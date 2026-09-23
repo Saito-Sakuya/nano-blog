@@ -1,0 +1,85 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { loadSite } from '../lib/content/collections.js';
+import { archivePageUrl, postsIndexUrl, searchUrl } from '../lib/routing/urls.js';
+import { buildMetadata } from '../lib/seo/metadata.js';
+
+/**
+ * Not found.
+ *
+ * Astro writes this file as `404.html` at the root of the build output, which
+ * is the file Cloudflare Pages serves — with a 404 status — for any URL that
+ * has no page behind it. That matters here: every list page only generates
+ * paths that exist, so a request for an unknown tag, series or page number
+ * lands on this document rather than on an empty list.
+ *
+ * The page never redirects and never guesses what the visitor meant. It offers
+ * the four indexes that can actually be browsed, and drops the search entry
+ * when the site has no public content — an empty search box would be a control
+ * with nothing behind it.
+ */
+
+const site = await loadSite();
+
+// Search covers public articles and public pages, so either one makes it worth
+// offering. With neither, there is no index to search.
+const hasSearchableContent = site.posts.length > 0 || site.pages.size > 0;
+
+const meta = buildMetadata({
+  title: '页面未找到',
+  description: '找不到该页面：它可能已被移动、重命名，或者从未存在。',
+  pathname: '/404.html',
+  noindex: true,
+});
+---
+
+<BaseLayout meta={meta}>
+  <div class="wrap">
+    <div class="page-head">
+      <h1>页面未找到</h1>
+      <p class="page-head__description">
+        找不到该页面：它可能已被移动、重命名，或者从未存在。
+      </p>
+    </div>
+
+    <nav class="not-found" aria-label="可浏览的入口">
+      <ul class="not-found__list">
+        <li class="not-found__item"><a href="/">首页</a></li>
+        <li class="not-found__item"><a href={postsIndexUrl}>文章</a></li>
+        <li class="not-found__item"><a href={archivePageUrl(1)}>归档</a></li>
+        {
+          hasSearchableContent && (
+            <li class="not-found__item"><a href={searchUrl}>搜索</a></li>
+          )
+        }
+      </ul>
+    </nav>
+  </div>
+</BaseLayout>
+
+<style>
+  .not-found__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-16);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .not-found__item a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding-inline: var(--space-16);
+    border: var(--border-width) solid var(--color-border);
+    border-radius: var(--radius-2);
+    text-decoration: none;
+    color: var(--color-text);
+  }
+
+  .not-found__item a:hover {
+    border-color: var(--color-link);
+    color: var(--color-link);
+  }
+</style>

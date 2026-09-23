@@ -1,0 +1,85 @@
+# nano-blog — response headers (Cloudflare Pages)
+#
+# Two groups of rules: the security policy that applies to everything, and the
+# cache policy that differs by asset class.
+#
+# `script-src 'self'` with no `unsafe-inline` is only possible because the build
+# emits no inline script: `assetsInlineLimit` is 0 so Astro never inlines a
+# component script, and the one script that must run before first paint lives in
+# `/theme-init.js` as a same-origin file.
+#
+# `'wasm-unsafe-eval'` is required, not optional. Pagefind compiles a WebAssembly
+# module (`/_pagefind/wasm.unknown.pagefind`), and since CSP3 a `script-src`
+# without this keyword makes `WebAssembly.instantiate` throw a `CompileError`:
+# the search box on `/search/` then fails. The verification server deliberately
+# applies this file, so browser tests exercise the deployed policy locally too.
+# The keyword permits pre-compiled WebAssembly only — it does not permit `eval`
+# of strings, so the "no dynamic code" posture is unchanged and `'unsafe-eval'`
+# stays absent.
+#
+# `style-src 'unsafe-inline'` is needed because Astro and Shiki emit trusted
+# inline `style` attributes on generated markup; it is not needed for any
+# author-supplied CSS, which the sanitiser strips at build time.
+#
+# A preview build appends an `X-Robots-Tag` rule below this block. That is done
+# by the post-build step, not here, so this file stays identical in every
+# environment and the version-controlled source is never rewritten.
+
+/*
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' https://media.example.invalid data:; media-src 'self' https://media.example.invalid; font-src 'self'; connect-src 'self'; frame-src https://www.youtube-nocookie.com https://player.bilibili.com; manifest-src 'none'; worker-src 'self'; upgrade-insecure-requests
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Permissions-Policy: accelerometer=(), autoplay=(), browsing-topics=(), camera=(), display-capture=(), geolocation=(), gyroscope=(), microphone=(), payment=(), usb=()
+  Cross-Origin-Opener-Policy: same-origin
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+
+# Hashed build output never changes under a given name.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# The one exception under `/assets/`: the KaTeX stylesheet and its fonts are
+# copied under a name without a content hash, so "immutable" would pin a stale
+# stylesheet in every returning browser for a year after a KaTeX upgrade. The
+# header is detached first and then set to a revalidating value — a bare second
+# `Cache-Control` would be joined with the rule above by a comma.
+/assets/katex/*
+  ! Cache-Control
+  Cache-Control: public, max-age=3600, must-revalidate
+
+# Open Graph cards are named after a digest of their inputs, so a given card URL
+# is immutable too.
+/og/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# The search index is rebuilt on every deploy but keeps a stable path.
+/_pagefind/*
+  Cache-Control: public, max-age=3600, must-revalidate
+
+# Documents must be revalidated: a stale article page is worse than a request.
+#
+# `/*/` is the rule that does the work, and it is not optional. The build uses
+# `format: "directory"` with `trailingSlash: "always"`, so an article is served
+# at `/posts/x/` and its request path never ends in `.html` — a `/*.html` rule
+# alone matched almost nothing, and the "revalidate documents" intent missed
+# every page a reader actually opens.
+/*/
+  Cache-Control: public, max-age=0, must-revalidate
+
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+/
+  Cache-Control: public, max-age=0, must-revalidate
+
+/rss.xml
+  Cache-Control: public, max-age=0, must-revalidate
+
+/sitemap-index.xml
+  Cache-Control: public, max-age=0, must-revalidate
+
+/sitemap-0.xml
+  Cache-Control: public, max-age=0, must-revalidate
+
+/robots.txt
+  Cache-Control: public, max-age=0, must-revalidate

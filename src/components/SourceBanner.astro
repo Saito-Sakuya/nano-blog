@@ -1,0 +1,47 @@
+---
+import { readSourceRecord } from '../lib/content/source-record.js';
+
+/**
+ * A banner naming the content source, shown only when the source is something
+ * a reader should not mistake for the real site.
+ *
+ * Two cases need it:
+ *
+ * - **Fixtures.** The page is full of test articles. Anyone looking at it must
+ *   be able to tell in one glance that none of it is real writing.
+ * - **An offline release.** The content was taken from a verified local cache
+ *   without contacting R2, so nothing has confirmed the cache still matches the
+ *   bucket. This has to be visible on the page, not
+ *   only in the terminal that produced the build.
+ *
+ * A normal build prints nothing at all.
+ */
+const record = readSourceRecord();
+
+const message =
+  record?.mode === 'fixtures'
+    ? '测试模式：此构建使用 tests/fixtures 中的隔离测试内容，不是真实文章。'
+    : record?.offline === true
+      ? `离线构建：内容来自本地已验证缓存${record.releaseId === null ? '' : `（${record.releaseId}）`}，本次构建未连接 R2，也未做远端校验。`
+      : null;
+---
+
+{
+  message !== null && (
+    <p class="source-banner" role="status">
+      {message}
+    </p>
+  )
+}
+
+<style>
+  .source-banner {
+    margin: 0;
+    padding: var(--space-8) var(--gutter-mobile);
+    background: var(--color-warning-soft);
+    color: var(--color-text);
+    border-block-end: var(--border-width) solid var(--color-warning);
+    font-size: var(--font-size-meta-lg);
+    text-align: center;
+  }
+</style>

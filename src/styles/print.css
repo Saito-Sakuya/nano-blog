@@ -1,0 +1,254 @@
+/*
+ * nano-blog — print styles
+ *
+ * Printing is a real reading mode, not an afterthought. Navigation, controls
+ * and anything that only works with a pointer are removed; disclosures and
+ * sidenotes are opened so nothing is lost on paper; and every link's
+ * destination is written out, because a URL that cannot be clicked is useless
+ * as a bare word.
+ */
+
+@media print {
+  :root {
+    /* Force a black-on-white document regardless of the screen theme. */
+    --color-bg: #ffffff;
+    --color-surface: #ffffff;
+    --color-text: #000000;
+    --color-muted: #333333;
+    --color-link: #000000;
+    --color-border: #999999;
+    --color-code-bg: #f4f4f4;
+    --color-code-text: #000000;
+  }
+
+  body {
+    background: #ffffff;
+    color: #000000;
+    font-size: 11pt;
+    line-height: 1.5;
+  }
+
+  /* Nothing interactive or navigational belongs on paper. */
+  .site-header,
+  .site-footer,
+  .skip-link,
+  .pagination,
+  .share,
+  .back-to-top,
+  .theme-toggle,
+  .site-nav,
+  .code-block__copy,
+  .embed__overlay,
+  .heading-anchor,
+  .toc__summary,
+  [data-live-region] {
+    display: none !important;
+  }
+
+  /* The contents list stays, but as a flat reference rather than a control. */
+  .toc {
+    border: 0;
+    padding: 0;
+    margin-block-end: 1.5rem;
+    break-inside: avoid;
+  }
+
+  .toc__list {
+    columns: 2;
+  }
+
+  .toc__item a {
+    color: #000000;
+    text-decoration: none;
+  }
+
+  /* Disclosures are opened so their content is not lost. */
+  details {
+    display: block;
+  }
+
+  details > summary {
+    list-style: none;
+    font-weight: 700;
+  }
+
+  details:not([open]) > *:not(summary) {
+    display: block;
+  }
+
+  /* The article becomes a single continuous column. */
+  .article-layout {
+    display: block !important;
+  }
+
+  /*
+   * The floating rails stop floating.
+   *
+   * On screen the contents rail is sticky at the screen edge and the note drawer
+   * is anchored into the article; on paper there is neither, and what they
+   * contain — the contents list, and every sidenote — belongs in the document.
+   * Resetting both to static puts them back in the flow, where the rules above
+   * and below apply: the contents list prints as a flat reference, and the notes
+   * print as endnotes after the article.
+   *
+   * `inset-block-start` has to go with `position`, or the drawer keeps the
+   * measured offset the script left on it as a static `top` and is displaced
+   * down the page by however far its reference happened to be.
+   */
+  .article-rail,
+  .sidenote-rail {
+    position: static !important;
+    inset: auto !important;
+    block-size: auto !important;
+    max-block-size: none !important;
+    max-inline-size: none !important;
+    inline-size: auto !important;
+    margin: 0 !important;
+    background: none;
+    border: 0;
+    box-shadow: none;
+    /* Nothing is behind a panel on paper, so there is nothing to frost. */
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+
+  /* The note panel becomes a plain block of notes. */
+  .sidenote-rail__panel {
+    display: block !important;
+    max-block-size: none !important;
+    overflow: visible !important;
+    padding: 0 !important;
+  }
+
+  .sidenote-rail__panel .sidenote {
+    margin: 0.75rem 0 !important;
+  }
+
+  /* The reference marks are not useful on paper: the note itself is right here,
+     and the print rules below label it inline. */
+  .sidenote-ref {
+    display: none !important;
+  }
+
+  /*
+   * Nor is the way into a note. On screen the chip is the visible affordance
+   * that says "there is a note over here"; on paper the note is already in the
+   * document, and the chip is an absolutely positioned box that would print
+   * wherever its offset happened to land — possibly over the text, possibly off
+   * the page.
+   */
+  .sidenote-chip {
+    display: none !important;
+  }
+
+  .prose {
+    max-width: none;
+    font-size: 11pt;
+    line-height: 1.5;
+  }
+
+  /* Sidenotes stop floating and are numbered inline, immediately after the
+     paragraph that referenced them. */
+  .sidenote {
+    float: none !important;
+    clear: both !important;
+    inline-size: auto !important;
+    margin: 0.75rem 0 !important;
+    padding: 0.5rem 0 0.5rem 0.75rem;
+    border-block-start: 1px solid #999999;
+    border-inline-start: 2px solid #999999;
+    background: none;
+    font-size: 9.5pt;
+    break-inside: avoid;
+  }
+
+  .sidenote__marker {
+    font-weight: 700;
+  }
+
+  .sidenote__marker::before {
+    content: "[边注 ";
+  }
+
+  .sidenote__marker::after {
+    content: "]";
+  }
+
+  /* Code keeps its own surface but never runs off the page. */
+  .code-block__frame {
+    border: 1px solid #999999;
+    break-inside: avoid;
+  }
+
+  .code-block__frame pre {
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-size: 9pt;
+  }
+
+  .code-block[data-line-numbers="true"] .line::before {
+    color: #666666;
+  }
+
+  .line--highlighted {
+    background: none;
+    box-shadow: none;
+    font-weight: 700;
+  }
+
+  /* Prefer a real border over a background wash, which most printers drop. */
+  .callout {
+    border: 1px solid #999999;
+    border-inline-start-width: 3px;
+    background: none;
+    break-inside: avoid;
+  }
+
+  table {
+    font-size: 9.5pt;
+    break-inside: avoid;
+  }
+
+  th,
+  td {
+    border: 1px solid #999999 !important;
+  }
+
+  thead th {
+    background: none !important;
+  }
+
+  /* A printed link needs its destination spelled out. */
+  .prose a[href^="http"]::after {
+    content: " <" attr(href) ">";
+    font-size: 9pt;
+    word-break: break-all;
+  }
+
+  /* Figures and covers should not be split across pages. */
+  figure,
+  img,
+  .mermaid-block,
+  .embed {
+    break-inside: avoid;
+  }
+
+  .mermaid-block__source {
+    font-size: 8.5pt;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  /* Print the canonical address of the document itself. */
+  .article-head::after {
+    content: attr(data-print-url);
+    display: block;
+    margin-block-start: 0.5rem;
+    font-size: 9pt;
+    color: #333333;
+  }
+
+  @page {
+    margin: 18mm 16mm;
+  }
+}

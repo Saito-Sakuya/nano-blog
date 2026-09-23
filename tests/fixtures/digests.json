@@ -1,0 +1,26 @@
+{
+  "cover-alpha.png": {
+    "sha256": "a3ebc0fe4141541d420d6127389d9e789420efa8d04cfcfdcb3a0774aa8b4ed4",
+    "bytes": 22813,
+    "width": 1600,
+    "height": 900
+  },
+  "cover-beta.png": {
+    "sha256": "1e7b56dcbc1b9b39e3a3ce577f6ed549b6a5a6d7325c5acc333dad4e0cf93334",
+    "bytes": 24080,
+    "width": 1600,
+    "height": 900
+  },
+  "figure-wide.png": {
+    "sha256": "02319fee3bad68398072db39e2822a7cd3f2c4f478d0ecf85222190eedc07362",
+    "bytes": 17149,
+    "width": 1200,
+    "height": 675
+  },
+  "figure-narrow.png": {
+    "sha256": "4f24213cd21d05f419d7468216286ffb24171074559ca2cba014e150a3e7c6c8",
+    "bytes": 6083,
+    "width": 640,
+    "height": 360
+  }
+}

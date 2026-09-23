@@ -1,0 +1,60 @@
+---
+/**
+ * Breadcrumbs.
+ *
+ * The trail starts at "文章" and never links to the page you are already on:
+ * the last item is plain text marked `aria-current="page"`.
+ *
+ * A deep path can be wider than a phone, so the list scrolls within itself
+ * rather than pushing the page sideways or truncating the title.
+ */
+interface Props {
+  items: readonly { label: string; href?: string }[];
+}
+
+const { items } = Astro.props;
+const last = items.length - 1;
+---
+
+{
+  items.length > 1 && (
+    <nav class="breadcrumb" aria-label="面包屑">
+      <ol class="breadcrumb__list">
+        {items.map((item, index) => (
+          <li class="breadcrumb__item">
+            {item.href !== undefined && index !== last ? (
+              <a href={item.href}>{item.label}</a>
+            ) : (
+              <span aria-current={index === last ? 'page' : undefined}>{item.label}</span>
+            )}
+            {index !== last && <span class="breadcrumb__separator" aria-hidden="true">/</span>}
+          </li>
+        ))}
+      </ol>
+    </nav>
+  )
+}
+
+<style>
+  .breadcrumb__item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-8);
+  }
+
+  .breadcrumb__item a {
+    color: var(--color-muted);
+    text-decoration: none;
+  }
+
+  .breadcrumb__item a:hover {
+    color: var(--color-link);
+    text-decoration: underline;
+  }
+
+  /* The current page is text, not a link, and is not colour-coded alone. */
+  .breadcrumb__item [aria-current='page'] {
+    color: var(--color-text);
+    font-weight: 600;
+  }
+</style>

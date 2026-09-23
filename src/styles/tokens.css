@@ -1,0 +1,256 @@
+/*
+ * nano-blog — design tokens
+ *
+ * This file is the single source of truth for colour, spacing, radius, motion
+ * and typography. Components must consume the semantic variables defined here
+ * and must never hard-code a colour, duration or spacing value of their own.
+ *
+ * Theme resolution order:
+ *   1. `[data-theme="dark"]` / `[data-theme="light"]` — an explicit user choice.
+ *   2. `prefers-color-scheme` — the system preference, used only when no
+ *      explicit choice has been stored.
+ * Every colour token is defined on bare `:root` so a page never renders with a
+ * missing token, and the dark values are repeated in both blocks below.
+ */
+
+:root {
+  color-scheme: light;
+
+  /* --- Surfaces and text ------------------------------------------------ */
+  --color-bg: #f7f5ef;
+  --color-surface: #fcfbf7;
+  --color-text: #172125;
+  --color-muted: #5d686c;
+
+  /* --- Interactive ------------------------------------------------------ */
+  --color-link: #006f80;
+  --color-brand: #00a2bd;
+  --color-brand-soft: #d9f2f5;
+  --color-border: #cdd4d2;
+
+  /* --- Code ------------------------------------------------------------- */
+  --color-code-bg: #111a1d;
+  --color-code-text: #e8efef;
+
+  /* --- Status ----------------------------------------------------------- */
+  --color-danger: #a62b22;
+  --color-warning: #805900;
+  --color-success: #256245;
+
+  /*
+   * Status colours are also needed as a translucent wash behind callouts and
+   * banners. Keeping the mix here means a component never reaches for a raw
+   * colour function on a semantic token.
+   */
+  --color-danger-soft: color-mix(
+    in srgb,
+    var(--color-danger) 8%,
+    var(--color-bg)
+  );
+  --color-warning-soft: color-mix(
+    in srgb,
+    var(--color-warning) 8%,
+    var(--color-bg)
+  );
+  --color-success-soft: color-mix(
+    in srgb,
+    var(--color-success) 8%,
+    var(--color-bg)
+  );
+  --color-note-soft: color-mix(in srgb, var(--color-link) 8%, var(--color-bg));
+
+  /*
+   * The floating panels are frosted: a translucent surface the page shows
+   * through, with a blur behind it. The mix lives here for the same reason the
+   * washes above do — the component names the intent, not the blend.
+   *
+   * 98% is a legibility decision, and the first attempt at it was wrong. A 92%
+   * veil — a common value for this effect — clears the contrast requirement
+   * (4.71:1 for `--color-muted` note text over a code block, where the
+   * requirement is 4.5:1) and it still failed in the reader's hands: the page's
+   * text sits at almost full black on almost full white, so even 8% of that
+   * range showing through is a legible ghost of the paragraph behind, and the
+   * thin rules of a table crossed the note's own words. Contrast was necessary
+   * and not sufficient.
+   *
+   * The number that matters is how much of the page's luminance range survives
+   * the veil. At 98% the residual is 2% of it — below the point where a line of
+   * text behind the panel can be read or mistaken for a line inside it — while
+   * the blur still shows at the panel's edges. Contrast rises to 5.32:1. The
+   * dark theme is not the constraint either way: its code block and surface are
+   * both dark, so it clears 4.5:1 at any opacity.
+   *
+   * No automated gate can hold this line for us. A translucent background makes
+   * axe report contrast as *incomplete* rather than measured — the a11y report
+   * shows `#sidenote-1 > p` in exactly that bucket — so the value is chosen by
+   * arithmetic, and it is set high on purpose rather than to taste.
+   */
+  --color-surface-veil: color-mix(
+    in srgb,
+    var(--color-surface) 98%,
+    transparent
+  );
+
+  /* --- Spacing (nine fixed steps) --------------------------------------- */
+  --space-4: 4px;
+  --space-8: 8px;
+  --space-12: 12px;
+  --space-16: 16px;
+  --space-24: 24px;
+  --space-32: 32px;
+  --space-48: 48px;
+  --space-64: 64px;
+  --space-96: 96px;
+
+  /* --- Borders and radii ------------------------------------------------ */
+  --border-width: 1px;
+  --border-width-strong: 2px;
+  --radius-2: 2px;
+  --radius-4: 4px;
+  --radius-8: 8px;
+  /* Nothing in this design is rounder than 8px. */
+  --radius-max: 8px;
+
+  /* --- Elevation (search overlay only) ---------------------------------- */
+  --shadow-overlay: 0 16px 48px rgb(0 0 0 / 0.14);
+
+  /* --- Motion ----------------------------------------------------------- */
+  --duration-120: 120ms;
+  --duration-180: 180ms;
+  --duration-240: 240ms;
+  --ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* --- Focus ------------------------------------------------------------ */
+  --focus-ring-width: 3px;
+  --focus-ring-offset: 3px;
+
+  /* --- Typography ------------------------------------------------------- */
+  --font-sans:
+    ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC",
+    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC",
+    sans-serif;
+  --font-mono:
+    ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", Menlo,
+    monospace;
+
+  --font-size-root: 16px;
+  --line-height-body: 1.7;
+
+  /* Article body: 18px/1.82 on desktop, 17px/1.78 below 48rem. */
+  --font-size-article: 18px;
+  --line-height-article: 1.82;
+  --measure-article: 42rem;
+
+  /* Metadata and indexes never go below 12px. */
+  --font-size-meta: 12px;
+  --font-size-meta-lg: 14px;
+
+  /* --- Layout ----------------------------------------------------------- */
+  --layout-max: 1200px;
+  --gutter-mobile: 16px;
+  --gutter-tablet: 32px;
+  --gutter-desktop: 48px;
+  /*
+   * The gutter in force at the current width, resolved to one value.
+   *
+   * The three above describe what each breakpoint uses; this is the one to read.
+   * The floating rails position themselves against it so their outer edge lines
+   * up with the page's own margin: read the wrong variable and a rail sits a few
+   * pixels off the edge it is supposed to hang from.
+   */
+  --gutter: var(--gutter-mobile);
+  --header-height: 64px;
+  --sidenote-width: 240px;
+  /*
+   * Width of the cover band on a list row.
+   *
+   * The band is positioned rather than laid out, so this value is read twice —
+   * to reserve the space it occupies and to size the band itself. Keeping it in
+   * one place is what stops the two from disagreeing, which is the failure mode
+   * that once put article text on top of the cover image.
+   */
+  --index-cover-width: 96px;
+  /*
+   * One height at every width. The band is the row's cover, so it is sized to
+   * fill the row rather than to sit inside it as a thumbnail; a shorter value on
+   * narrow screens made the same list read as a different design on a phone. The
+   * row reserves this height, so the band reaches it on every row and the
+   * right-hand edge of the list stays a straight line.
+   */
+  --index-cover-height: 96px;
+  /* Gap kept between a cover band and the row edges above and below it. */
+  --index-cover-inset: 6px;
+}
+
+/* System dark theme, unless the visitor has explicitly chosen light. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --color-bg: #0e1517;
+    --color-surface: #151e21;
+    --color-text: #e8efef;
+    --color-muted: #9aa8ab;
+
+    --color-link: #52c6d8;
+    --color-brand: #00a2bd;
+    --color-brand-soft: #10373e;
+    --color-border: #324044;
+
+    --color-code-bg: #091013;
+    --color-code-text: #e8efef;
+
+    --color-danger: #ff8a80;
+    --color-warning: #f2c86b;
+    --color-success: #7ed6a4;
+  }
+}
+
+/* Explicit dark choice, which wins over a light system preference. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-bg: #0e1517;
+  --color-surface: #151e21;
+  --color-text: #e8efef;
+  --color-muted: #9aa8ab;
+
+  --color-link: #52c6d8;
+  --color-brand: #00a2bd;
+  --color-brand-soft: #10373e;
+  --color-border: #324044;
+
+  --color-code-bg: #091013;
+  --color-code-text: #e8efef;
+
+  --color-danger: #ff8a80;
+  --color-warning: #f2c86b;
+  --color-success: #7ed6a4;
+}
+
+/*
+ * The root font size is fixed at 16px so that a visitor's browser font-size
+ * preference is still honoured for `rem`-based layout, while the article
+ * measure stays predictable.
+ */
+@media (max-width: 47.999rem) {
+  :root {
+    --font-size-article: 17px;
+    --line-height-article: 1.78;
+  }
+}
+
+/* From the tablet breakpoint there is room for the cover band to widen. The
+   height is deliberately not overridden: it is the same at every width. */
+@media (min-width: 48rem) {
+  :root {
+    --index-cover-width: 240px;
+    --gutter: var(--gutter-tablet);
+  }
+}
+
+@media (min-width: 75rem) {
+  :root {
+    --gutter: var(--gutter-desktop);
+  }
+}

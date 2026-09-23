@@ -1,0 +1,48 @@
+---
+/**
+ * A gallery.
+ *
+ * `<Gallery>` supplies the layout; the images are ordinary `<Figure>` children
+ * written by the author. Reading order and keyboard order follow the source
+ * order, and there is no lightbox — a modal would be an extra interaction to
+ * get wrong, and the images are already at full column width.
+ *
+ * Between two and six figures are expected. The bound is enforced by the MDX
+ * validator, which reports the actual count rather than silently reflowing
+ * whatever it is given.
+ */
+interface Props {
+  caption?: string;
+}
+
+const { caption } = Astro.props;
+---
+
+<figure class="gallery">
+  <div class="gallery__grid">
+    <slot />
+  </div>
+  {caption && <figcaption class="gallery__caption">{caption}</figcaption>}
+</figure>
+
+<style>
+  .gallery {
+    margin-block: var(--space-24);
+  }
+
+  .gallery__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+    gap: var(--space-12);
+  }
+
+  .gallery__grid :global(.figure) {
+    margin: 0;
+  }
+
+  .gallery__caption {
+    margin-block-start: var(--space-8);
+    font-size: var(--font-size-meta-lg);
+    color: var(--color-muted);
+  }
+</style>

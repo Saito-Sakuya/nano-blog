@@ -1,0 +1,26 @@
+---
+/**
+ * Registers the Mermaid renderer, but only on a page that actually has a
+ * diagram.
+ *
+ * `enabled` is decided at build time from the article's own source, so a page
+ * without a diagram ships no Mermaid script tag at all. Where there is one,
+ * this emits a small module that watches the diagram; the Mermaid library
+ * itself is fetched only when a diagram scrolls into view, so even a page with
+ * a diagram pays nothing for it on the first screen.
+ */
+interface Props {
+  enabled: boolean;
+}
+
+const { enabled } = Astro.props;
+---
+
+{
+  enabled && (
+    <script>
+      import { initMermaid } from '../scripts/mermaid.js';
+      initMermaid();
+    </script>
+  )
+}

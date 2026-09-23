@@ -1,0 +1,99 @@
+---
+import { getEntry, render } from 'astro:content';
+
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { loadSite } from '../lib/content/collections.js';
+import { aboutUrl, rssUrl } from '../lib/routing/urls.js';
+import { buildMetadata } from '../lib/seo/metadata.js';
+import { ogImagePath } from '../lib/seo/og.js';
+import {
+  CONTENT_LICENSE_LABEL,
+  CONTENT_LICENSE_URL,
+  CODE_LICENSE_LABEL,
+  SITE_NAME,
+  SITE_TAGLINE,
+} from '../lib/site.js';
+
+/**
+ * About.
+ *
+ * The identity block below is the whole page when there is no public
+ * `pages/about.md`: the site name, its tagline, the anonymity statement, the
+ * content licence and the feed. Nothing is filled in around it — no author
+ * story, no location, no technology résumé, no contact details — because none
+ * of those are facts the site holds, and inventing them would be inventing a
+ * claim about a real person.
+ *
+ * When the author does publish `pages/about.md`, its body is rendered as prose
+ * *after* that block. The block is never replaced by it.
+ */
+
+const site = await loadSite();
+
+const aboutEntry = site.about === null ? undefined : await getEntry('pages', 'about');
+const Content = aboutEntry === undefined ? null : (await render(aboutEntry)).Content;
+
+const aboutData = site.about?.data;
+
+/*
+ * A `noindex: true` on `pages/about.md` has to reach the metadata, and the page
+ * has to reach the search index when it is not marked. Both were previously
+ * dropped on the floor here: the flag the schema accepts was never read, so an
+ * author asking for noindex silently got an indexable page.
+ */
+const noindex = aboutData?.noindex ?? false;
+
+const meta = buildMetadata({
+  title: aboutData?.title ?? '关于',
+  description: aboutData?.description ?? `关于 ${SITE_NAME}：站点身份、内容许可与订阅方式。`,
+  pathname: aboutUrl,
+  noindex,
+  ...(aboutData?.updatedAt === undefined
+    ? {}
+    : { modifiedTime: aboutData.updatedAt }),
+  ...(aboutData?.cover === undefined
+    ? {}
+    : { ogImage: ogImagePath(aboutData.cover.src) }),
+});
+---
+
+<BaseLayout meta={meta} indexable={!noindex}>
+  <div class="wrap">
+    <div class="page-head">
+      <h1>{site.about?.data.title ?? '关于'}</h1>
+    </div>
+
+    <div class="prose identity">
+      <p class="identity__brand">
+        <span>ani</span><span class="brand__mark" aria-hidden="true"></span><span>nano</span>
+      </p>
+      <p>{SITE_TAGLINE}</p>
+      <p>由 Nano 匿名写作。</p>
+      <p>
+        本站内容采用
+        <a href={CONTENT_LICENSE_URL}>{CONTENT_LICENSE_LABEL}</a>
+        许可，站点代码采用 {CODE_LICENSE_LABEL} 许可。
+      </p>
+      <p>
+        订阅：<a href={rssUrl}>RSS 全文订阅</a>
+      </p>
+    </div>
+
+    {Content !== null && <div class="prose identity__body"><Content /></div>}
+  </div>
+</BaseLayout>
+
+<style>
+  .identity__brand {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.28em;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+
+  .identity__body {
+    margin-block-start: var(--space-48);
+  }
+</style>

@@ -1,0 +1,59 @@
+{
+  // markdownlint-cli2 configuration.
+  //
+  // Loaded automatically by `markdownlint-cli2` (the `lint` script) and by
+  // `pnpm verify`, which run it as `markdownlint-cli2 "**/*.md"`.
+  //
+  // `ignores` is not optional here: without it the glob reaches into every
+  // installed package's README and LICENSE, and the run reports thousands of
+  // findings in `node_modules` that nobody can act on.
+  "ignores": [
+    "node_modules/**",
+    "dist/**",
+    "dist-fixtures/**",
+    ".astro/**",
+    ".ani-content/**",
+    "lighthouse-results/**",
+    "playwright-report/**",
+    "test-results/**",
+    "coverage/**",
+    // Local tool state. Not part of the project and not committed, but the glob
+    // reaches it just the same, and it is not written to this repository's
+    // documentation style.
+    ".zcode/**",
+    ".mimosa/**",
+  ],
+  "config": {
+    "default": true,
+
+    // --- disabled project-wide ---------------------------------------------
+    // The documentation and the fixture content are written as continuous prose
+    // and tables, and every table row, code fence and long Chinese sentence
+    // exceeds any line length worth enforcing. Wrapping the prose to satisfy
+    // the rule would make the documents harder to read and the diffs worse.
+    "MD013": false,
+
+    // Section names repeat across the documentation and the fixture content
+    // ("Usage", "Notes", "Flags", "示例"). Sibling duplicates are meaningful
+    // structure, not an authoring mistake.
+    "MD024": false,
+  },
+
+  // Author content is held to the sanitiser and the parser, not to a
+  // documentation style guide. The fixture article is written specifically to
+  // exercise raw HTML that is allowed (`<abbr>`, `<kbd>`, `<mark>`, `<sub>`) and
+  // raw HTML that must be stripped (`<div>`), and it places the five callout
+  // types as five adjacent blockquotes. Merging those blockquotes to satisfy
+  // MD028 would change what the parser sees. The two rules are turned off for
+  // content only; `README.md` and `docs/**` keep them.
+  "overrides": [
+    {
+      "filter": ["tests/fixtures/content/**/*.md"],
+      "combine": "merge",
+      "config": {
+        "MD028": false,
+        "MD033": false,
+      },
+    },
+  ],
+}

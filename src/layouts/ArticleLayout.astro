@@ -1,0 +1,339 @@
+---
+import type { AstroComponentFactory } from 'astro/runtime/server/index.js';
+
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import Comments from '../components/Comments.astro';
+import IndexList from '../components/IndexList.astro';
+import KatexSupport from '../components/KatexSupport.astro';
+import MermaidSupport from '../components/MermaidSupport.astro';
+import TableOfContents from '../components/TableOfContents.astro';
+import AudioPlayer from '../components/mdx/AudioPlayer.astro';
+import Callout from '../components/mdx/Callout.astro';
+import Details from '../components/mdx/Details.astro';
+import Figure from '../components/mdx/Figure.astro';
+import Gallery from '../components/mdx/Gallery.astro';
+import Sidenote from '../components/mdx/Sidenote.astro';
+import Tab from '../components/mdx/Tab.astro';
+import Tabs from '../components/mdx/Tabs.astro';
+import VideoEmbed from '../components/mdx/VideoEmbed.astro';
+import { hasMathFormula, hasMermaidDiagram } from '../lib/content/body-features.js';
+import { displayDate } from '../lib/content/build-context.js';
+import type { PostView, SeriesView } from '../lib/content/collections.js';
+import type { Heading } from '../lib/content/toc.js';
+import { loadMediaIndex } from '../lib/media/index.js';
+import { buildPicture } from '../lib/media/picture.js';
+import { seriesUrl, tagUrl } from '../lib/routing/urls.js';
+import { CONTENT_LICENSE_LABEL, CONTENT_LICENSE_URL, canonicalUrl } from '../lib/site.js';
+
+/**
+ * The article page.
+ *
+ * Reading is the whole point, so the composition is built around the
+ * relationship between the body text and its sidenotes: on a wide screen a
+ * metadata rail, the article measure and a lane the notes float into; below
+ * that, a single column with the notes folded in beside their reference.
+ */
+export interface SeriesContext {
+  readonly series: SeriesView;
+  readonly previous: PostView | null;
+  readonly next: PostView | null;
+}
+
+interface Props {
+  post: PostView;
+  Content: AstroComponentFactory;
+  headings: readonly Heading[];
+  related: readonly PostView[];
+  breadcrumbs: readonly { label: string; href?: string }[];
+  seriesContext: SeriesContext | null;
+}
+
+const { post, Content, headings, related, breadcrumbs, seriesContext } = Astro.props;
+const { data, readingMinutes } = post;
+
+/**
+ * The MDX whitelist. Passing the map here — rather than letting content resolve
+ * its own modules — is what keeps `.mdx` unable to reach anything outside this
+ * list.
+ */
+const mdxComponents = {
+  Callout,
+  Figure,
+  Gallery,
+  Sidenote,
+  VideoEmbed,
+  AudioPlayer,
+  Tabs,
+  Tab,
+  Details,
+};
+
+const cover = data.cover;
+const coverPicture = buildPicture(loadMediaIndex(), cover.src, {
+  displayWidth: 900,
+  displayHeight: 506,
+  /*
+   * The box the cover is drawn into, per breakpoint: the article measure at the
+   * three-column width, the full column below it. `buildPicture` hands this
+   * value back so the `<source>` elements below cannot describe a different box
+   * from the one the layout reserves — which is what a second copy of the string
+   * in the template was doing.
+   */
+  sizes: '(min-width: 75rem) 900px, 100vw',
+});
+
+// Both flags are decided at build time from the article's own source, so a page
+// without a diagram never emits the Mermaid script and a page without a formula
+// never requests the KaTeX stylesheet.
+const hasMermaid = hasMermaidDiagram(post.body);
+const hasMath = hasMathFormula(post.body);
+---
+
+<KatexSupport enabled={hasMath} />
+<MermaidSupport enabled={hasMermaid} />
+
+<div class="wrap">
+  <Breadcrumbs items={[...breadcrumbs]} />
+
+  <article data-canonical-url={canonicalUrl(post.url)}>
+    <header class="article-head" data-print-url={canonicalUrl(post.url)}>
+      <h1>{data.title}</h1>
+      <p class="article-head__description">{data.description}</p>
+
+      <div class="article-meta">
+        <!--
+          The search index needs a date and a tag list to show beside a result.
+          Both are attached to elements that are already on the page rather than
+          added as hidden extras, so nothing is duplicated and there is no
+          invisible text for the index to pick up as body content.
+        -->
+        <time datetime={data.publishedAt} data-pagefind-meta="date">
+          发表于 {displayDate(data.publishedAt)}
+        </time>
+        {
+          data.updatedAt && (
+            <time datetime={data.updatedAt}>更新于 {displayDate(data.updatedAt)}</time>
+          )
+        }
+        <span>约 {readingMinutes} 分钟</span>
+        {/*
+          Filled by script: a build-time count would be frozen at deploy time.
+          The element ships hidden and empty rather than showing a placeholder
+          zero, so nothing appears until there is a real number to show.
+        */}
+        <span class="article-meta__views" data-views data-post-id={post.id} hidden></span>
+        {
+          data.tags.length > 0 && (
+            <ul class="article-meta__list" data-pagefind-meta="tags">
+              {data.tags.map((tag) => (
+                <li>
+                  <a class="tag-chip" href={tagUrl(tag.id)}>{tag.label}</a>
+                </li>
+              ))}
+            </ul>
+          )
+        }
+        {
+          data.series && (
+            <a href={seriesUrl(data.series.id)}>
+              系列：{data.series.title}（第 {data.series.order} 篇）
+            </a>
+          )
+        }
+        <a href={CONTENT_LICENSE_URL} rel="license">{CONTENT_LICENSE_LABEL}</a>
+      </div>
+
+      {/*
+        The cover is the header's last child so that the reading order the
+        specification fixes — breadcrumb, title, description, meta, cover — is
+        still the order in the DOM. On a wide screen the stylesheet lifts the
+        image out of the flow to sit behind the title, fading away to the left;
+        below the tablet breakpoint it stays an ordinary figure in sequence.
+      */}
+      <figure class="article-cover">
+        <div data-media-frame>
+          <span data-media-fallback>{[...data.title][0] ?? '·'}</span>
+          <picture>
+            {
+              coverPicture.sources.map((source) => (
+                <source type={source.type} srcset={source.srcset} sizes={coverPicture.sizes} />
+              ))
+            }
+            <img
+              src={coverPicture.src}
+              alt={cover.alt}
+              width="900"
+              height="506"
+              data-media-image
+              fetchpriority="high"
+              decoding="async"
+            />
+          </picture>
+        </div>
+      </figure>
+    </header>
+
+    {cover.credit && <p class="article-credit">{cover.credit}</p>}
+
+    {/*
+      Both rails come before the body, for two different reasons.
+
+      The contents rail's place *is* load-bearing: it is `position: sticky` when
+      floating, and a sticky element anchors from where the flow puts it. Placed
+      after the article it would stick at the article's end, thousands of pixels
+      below the fold, and would never be reachable. Put first, it rests at the top
+      of the article — where the tab belongs.
+
+      The note drawer comes here too, but nothing depends on it. It is positioned
+      against the article rather than stuck to the viewport, so the flow does not
+      decide where it appears.
+
+      Where the notes go: on a wide screen each one floats beside the paragraph
+      that references it and this stays empty and hidden. Below that breakpoint
+      the script moves every note in here and leaves a numbered reference behind
+      in the text; the drawer is anchored to that reference, so it opens beside
+      the paragraph the note belongs to and scrolls away with it.
+
+      It is `hidden` in the markup and stays that way until a note is opened:
+      there is no tab in the corner, because the reference in the prose is the way
+      in. The summary is the drawer's own header, which is also how it is closed.
+
+      It is a `<details>` for the same reason the contents list is — the browser
+      owns the open/closed semantics and the keyboard behaviour. The open state is
+      the script's job, and so is `hidden`.
+    */}
+    <div class="article-layout">
+      <div class="article-rail">
+        <TableOfContents headings={headings} mode={data.toc} />
+      </div>
+
+      <details class="sidenote-rail" id="sidenote-drawer" data-sidenote-rail hidden>
+        <summary class="sidenote-rail__summary">
+          边注
+          <span class="sidenote-rail__count" data-sidenote-count></span>
+        </summary>
+        <div class="sidenote-rail__panel" data-sidenote-panel></div>
+      </details>
+
+      <div class="article-body">
+        <div class="prose">
+          <Content components={mdxComponents} />
+        </div>
+      </div>
+    </div>
+
+    {
+      seriesContext !== null && (
+        <nav class="series-nav" aria-label={`系列：${seriesContext.series.title}`}>
+          <p class="series-nav__title">
+            <a href={seriesUrl(seriesContext.series.id)}>{seriesContext.series.title}</a>
+            <span>共 {seriesContext.series.count} 篇</span>
+          </p>
+          <ul class="series-nav__list">
+            <li>
+              {seriesContext.previous === null ? (
+                <span class="series-nav__empty">已是第一篇</span>
+              ) : (
+                <a href={seriesContext.previous.url} rel="prev">
+                  上一篇：{seriesContext.previous.data.title}
+                </a>
+              )}
+            </li>
+            <li>
+              {seriesContext.next === null ? (
+                <span class="series-nav__empty">已是最后一篇</span>
+              ) : (
+                <a href={seriesContext.next.url} rel="next">
+                  下一篇：{seriesContext.next.data.title}
+                </a>
+              )}
+            </li>
+          </ul>
+        </nav>
+      )
+    }
+
+    {
+      related.length > 0 && (
+        <section class="related" aria-labelledby="related-heading">
+          <h2 class="related__heading" id="related-heading">相关文章</h2>
+          {/* The rows are this section's content, not the page's, so they are a
+              level below its own heading rather than a second set of `h2`s. */}
+          <IndexList posts={related} headingLevel="h3" />
+        </section>
+      )
+    }
+
+    <Comments postId={post.id} enabled={data.comments} />
+
+    <div class="share" data-share>
+      <button class="share__button" type="button" data-share-copy>复制链接</button>
+      <button class="share__button" type="button" data-share-native hidden>系统分享</button>
+      <span class="share__status" data-copy-status></span>
+    </div>
+  </article>
+</div>
+
+<button class="back-to-top" type="button" data-back-to-top hidden>返回顶部</button>
+<p class="visually-hidden-live" data-live-region aria-live="polite" aria-atomic="true"></p>
+
+<script>
+  import { initArticle } from '../scripts/article.js';
+  import { initEmbeds } from '../scripts/embeds.js';
+  import { initViews } from '../scripts/views.js';
+  initArticle();
+  initEmbeds();
+  initViews();
+</script>
+
+<style>
+  .series-nav,
+  .related {
+    margin-block-start: var(--space-48);
+    padding-block-start: var(--space-16);
+    border-block-start: var(--border-width) solid var(--color-border);
+  }
+
+  .series-nav__title {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-8);
+    align-items: baseline;
+    font-weight: 600;
+    margin-block-end: var(--space-8);
+  }
+
+  .series-nav__title span {
+    font-size: var(--font-size-meta);
+    color: var(--color-muted);
+  }
+
+  .series-nav__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-8) var(--space-24);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: var(--font-size-meta-lg);
+  }
+
+  .series-nav__empty {
+    color: var(--color-muted);
+  }
+
+  .related__heading {
+    font-size: 1.1rem;
+    margin-block-end: var(--space-8);
+  }
+
+  /* The native share button is revealed by script only where the API exists. */
+  .share [data-share-native][hidden] {
+    display: none;
+  }
+
+  .share__status {
+    font-size: var(--font-size-meta-lg);
+    color: var(--color-muted);
+  }
+</style>

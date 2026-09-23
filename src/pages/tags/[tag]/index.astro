@@ -1,0 +1,85 @@
+---
+import type { GetStaticPaths } from 'astro';
+
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import EmptyState from '../../../components/EmptyState.astro';
+import IndexList from '../../../components/IndexList.astro';
+import Pagination from '../../../components/Pagination.astro';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { loadSite, postsWithTag } from '../../../lib/content/collections.js';
+import { pageSlice, paginate, tagPageUrl, tagsIndexUrl } from '../../../lib/routing/urls.js';
+import { buildMetadata } from '../../../lib/seo/metadata.js';
+
+/**
+ * A single tag, page one.
+ *
+ * `loadSite` builds its tag list from public articles only, so a tag that is
+ * unknown, or that is used solely by drafts and future-dated articles, has no
+ * path generated at all. In a static build that means no file is written for
+ * `/tags/<id>/` and the host answers with the real `404.html` and a 404 status
+ * — which is exactly the required behaviour and is why no placeholder page is
+ * emitted for a tag that does not exist.
+ *
+ * The guard below only ever runs for a request that reached this component
+ * without a matching path (the dev server); it rewrites to the 404 page rather
+ * than rendering an empty tag or throwing.
+ */
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const site = await loadSite();
+
+  return site.tags.map((tag) => ({ params: { tag: tag.id } }));
+};
+
+const site = await loadSite();
+const tagId = Astro.params['tag'] ?? '';
+const tag = site.tags.find((entry) => entry.id === tagId);
+
+if (tag === undefined) {
+  return Astro.rewrite('/404');
+}
+
+// `site.posts` is newest first, and the filter preserves that order.
+const posts = postsWithTag(site, tag.id);
+const pagePosts = pageSlice(posts, 1);
+const pagination = paginate(posts.length, 1, (page) => tagPageUrl(tag.id, page));
+
+const meta = buildMetadata({
+  title: `标签：${tag.label}`,
+  description: `${tag.label} 标签下的公开文章，共 ${posts.length} 篇。`,
+  pathname: tagPageUrl(tag.id, 1),
+});
+---
+
+<BaseLayout meta={meta}>
+  <div class="wrap">
+    <Breadcrumbs
+      items={[{ label: '标签', href: tagsIndexUrl() }, { label: tag.label }]}
+    />
+
+    <div class="page-head">
+      <h1>{tag.label}</h1>
+      <p class="page-head__description">
+        标签 id <span class="tag-id">{tag.id}</span>，共 {posts.length} 篇公开文章。
+      </p>
+    </div>
+
+    {
+      posts.length === 0 ? (
+        <EmptyState message="此标签下尚无公开文章。" />
+      ) : (
+        <>
+          <IndexList posts={pagePosts} />
+          <Pagination pagination={pagination} label={`${tag.label} 标签分页`} />
+        </>
+      )
+    }
+  </div>
+</BaseLayout>
+
+<style>
+  .tag-id {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-meta-lg);
+  }
+</style>

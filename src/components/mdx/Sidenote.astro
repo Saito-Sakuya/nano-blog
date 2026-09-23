@@ -1,0 +1,21 @@
+---
+/**
+ * MDX sidenote.
+ *
+ * Renders the same `<aside class="sidenote">` structure as the Markdown
+ * `:::sidenote[...]` directive. The number and id are assigned in the browser
+ * by the same pass that numbers the directive form, so both spellings stay
+ * consistent and neither can drift from the other.
+ */
+interface Props {
+  label?: string;
+}
+
+const { label } = Astro.props;
+---
+
+<aside class="sidenote" role="note">
+  {label && <span class="sidenote__label">{label}</span>}
+  <span class="sidenote__marker" aria-hidden="true"></span>
+  <slot />
+</aside>

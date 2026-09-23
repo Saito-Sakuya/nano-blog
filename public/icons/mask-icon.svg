@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!--
+    Pinned-tab mask icon. Safari renders this as a monochrome silhouette and
+    applies the colour given in the <link rel="mask-icon"> tag, so it is drawn
+    with a single fill and no background.
+  -->
+  <rect x="6" y="24" width="16" height="16" fill="#000000" />
+  <text
+    x="28"
+    y="47"
+    font-family="Helvetica, Arial, sans-serif"
+    font-size="38"
+    font-weight="700"
+    fill="#000000"
+  >an</text>
+</svg>

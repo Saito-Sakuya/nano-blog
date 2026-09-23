@@ -1,0 +1,115 @@
+---
+import { shouldRenderToc, tocEntries, type Heading } from '../lib/content/toc.js';
+
+/**
+ * The article table of contents.
+ *
+ * It is a real list of anchor links, so it works with JavaScript disabled. The
+ * current-section highlight is added by the article script and is purely
+ * additive.
+ *
+ * Rendered as `<details open>` so it is collapsible below the wide breakpoint,
+ * where it sits above the body rather than beside it. At 75rem and up the
+ * stylesheet hides the summary, leaving a plain list in the metadata rail.
+ */
+interface Props {
+  headings: readonly Heading[];
+  /**
+   * The article's `toc` frontmatter, which decides whether the list is shown:
+   * `auto` needs three sections, `always` needs one, `never` shows none.
+   * Defaulted rather than required so this component stays usable without the
+   * value, but the article route always passes it.
+   */
+  mode?: 'auto' | 'always' | 'never';
+}
+
+const { headings, mode = 'auto' } = Astro.props;
+const items = tocEntries(headings);
+const show = shouldRenderToc(headings, mode);
+---
+
+{
+  show && (
+    <details class="toc" data-toc open>
+      <summary class="toc__summary">目录</summary>
+      <nav aria-label="文章目录">
+        <ol class="toc__list">
+          {items.map((heading) => (
+            <li class:list={['toc__item', `toc__item--h${heading.depth}`]}>
+              <a href={`#${heading.slug}`}>{heading.text}</a>
+            </li>
+          ))}
+        </ol>
+      </nav>
+    </details>
+  )
+}
+
+<style>
+  .toc {
+    margin-block-end: var(--space-24);
+    border: var(--border-width) solid var(--color-border);
+    border-radius: var(--radius-4);
+    padding: var(--space-8) var(--space-12);
+    font-size: var(--font-size-meta-lg);
+  }
+
+  .toc__summary {
+    cursor: pointer;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+  }
+
+  .toc__list {
+    list-style: none;
+    padding: 0;
+    margin: var(--space-4) 0 0;
+  }
+
+  .toc__item {
+    margin-block-start: var(--space-4);
+  }
+
+  .toc__item--h3 {
+    padding-inline-start: var(--space-12);
+    font-size: var(--font-size-meta);
+  }
+
+  .toc__item a {
+    text-decoration: none;
+    color: var(--color-muted);
+  }
+
+  .toc__item a:hover {
+    color: var(--color-link);
+    text-decoration: underline;
+  }
+
+  /* The section being read is marked, and the mark is not colour alone: it
+     also gains the brand rule and a heavier weight. */
+  .toc__item a[aria-current='true'] {
+    color: var(--color-text);
+    font-weight: 600;
+    box-shadow: inset 2px 0 0 var(--color-brand);
+    padding-inline-start: var(--space-8);
+  }
+
+  @media (min-width: 75rem) {
+    .toc {
+      border: 0;
+      border-radius: 0;
+      padding: 0;
+      margin-block-end: 0;
+    }
+
+    .toc__summary {
+      display: none;
+    }
+
+    .toc__list {
+      margin-block-start: 0;
+    }
+  }
+</style>

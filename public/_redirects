@@ -1,0 +1,13 @@
+# nano-blog — permanent redirects
+#
+# The site has no previous address, so there is nothing to redirect yet. The
+# specification forbids sending unknown old URLs to the home page, so this file
+# stays empty of catch-all rules on purpose.
+#
+# When a published article's path changes, add one explicit 301 per moved URL:
+#
+#   /posts/old/path/  /posts/new/path/  301
+#
+# `content:validate` and `content:publish` both check this table for loops,
+# chains, missing destinations and catch-all wildcards, so a rule added here
+# cannot quietly break. See docs/WRITING.md section 6.1.

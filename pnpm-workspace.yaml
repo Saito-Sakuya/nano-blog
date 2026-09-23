@@ -1,0 +1,24 @@
+# pnpm 12 reads its project settings from this file.
+#
+# `allowBuilds` is an explicit allow-list of dependencies permitted to run
+# install scripts. Everything else is blocked, so a compromised transitive
+# package cannot execute code at install time. Only these two vendored native
+# toolchains need a build step; both are build-time only.
+allowBuilds:
+  esbuild: true
+  sharp: true
+
+# Refuse to install a package version published less than 24 hours ago (value
+# is in minutes). A freshly published release is the single most common vector
+# for npm supply-chain attacks, and nothing in this project needs a dependency
+# within hours of its publication. This is pnpm 12's own default; it is written
+# out here so the guarantee is explicit and survives a pnpm default change.
+# Dependency updates are therefore deliberately deliberate: bump a range, wait
+# out the window, then install.
+minimumReleaseAge: 1440
+
+# Chevrotain (through Mermaid) pins lodash-es 4.17.23, which is affected by
+# GHSA-r5fr-rjxr-66jc and GHSA-f23m-r3pf-42rh. Keep all copies on the patched
+# release until its upstream dependency is updated.
+overrides:
+  lodash-es: 4.18.1

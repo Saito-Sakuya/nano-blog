@@ -1,0 +1,20 @@
+---
+import { CALLOUT_LABELS, type CalloutType } from '../../lib/markdown/remark-callouts.js';
+
+/**
+ * MDX form of the callout. Renders the same markup as the Markdown
+ * `> [!NOTE]` syntax so both spellings produce one appearance.
+ */
+interface Props {
+  type: CalloutType;
+  title?: string;
+}
+
+const { type, title } = Astro.props;
+const label = CALLOUT_LABELS[type];
+---
+
+<aside class:list={['callout', `callout--${type.toLowerCase()}`]} data-callout={type.toLowerCase()}>
+  <p class="callout__label">{title ?? label}</p>
+  <slot />
+</aside>

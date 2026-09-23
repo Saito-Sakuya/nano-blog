@@ -1,0 +1,90 @@
+---
+import '../styles/global.css';
+// Imported by URL so it can be attached with `media="print"` and so a screen
+// reader never has to download rules it will not use.
+import printStylesUrl from '../styles/print.css?url';
+
+import SeoHead from '../components/SeoHead.astro';
+import { loadMediaIndex } from '../lib/media/index.js';
+import {
+  HAS_CONFIGURED_MEDIA_ORIGIN,
+  MEDIA_ORIGIN,
+  SITE_LANG,
+  SITE_URL,
+} from '../lib/site.js';
+import SiteFooter from '../components/SiteFooter.astro';
+import SourceBanner from '../components/SourceBanner.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import type { PageMetadata } from '../lib/seo/metadata.js';
+
+/**
+ * The document shell every page shares.
+ *
+ * The theme initialiser is a same-origin external file placed before the
+ * stylesheet: it has to run before first paint to avoid a flash of the wrong
+ * theme, and it has to be external so the Content-Security-Policy can forbid
+ * inline script outright.
+ */
+interface Props {
+  meta: PageMetadata;
+  jsonLd?: Record<string, unknown> | undefined;
+  /**
+   * Whether this page's content is added to the search index.
+   *
+   * Articles, `about` and every other standalone page pass `true`; list pages
+   * (home, archives, tag and series indexes, tags index) leave it off, so an
+   * index of the index does not turn up when a reader searches for a word the
+   * index itself contains. A page marked `noindex: true` also leaves it off.
+   */
+  indexable?: boolean;
+}
+
+const { meta, jsonLd, indexable = false } = Astro.props;
+
+/*
+ * Warm the connection to the media host, but only when this build actually has
+ * media to fetch.
+ *
+ * Every cover, figure and poster comes from a different origin than the site,
+ * so the first image on any page pays a DNS lookup and a TLS handshake before
+ * its bytes start moving. Opening that connection up front removes the stall
+ * from the critical path.
+ *
+ * Gated on the media index and an explicitly configured origin rather than
+ * emitted unconditionally: the site ships with no content at all, and its
+ * default media origin is an intentionally unresolvable placeholder. A
+ * preconnect to either would be a connection the reader pays for and never
+ * uses; the placeholder is especially harmful in browser tests because it can
+ * delay navigation while DNS times out.
+ */
+const hasMedia = loadMediaIndex().assets.length > 0;
+const showPreconnect =
+  hasMedia && HAS_CONFIGURED_MEDIA_ORIGIN && MEDIA_ORIGIN !== SITE_URL;
+---
+
+<!doctype html>
+<html lang={SITE_LANG}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {showPreconnect && <link rel="preconnect" href={MEDIA_ORIGIN} />}
+    <script is:inline src="/theme-init.js"></script>
+    <SeoHead meta={meta} jsonLd={jsonLd} />
+    <link rel="stylesheet" href={printStylesUrl} media="print" />
+  </head>
+
+  <body>
+    <a class="skip-link" href="#main">跳到正文</a>
+    <SourceBanner />
+    <SiteHeader />
+    <main id="main" tabindex="-1" data-pagefind-body={indexable ? '' : undefined} data-pagefind-ignore={indexable ? undefined : 'all'}>
+      <slot />
+    </main>
+    <SiteFooter />
+
+    <script>
+      import { initGlobal } from '../scripts/global.js';
+      initGlobal();
+    </script>
+  </body>
+</html>

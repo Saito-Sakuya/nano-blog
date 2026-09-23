@@ -1,0 +1,68 @@
+---
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+
+import { PROJECT_ROOT } from '../lib/content/paths.js';
+
+/**
+ * Loads the KaTeX stylesheet, but only on a page that actually has a formula.
+ *
+ * `rehype-katex` emits the markup for a formula; without this stylesheet the
+ * output is unreadable — the MathML copy is not hidden and the visual HTML copy
+ * has no positioning. The stylesheet and its fonts are self-hosted: they are
+ * copied out of the `katex` package into the build's own asset directory, so
+ * nothing is fetched from a CDN and `style-src 'self'` / `font-src 'self'`
+ * both hold.
+ *
+ * `enabled` is decided at build time from the article's own source, so a page
+ * without a formula never requests the file.
+ *
+ * ## Why the URL carries a digest
+ *
+ * The copy in the build keeps KaTeX's own file name — the post-build step copies
+ * `katex.min.css` verbatim — and `/assets/*` is served `immutable` for a year.
+ * Together those mean a returning browser keeps the *old* stylesheet under the
+ * *new* URL for a year after a KaTeX upgrade, and no response header can reach
+ * it: a cache entry that never revalidates is the client's decision alone.
+ * Changing the URL is the only fix available from here, so the query string is a
+ * digest of the file's own bytes: unchanged CSS keeps its URL and stays cached,
+ * and upgraded CSS is a URL no browser has seen before.
+ *
+ * The digest is read from the same path the copy step reads, so the two cannot
+ * describe different files. Importing the stylesheet through the bundler instead
+ * would give a hashed file name in a directory the copy step never writes, and
+ * would also merge the CSS into the shared stylesheet that a page without a
+ * formula must not download.
+ *
+ * The read is lazy — it happens only when a page really has a formula — because
+ * this component is rendered by every article, and a build that has no maths in
+ * it should not open the file at all.
+ */
+interface Props {
+  enabled: boolean;
+}
+
+const { enabled } = Astro.props;
+
+const KATEX_CSS_PATH = path.join(
+  PROJECT_ROOT,
+  'node_modules',
+  'katex',
+  'dist',
+  'katex.min.css',
+);
+
+/** Public path of the stylesheet, versioned by its own content. */
+function katexStylesheetHref(): string {
+  // Twelve hex characters: far more than enough to change when the file does,
+  // short enough to read in a build log or a diff.
+  const digest = createHash('sha256')
+    .update(readFileSync(KATEX_CSS_PATH))
+    .digest('hex')
+    .slice(0, 12);
+  return `/assets/katex/katex.min.css?v=${digest}`;
+}
+---
+
+{enabled && <link rel="stylesheet" href={katexStylesheetHref()} />}

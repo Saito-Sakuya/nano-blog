@@ -1,0 +1,21 @@
+---
+/**
+ * One panel of a `<Tabs>` group.
+ *
+ * The label is rendered as a visible heading in the server output so the
+ * sequential, no-JavaScript form makes sense on its own. The enhancement
+ * script hides those headings once it has built a real tablist.
+ */
+interface Props {
+  label: string;
+}
+
+const { label } = Astro.props;
+---
+
+<section class="tabs__item" data-tab-item>
+  <h4 class="tabs__label" data-tab-label>{label}</h4>
+  <div class="tabs__panel" data-tab-panel tabindex="0">
+    <slot />
+  </div>
+</section>

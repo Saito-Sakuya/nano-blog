@@ -1,0 +1,218 @@
+---
+import { loadMediaIndex } from '../../lib/media/index.js';
+import { buildPicture } from '../../lib/media/picture.js';
+
+/**
+ * A privacy-preserving video embed.
+ *
+ * Nothing is requested from the video provider until the reader asks for it.
+ * The initial markup is a local poster, the title, the name of the provider
+ * that would be contacted, and a button. Only a deliberate click creates the
+ * iframe — so an article that merely mentions a video never leaks the reader's
+ * address to a third party.
+ *
+ * The embed URL is constructed here from a validated identifier. An author
+ * cannot supply a query string, so a link cannot be turned into an arbitrary
+ * player configuration.
+ */
+type Provider = 'youtube' | 'bilibili';
+
+interface Props {
+  provider: Provider;
+  id: string;
+  title: string;
+  poster: string;
+}
+
+const { provider, id, title, poster } = Astro.props;
+
+const YOUTUBE_ID = /^[A-Za-z0-9_-]{11}$/u;
+const BILIBILI_ID = /^BV[0-9A-Za-z]{10}$/u;
+
+if (provider === 'youtube' && !YOUTUBE_ID.test(id)) {
+  throw new Error(
+    `VideoEmbed received an invalid YouTube id: ${JSON.stringify(id)}. Expected 11 characters of [A-Za-z0-9_-].`,
+  );
+}
+if (provider === 'bilibili' && !BILIBILI_ID.test(id)) {
+  throw new Error(
+    `VideoEmbed received an invalid Bilibili id: ${JSON.stringify(id)}. Expected the form BV followed by 10 alphanumerics.`,
+  );
+}
+if (title.trim().length === 0) {
+  throw new Error('VideoEmbed requires a non-empty title.');
+}
+
+const src =
+  provider === 'youtube'
+    ? `https://www.youtube-nocookie.com/embed/${id}`
+    : `https://player.bilibili.com/player.html?bvid=${encodeURIComponent(id)}`;
+
+const allow =
+  provider === 'youtube'
+    ? 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; web-share'
+    : 'autoplay; fullscreen; picture-in-picture';
+
+const providerName = provider === 'youtube' ? 'YouTube' : '哔哩哔哩';
+
+const picture = buildPicture(loadMediaIndex(), poster, {
+  displayWidth: 832,
+  displayHeight: 468,
+  // The embed sits in the article column, which is capped at 42rem from 48rem
+  // upward — claiming the full viewport until 75rem asked for a larger
+  // candidate than the box can use.
+  sizes: '(min-width: 48rem) 42rem, 100vw',
+});
+
+const posterHeight = 468;
+const externalHref =
+  provider === 'youtube' ? `https://www.youtube.com/watch?v=${id}` : `https://www.bilibili.com/video/${id}`;
+---
+
+<figure class="embed" data-video-embed>
+  <div class="embed__frame" data-media-frame>
+    <span data-media-fallback>{title}</span>
+    <picture>
+      {
+        picture.sources.map((source) => (
+          <source
+            type={source.type}
+            srcset={source.srcset}
+            sizes="(min-width: 48rem) 42rem, 100vw"
+          />
+        ))
+      }
+      <img
+        src={picture.src}
+        alt=""
+        width="832"
+        height={posterHeight}
+        data-media-image
+        loading="lazy"
+        decoding="async"
+      />
+    </picture>
+
+    <div class="embed__overlay">
+      <p class="embed__title">{title}</p>
+      <button
+        class="embed__button"
+        type="button"
+        data-video-load
+        data-video-src={src}
+        data-video-allow={allow}
+        data-video-title={title}
+        data-video-provider={providerName}
+      >
+        加载视频
+      </button>
+      <p class="embed__notice">
+        点击后将连接 {providerName}。在此之前不会向第三方发送任何请求。
+      </p>
+    </div>
+  </div>
+
+  <figcaption class="embed__caption">
+    {title}
+    <a
+      class="embed__external"
+      href={externalHref}
+      target="_blank"
+      rel="noopener noreferrer"
+    >在 {providerName} 观看（外部链接）</a>
+  </figcaption>
+</figure>
+
+<style>
+  .embed {
+    margin-block: var(--space-24);
+  }
+
+  .embed__frame {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    background: var(--color-code-bg);
+    border: var(--border-width) solid var(--color-border);
+    border-radius: var(--radius-4);
+    overflow: hidden;
+  }
+
+  /* The poster is decorative here — the title is right beside it — so its
+     fallback panel states the video's title in plain text instead. */
+  .embed__frame [data-media-fallback] {
+    padding: var(--space-16);
+    font-weight: 600;
+  }
+
+  .embed__frame img {
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+  }
+
+  /*
+   * `:global(iframe)` is required here, not stylistic.
+   *
+   * Astro appends its scope attribute to the LAST compound selector of a scoped
+   * rule, so a plain `.embed__frame iframe` compiles to
+   * `.embed__frame[data-astro-cid-x] iframe[data-astro-cid-x]`. The iframe is
+   * built with `document.createElement` in the embed script, so it never
+   * carries that attribute and the rule never matched — the player fell back to
+   * the user agent's 300x150 default inside a 610x343 frame, occupying about a
+   * fifth of the box. Hoisting the scope onto the real ancestor is what makes
+   * the sizing apply.
+   */
+  .embed__frame :global(iframe) {
+    inline-size: 100%;
+    block-size: 100%;
+    border: 0;
+  }
+
+  .embed__overlay {
+    position: absolute;
+    inset: auto 0 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-8);
+    padding: var(--space-12);
+    background: color-mix(in srgb, var(--color-code-bg) 88%, transparent);
+    color: var(--color-code-text);
+  }
+
+  .embed__title {
+    margin: 0;
+    font-size: var(--font-size-meta-lg);
+    font-weight: 600;
+    flex: 1 1 12rem;
+    min-inline-size: 0;
+  }
+
+  .embed__button {
+    min-height: 44px;
+    padding: var(--space-8) var(--space-16);
+    background: var(--color-surface);
+    color: var(--color-text);
+    border: 0;
+    border-radius: var(--radius-2);
+    cursor: pointer;
+  }
+
+  .embed__notice {
+    flex: 1 1 100%;
+    margin: 0;
+    font-size: var(--font-size-meta);
+    color: var(--color-code-text);
+  }
+
+  .embed__caption {
+    margin-block-start: var(--space-8);
+    font-size: var(--font-size-meta-lg);
+    color: var(--color-muted);
+  }
+
+  .embed__external {
+    display: inline-block;
+    margin-inline-start: var(--space-8);
+  }
+</style>

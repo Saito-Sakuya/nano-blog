@@ -1,0 +1,40 @@
+# Normalise line endings on the way into the repository.
+#
+# The project's own formatter already requires LF everywhere (Prettier's
+# default `endOfLine: "lf"` is what `pnpm format:check` enforces), so a file
+# committed with CRLF would fail the very first verification step. Declaring it
+# here means a clone on Windows cannot reintroduce the problem through
+# `core.autocrlf`, and a diff can never be nothing but line-ending noise.
+* text=auto eol=lf
+
+# Binary assets must be left exactly as they are.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.avif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.otf binary
+*.ttf binary
+
+# Fixture media is deliberately binary and is tracked; keep it out of diffs and
+# out of any textual merge.
+tests/fixtures/media/*.png binary -diff
+tests/fixtures/media/*.json text eol=lf
+
+# The lockfile is generated and must never be re-encoded by tooling.
+pnpm-lock.yaml text eol=lf -diff
+
+# Markdown and HTML documents read better with a stable LF, and the generated
+# `_headers` / `_redirects` files are parsed by the host verbatim.
+*.md text eol=lf
+*.astro text eol=lf
+*.css text eol=lf
+*.ts text eol=lf
+*.js text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf

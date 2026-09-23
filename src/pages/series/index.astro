@@ -1,0 +1,106 @@
+---
+import EmptyState from '../../components/EmptyState.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { displayDate } from '../../lib/content/build-context.js';
+import { loadSite } from '../../lib/content/collections.js';
+import { seriesIndexUrl } from '../../lib/routing/urls.js';
+import { buildMetadata } from '../../lib/seo/metadata.js';
+
+/**
+ * The series index.
+ *
+ * A series is an ordered reading path, so the index leads with how recently it
+ * was added to: `loadSite` sorts by the newest public article in each series,
+ * and the newest date is shown outright rather than as a relative phrase.
+ */
+
+const site = await loadSite();
+
+const meta = buildMetadata({
+  title: '系列',
+  description: '全部系列及其公开文章数，按最近更新时间从新到旧排列。',
+  pathname: seriesIndexUrl(),
+});
+---
+
+<BaseLayout meta={meta}>
+  <div class="wrap">
+    <div class="page-head">
+      <h1>系列</h1>
+      <p class="page-head__description">
+        共 {site.series.length} 个系列，按最近一篇公开文章的时间从新到旧排列。
+      </p>
+    </div>
+
+    {
+      site.series.length === 0 ? (
+        <EmptyState message="尚无系列。" />
+      ) : (
+        <ul class="series-index">
+          {site.series.map((entry) => (
+            <li class="series-index__item">
+              <h2 class="series-index__title">
+                <a href={entry.url}>{entry.title}</a>
+              </h2>
+              <p class="series-index__meta">
+                <span>{entry.count} 篇公开文章</span>
+                <span>
+                  最近更新
+                  <time datetime={entry.latest}> {displayDate(entry.latest)}</time>
+                </span>
+                <span class="series-index__id">{entry.id}</span>
+              </p>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+  </div>
+</BaseLayout>
+
+<style>
+  .series-index {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .series-index__item {
+    padding-block: var(--space-16);
+    border-block-end: var(--border-width) solid var(--color-border);
+  }
+
+  .series-index__title {
+    font-size: 1.0625rem;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+
+  .series-index__title a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--color-text);
+    text-decoration: none;
+  }
+
+  .series-index__title a:hover {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+  }
+
+  .series-index__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4) var(--space-16);
+    margin-block-start: var(--space-4);
+    font-size: var(--font-size-meta-lg);
+    color: var(--color-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .series-index__id {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-meta);
+  }
+</style>

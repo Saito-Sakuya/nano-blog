@@ -1,0 +1,85 @@
+---
+import { mediaUrl } from '../../lib/media/picture.js';
+import { loadMediaIndex, findAsset } from '../../lib/media/index.js';
+
+/**
+ * An audio attachment.
+ *
+ * Native controls with `preload="none"`: nothing is fetched until the reader
+ * presses play, and the download link means the audio is reachable even where
+ * the element is not.
+ */
+interface Props {
+  src: string;
+  title: string;
+  transcript?: string;
+}
+
+const { src, title, transcript } = Astro.props;
+
+const asset = findAsset(loadMediaIndex(), src);
+if (asset === null) {
+  throw new Error(
+    `AudioPlayer source ${src} is not in the media index. Only media imported through media:add may be embedded.`,
+  );
+}
+
+const url = mediaUrl(src);
+---
+
+<figure class="audio">
+  <figcaption class="audio__title">{title}</figcaption>
+
+  <audio controls preload="none" src={url} class="audio__element">
+    <a href={url}>下载音频：{title}</a>
+  </audio>
+
+  <p class="audio__download">
+    <a href={url} download>下载音频（{asset.mime}）</a>
+  </p>
+
+  {
+    transcript !== undefined && transcript.length > 0 && (
+      <details class="audio__transcript">
+        <summary>逐字稿</summary>
+        <p>{transcript}</p>
+      </details>
+    )
+  }
+</figure>
+
+<style>
+  .audio {
+    margin-block: var(--space-24);
+    padding: var(--space-16);
+    border: var(--border-width) solid var(--color-border);
+    border-radius: var(--radius-4);
+    background: var(--color-surface);
+  }
+
+  .audio__title {
+    font-weight: 600;
+    margin-block-end: var(--space-8);
+  }
+
+  .audio__element {
+    inline-size: 100%;
+  }
+
+  .audio__download {
+    margin-block-start: var(--space-8);
+    font-size: var(--font-size-meta-lg);
+  }
+
+  .audio__transcript {
+    margin-block-start: var(--space-12);
+    font-size: var(--font-size-meta-lg);
+  }
+
+  .audio__transcript summary {
+    cursor: pointer;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+</style>

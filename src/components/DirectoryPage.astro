@@ -1,0 +1,148 @@
+---
+import { getEntry, render } from 'astro:content';
+
+import Breadcrumbs from './Breadcrumbs.astro';
+import EmptyState from './EmptyState.astro';
+import IndexList from './IndexList.astro';
+import Pagination from './Pagination.astro';
+import { loadSite } from '../lib/content/collections.js';
+import {
+  directoryPageUrl,
+  directoryUrl,
+  pageSlice,
+  paginate,
+  postsIndexUrl,
+} from '../lib/routing/urls.js';
+
+/**
+ * A posts directory: breadcrumbs, an optional intro from `_index.md`, the
+ * directories directly beneath it, and every public article in the subtree.
+ *
+ * Shared by `/posts/` and every `/posts/.../` so the two cannot drift apart.
+ */
+interface Props {
+  segments: readonly string[];
+  page: number;
+}
+
+const { segments, page } = Astro.props;
+const site = await loadSite();
+
+const directory = site.directories.get(segments.join('/'));
+if (directory === undefined) {
+  throw new Error(`No directory named ${segments.join('/')}`);
+}
+
+const posts = pageSlice(directory.posts, page);
+const pagination = paginate(directory.posts.length, page, (target) =>
+  directoryPageUrl(directory.segments, target),
+);
+
+const isRoot = segments.length === 0;
+
+const crumbs: { label: string; href?: string }[] = [{ label: '文章', href: postsIndexUrl }];
+segments.forEach((_, index) => {
+  const slice = segments.slice(0, index + 1);
+  const node = site.directories.get(slice.join('/'));
+  const label = node?.title ?? (slice.at(-1) ?? '').replace(/-/gu, ' ');
+  crumbs.push({ label, href: directoryUrl(slice) });
+});
+if (isRoot) crumbs.pop();
+
+// The intro is Markdown from `_index.md`, rendered through the collection
+// rather than injected as HTML.
+let Intro: Awaited<ReturnType<typeof render>>['Content'] | null = null;
+if (directory.indexEntryId !== null) {
+  const indexEntry = await getEntry('postIndexes', directory.indexEntryId);
+  if (indexEntry !== undefined) {
+    Intro = (await render(indexEntry)).Content;
+  }
+}
+---
+
+<div class="wrap">
+  <Breadcrumbs items={crumbs} />
+
+  <div class="page-head">
+    <h1>{directory.title}</h1>
+    <p class="page-head__description">{directory.description}</p>
+    <p class="directory-counts">
+      共 {directory.posts.length} 篇公开文章
+      {directory.children.length > 0 && `，${directory.children.length} 个子目录`}
+    </p>
+  </div>
+
+  {
+    directory.children.length > 0 && (
+      <nav class="subdirectories" aria-label="子目录">
+        <ul class="subdirectories__list">
+          {directory.children.map((child) => (
+            <li>
+              <a href={child.url}>{child.title}</a>
+              <span>{child.posts.length} 篇</span>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    )
+  }
+
+  {
+    Intro !== null && (
+      <div class="prose directory-intro">
+        <Intro />
+      </div>
+    )
+  }
+
+  {
+    directory.posts.length === 0 ? (
+      <EmptyState message="此目录尚无公开文章。" />
+    ) : (
+      <>
+        <IndexList posts={posts} />
+        <Pagination pagination={pagination} label={`${directory.title}分页`} />
+      </>
+    )
+  }
+</div>
+
+<style>
+  .directory-counts {
+    font-size: var(--font-size-meta-lg);
+    color: var(--color-muted);
+    margin-block-start: var(--space-8);
+  }
+
+  .subdirectories {
+    margin-block-end: var(--space-24);
+  }
+
+  .subdirectories__list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+    gap: var(--space-8);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .subdirectories__list li {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-8);
+    padding: var(--space-8) var(--space-12);
+    border: var(--border-width) solid var(--color-border);
+    border-radius: var(--radius-2);
+  }
+
+  .subdirectories__list span {
+    margin-inline-start: auto;
+    font-size: var(--font-size-meta);
+    color: var(--color-muted);
+  }
+
+  .directory-intro {
+    margin-block-end: var(--space-24);
+  }
+</style>

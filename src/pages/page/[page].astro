@@ -1,0 +1,39 @@
+---
+import type { GetStaticPaths } from 'astro';
+
+import HomeFeed from '../../components/HomeFeed.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { loadSite } from '../../lib/content/collections.js';
+import { buildMetadata } from '../../lib/seo/metadata.js';
+import { homePageUrl, pageNumbers } from '../../lib/routing/urls.js';
+import { PAGE_SIZE, SITE_TAGLINE } from '../../lib/site.js';
+
+/**
+ * Pages 2 and beyond of the home feed.
+ *
+ * Page 1 is `/` and is never duplicated at `/page/1/` — a second URL for the
+ * same content would split its canonical signal in two.
+ */
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const site = await loadSite();
+
+  // A page number is only generated when it has content behind it, so a
+  // paginated URL can never render an empty list.
+  return pageNumbers(site.posts.length, PAGE_SIZE)
+    .filter((page) => page > 1)
+    .map((page) => ({ params: { page: String(page) } }));
+};
+
+const page = Number(Astro.params['page']);
+
+const meta = buildMetadata({
+  title: `最新文章 · 第 ${page} 页`,
+  description: `${SITE_TAGLINE}（第 ${page} 页）`,
+  pathname: homePageUrl(page),
+});
+---
+
+<BaseLayout meta={meta}>
+  <HomeFeed page={page} />
+</BaseLayout>

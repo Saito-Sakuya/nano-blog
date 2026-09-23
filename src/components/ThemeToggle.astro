@@ -1,0 +1,115 @@
+---
+/**
+ * Theme control — a bookmark-shaped trigger opening a three-way chooser.
+ *
+ * The container is `hidden` in the markup and revealed by the script. Without
+ * JavaScript the site follows the system preference through CSS alone, and a
+ * control that could not do anything is never shown.
+ */
+---
+
+<div class="theme-toggle" data-theme-toggle hidden>
+  {/*
+    The `id` is not decoration: the menu below names itself with
+    `aria-labelledby="theme-button"`, and a `role="menu"` whose label resolves
+    to nothing is announced as an unnamed menu. The reference is to the trigger
+    because that is what tells the reader which menu this is.
+  */}
+  <button
+    class="bookmark bookmark--button"
+    type="button"
+    id="theme-button"
+    data-theme-button
+    aria-haspopup="menu"
+    aria-expanded="false"
+    aria-controls="theme-menu"
+  >
+    <span data-theme-label>主题</span>
+  </button>
+
+  <ul class="theme-menu" id="theme-menu" role="menu" aria-labelledby="theme-button" data-theme-menu hidden>
+    <li role="none">
+      <button class="theme-menu__item" type="button" role="menuitemradio" aria-checked="false" data-theme-value="light">
+        浅色
+      </button>
+    </li>
+    <li role="none">
+      <button class="theme-menu__item" type="button" role="menuitemradio" aria-checked="false" data-theme-value="dark">
+        深色
+      </button>
+    </li>
+    <li role="none">
+      <button class="theme-menu__item" type="button" role="menuitemradio" aria-checked="false" data-theme-value="system">
+        跟随系统
+      </button>
+    </li>
+  </ul>
+</div>
+
+<script>
+  import { initThemeToggle } from '../scripts/theme.js';
+  initThemeToggle();
+</script>
+
+<style>
+  .theme-toggle {
+    display: flex;
+    align-items: stretch;
+  }
+
+  /*
+   * A class rule outranks the user agent's `[hidden] { display: none }`, so the
+   * `hidden` attribute alone would not keep the control off the page. Without
+   * this, a reader with JavaScript disabled sees a theme button that cannot do
+   * anything.
+   */
+  .theme-toggle[hidden] {
+    display: none;
+  }
+
+  /*
+   * Fixed rather than absolute: the navigation list scrolls horizontally on
+   * narrow screens and would clip an absolutely positioned child. The position
+   * is set from the trigger's bounding box by the script.
+   */
+  .theme-menu {
+    position: fixed;
+    z-index: 40;
+    min-inline-size: 9rem;
+    padding: var(--space-4);
+    margin: 0;
+    list-style: none;
+    background: var(--color-surface);
+    border: var(--border-width) solid var(--color-border);
+    border-radius: var(--radius-4);
+  }
+
+  .theme-menu__item {
+    display: flex;
+    align-items: center;
+    inline-size: 100%;
+    min-height: 40px;
+    padding: var(--space-4) var(--space-8);
+    background: transparent;
+    border: 0;
+    border-radius: var(--radius-2);
+    font-size: var(--font-size-meta-lg);
+    text-align: start;
+    cursor: pointer;
+  }
+
+  .theme-menu__item:hover {
+    background: var(--color-brand-soft);
+  }
+
+  .theme-menu__item[aria-checked='true'] {
+    background: var(--color-brand-soft);
+    font-weight: 600;
+  }
+
+  .theme-menu__item[aria-checked='true']::after {
+    content: '✓';
+    margin-inline-start: auto;
+    color: var(--color-brand);
+  }
+</style>

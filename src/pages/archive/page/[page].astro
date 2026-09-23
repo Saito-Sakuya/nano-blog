@@ -1,0 +1,155 @@
+---
+import type { GetStaticPaths } from 'astro';
+
+import EmptyState from '../../../components/EmptyState.astro';
+import IndexList from '../../../components/IndexList.astro';
+import Pagination from '../../../components/Pagination.astro';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { monthOf, yearOf } from '../../../lib/content/build-context.js';
+import { loadSite, type PostView } from '../../../lib/content/collections.js';
+import { archivePageUrl, pageNumbers, pageSlice, paginate } from '../../../lib/routing/urls.js';
+import { buildMetadata } from '../../../lib/seo/metadata.js';
+import { PAGE_SIZE } from '../../../lib/site.js';
+
+/**
+ * The archive, pages two and beyond.
+ *
+ * `/archive/` is page one and there is deliberately no `/archive/page/1/`: a
+ * second URL for the same articles would split its canonical signal in two.
+ *
+ * A page number is only generated when articles exist behind it, so a
+ * paginated archive URL can never render an empty list.
+ */
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const site = await loadSite();
+
+  return pageNumbers(site.posts.length, PAGE_SIZE)
+    .filter((page) => page > 1)
+    .map((page) => ({ params: { page: String(page) } }));
+};
+
+interface MonthGroup {
+  readonly label: string;
+  readonly posts: readonly PostView[];
+}
+
+interface YearGroup {
+  readonly year: string;
+  readonly count: number;
+  readonly months: readonly MonthGroup[];
+}
+
+/** Group one page's articles by year and month, both newest first. */
+function groupByYearMonth(posts: readonly PostView[]): YearGroup[] {
+  const years = new Map<string, Map<string, PostView[]>>();
+
+  for (const post of posts) {
+    const year = yearOf(post.data.publishedAt);
+    const month = monthOf(post.data.publishedAt);
+
+    let months = years.get(year);
+    if (months === undefined) {
+      months = new Map();
+      years.set(year, months);
+    }
+
+    const bucket = months.get(month);
+    if (bucket === undefined) {
+      months.set(month, [post]);
+    } else {
+      bucket.push(post);
+    }
+  }
+
+  return [...years.entries()].map(([year, months]) => {
+    const groups: MonthGroup[] = [...months.entries()].map(([month, monthPosts]) => ({
+      label: `${year}-${month}`,
+      posts: monthPosts,
+    }));
+
+    return {
+      year,
+      count: groups.reduce((total, group) => total + group.posts.length, 0),
+      months: groups,
+    };
+  });
+}
+
+const site = await loadSite();
+const page = Number(Astro.params['page']);
+const posts = pageSlice(site.posts, page);
+const pagination = paginate(site.posts.length, page, archivePageUrl);
+const groups = groupByYearMonth(posts);
+
+const meta = buildMetadata({
+  title: `归档 · 第 ${page} 页`,
+  description: `按年份与月份排列的全部公开文章（第 ${page} 页）。`,
+  pathname: archivePageUrl(page),
+});
+---
+
+<BaseLayout meta={meta}>
+  <div class="wrap">
+    <div class="page-head">
+      <h1>归档 · 第 {page} 页</h1>
+      <p class="page-head__description">按年份与月份排列的全部公开文章，每页 10 篇。</p>
+    </div>
+
+    {
+      site.posts.length === 0 ? (
+        <EmptyState message="尚无可归档的公开文章。" />
+      ) : (
+        <>
+          {groups.map((group) => (
+            <section class="archive-year">
+              <h2 class="archive-year__title">
+                {group.year}
+                <span class="archive-year__count">{group.count} 篇</span>
+              </h2>
+
+              {group.months.map((month) => (
+                <>
+                  <h3 class="archive-month__title">{month.label}</h3>
+                  <IndexList posts={month.posts} variant="archive" />
+                </>
+              ))}
+            </section>
+          ))}
+
+          <Pagination pagination={pagination} label="归档分页" />
+        </>
+      )
+    }
+  </div>
+</BaseLayout>
+
+<style>
+  .archive-year + .archive-year {
+    margin-block-start: var(--space-48);
+  }
+
+  .archive-year__title {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-8);
+    font-size: 1.25rem;
+    padding-block-end: var(--space-8);
+    border-block-end: var(--border-width-strong) solid var(--color-brand);
+  }
+
+  .archive-year__count {
+    font-size: var(--font-size-meta);
+    font-weight: 400;
+    color: var(--color-muted);
+  }
+
+  .archive-month__title {
+    margin-block: var(--space-24) var(--space-4);
+    font-size: var(--font-size-meta-lg);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: var(--color-muted);
+    font-variant-numeric: tabular-nums;
+  }
+</style>

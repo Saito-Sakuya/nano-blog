@@ -1,0 +1,104 @@
+---
+import EmptyState from '../../components/EmptyState.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { loadSite } from '../../lib/content/collections.js';
+import { tagsIndexUrl } from '../../lib/routing/urls.js';
+import { buildMetadata } from '../../lib/seo/metadata.js';
+
+/**
+ * The tag index.
+ *
+ * Every tag carries its `label` (what a reader sees) and its `id` (the stable
+ * part of its URL) side by side, because the two are allowed to differ and the
+ * id is the thing that appears in links. The order — most articles first, then
+ * by id — comes from `loadSite`, so this page cannot disagree with the counts
+ * the tag pages themselves show.
+ */
+
+const site = await loadSite();
+
+const meta = buildMetadata({
+  title: '标签',
+  description: '全部公开标签及其文章数，按文章数从多到少排列。',
+  pathname: tagsIndexUrl(),
+});
+---
+
+<BaseLayout meta={meta}>
+  <div class="wrap">
+    <div class="page-head">
+      <h1>标签</h1>
+      <p class="page-head__description">
+        共 {site.tags.length} 个公开标签，按文章数从多到少排列。
+      </p>
+    </div>
+
+    {
+      site.tags.length === 0 ? (
+        <EmptyState message="尚无标签。" />
+      ) : (
+        <ul class="tag-index">
+          {site.tags.map((tag) => (
+            <li class="tag-index__item">
+              <a class="tag-index__link" href={tag.url}>
+                <span class="tag-index__label">{tag.label}</span>
+                <span class="tag-index__id">{tag.id}</span>
+              </a>
+              <span class="tag-index__count">{tag.count} 篇</span>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+  </div>
+</BaseLayout>
+
+<style>
+  .tag-index {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .tag-index__item {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-16);
+    padding-block: var(--space-12);
+    border-block-end: var(--border-width) solid var(--color-border);
+  }
+
+  .tag-index__link {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-8);
+    min-height: 44px;
+    text-decoration: none;
+    color: var(--color-text);
+  }
+
+  .tag-index__link:hover .tag-index__label {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+  }
+
+  .tag-index__label {
+    font-weight: 600;
+  }
+
+  /* The id is the stable part of the URL, so it is always shown next to the
+     label rather than being hidden behind it. */
+  .tag-index__id {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-meta);
+    color: var(--color-muted);
+  }
+
+  .tag-index__count {
+    margin-inline-start: auto;
+    font-size: var(--font-size-meta-lg);
+    color: var(--color-muted);
+    font-variant-numeric: tabular-nums;
+  }
+</style>

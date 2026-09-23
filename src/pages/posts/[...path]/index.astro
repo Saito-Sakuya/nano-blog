@@ -1,0 +1,177 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { getEntry, render } from 'astro:content';
+
+import DirectoryPage from '../../../components/DirectoryPage.astro';
+import ArticleLayout, { type SeriesContext } from '../../../layouts/ArticleLayout.astro';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { loadSite, relatedPosts, type PostView } from '../../../lib/content/collections.js';
+import {
+  directoryPageUrl,
+  directoryUrl,
+  pageNumbers,
+  postsIndexUrl,
+} from '../../../lib/routing/urls.js';
+import { buildMetadata } from '../../../lib/seo/metadata.js';
+import { blogPostingJsonLd } from '../../../lib/seo/jsonld.js';
+import { ogImagePath } from '../../../lib/seo/og.js';
+import { canonicalUrl } from '../../../lib/site.js';
+
+/**
+ * Everything under `/posts/`.
+ *
+ * One route serves articles, directory indexes and both kinds of pagination.
+ * The URLs are enumerated explicitly in `getStaticPaths` rather than left to
+ * overlapping dynamic segments and their precedence, so the set of pages this
+ * site can produce is a list that can be read, and a URL can never resolve to
+ * two different pages depending on route priority.
+ */
+
+type RouteProps =
+  | { kind: 'article'; postId: string }
+  | { kind: 'directory'; segments: string[]; page: number };
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const site = await loadSite();
+  const paths: { params: { path: string }; props: RouteProps }[] = [];
+
+  for (const directory of site.directories.values()) {
+    // The root directory is `/posts/`, which has its own route.
+    if (directory.segments.length === 0) continue;
+
+    const base = directory.segments.join('/');
+    paths.push({
+      params: { path: base },
+      props: { kind: 'directory', segments: [...directory.segments], page: 1 },
+    });
+
+    for (const page of pageNumbers(directory.posts.length)) {
+      if (page === 1) continue;
+      paths.push({
+        params: { path: `${base}/page/${page}` },
+        props: { kind: 'directory', segments: [...directory.segments], page },
+      });
+    }
+  }
+
+  // Pagination for the posts root itself.
+  for (const page of pageNumbers(site.root.posts.length)) {
+    if (page === 1) continue;
+    paths.push({
+      params: { path: `page/${page}` },
+      props: { kind: 'directory', segments: [], page },
+    });
+  }
+
+  for (const post of site.posts) {
+    paths.push({ params: { path: post.id }, props: { kind: 'article', postId: post.id } });
+  }
+
+  return paths;
+};
+
+const site = await loadSite();
+const route = Astro.props as RouteProps;
+
+/** Breadcrumb trail for an article, ending just before the article itself. */
+function ancestorCrumbs(segments: readonly string[]): { label: string; href?: string }[] {
+  const crumbs: { label: string; href?: string }[] = [{ label: '文章', href: postsIndexUrl }];
+  segments.forEach((_, index) => {
+    const slice = segments.slice(0, index + 1);
+    const node = site.directories.get(slice.join('/'));
+    const label = node?.title ?? (slice.at(-1) ?? '').replace(/-/gu, ' ');
+    crumbs.push({ label, href: directoryUrl(slice) });
+  });
+  return crumbs;
+}
+
+function seriesContextFor(post: PostView): SeriesContext | null {
+  const seriesId = post.data.series?.id;
+  if (seriesId === undefined) return null;
+  const series = site.series.find((entry) => entry.id === seriesId);
+  if (series === undefined) return null;
+
+  const position = series.posts.findIndex((entry) => entry.id === post.id);
+  if (position === -1) return null;
+
+  return {
+    series,
+    previous: position > 0 ? (series.posts[position - 1] ?? null) : null,
+    next: position < series.posts.length - 1 ? (series.posts[position + 1] ?? null) : null,
+  };
+}
+---
+
+{
+  route.kind === 'directory' ? (
+    await (async () => {
+      const directory = site.directories.get(route.segments.join('/'));
+      if (directory === undefined) {
+        throw new Error(`Unknown directory ${route.segments.join('/')}`);
+      }
+
+      const meta = buildMetadata({
+        title:
+          route.page > 1
+            ? `${directory.title} · 第 ${route.page} 页`
+            : directory.title,
+        description: directory.description,
+        pathname: directoryPageUrl(directory.segments, route.page),
+      });
+
+      return (
+        <BaseLayout meta={meta}>
+          <DirectoryPage segments={route.segments} page={route.page} />
+        </BaseLayout>
+      );
+    })()
+  ) : (
+    await (async () => {
+      const post = site.posts.find((entry) => entry.id === route.postId);
+      if (post === undefined) throw new Error(`Unknown post id ${route.postId}`);
+
+      const entry = await getEntry('posts', post.id);
+      if (entry === undefined) throw new Error(`Post ${post.id} is missing from the collection`);
+      const { Content, headings } = await render(entry);
+
+      const related = relatedPosts(post, site.posts);
+      const ogPath = ogImagePath(post.data.cover.src);
+
+      const meta = buildMetadata({
+        title: post.data.ogTitle ?? post.data.title,
+        description: post.data.description,
+        pathname: post.url,
+        ogType: 'article',
+        ogImage: ogPath,
+        ogTitle: post.data.ogTitle,
+        ogDescription: post.data.ogDescription,
+        publishedTime: post.data.publishedAt,
+        modifiedTime: post.data.updatedAt,
+        keywords: post.data.tags.map((tag) => tag.label),
+      });
+
+      return (
+        <BaseLayout
+          meta={meta}
+          indexable
+          jsonLd={blogPostingJsonLd({
+            data: post.data,
+            id: post.id,
+            url: post.url,
+            description: post.data.description,
+            imageUrl: canonicalUrl(ogPath),
+          })}
+        >
+          <ArticleLayout
+            post={post}
+            Content={Content}
+            headings={headings}
+            related={related}
+            breadcrumbs={[...ancestorCrumbs(post.segments), { label: post.data.title }]}
+            seriesContext={seriesContextFor(post)}
+          />
+        </BaseLayout>
+      );
+    })()
+  )
+}

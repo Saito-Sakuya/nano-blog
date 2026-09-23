@@ -1,0 +1,147 @@
+---
+import { commentsApiPath } from '../lib/routing/urls.js';
+
+/**
+ * The comment section.
+ *
+ * Three parts, and the order between them is the reading order: what others
+ * said, then what you can say. The list is loaded by script and the form works
+ * without it.
+ *
+ * ## Why the form is a real form
+ *
+ * It posts to the API endpoint with `method="post"`, so with JavaScript
+ * disabled — or after the script fails to load — the browser submits it the
+ * ordinary way and the endpoint answers with a small confirmation page. That is
+ * why the endpoint negotiates on `Accept` rather than requiring JSON. A comment
+ * box that silently does nothing without script would be the worst kind of
+ * degradation: the reader writes a paragraph, presses the button, and nothing
+ * happens with no way to tell why.
+ *
+ * The script takes over when it runs: it intercepts the submit, posts with
+ * `fetch`, and renders the result in place. The form itself is unchanged, so
+ * there is one code path for the markup and one for the network.
+ *
+ * ## The timestamp field, and why it starts empty
+ *
+ * `renderedAt` is filled in by the page script when the page loads, and the
+ * server subtracts it from its own clock to decide whether a submission arrived
+ * too fast to be human. It is empty in the markup because this site is static:
+ * a value rendered here would be the *build* time, so every submission more
+ * than twelve hours after a deploy would be rejected as stale.
+ *
+ * Empty means "no timestamp", which the server treats as "skip the timing
+ * check" rather than "reject". A reader without JavaScript can therefore still
+ * comment; the honeypot and review remain, and neither needs script.
+ */
+interface Props {
+  /** Content path of the article, as the API expects it. */
+  postId: string;
+  /** Whether the article accepts comments at all. */
+  enabled: boolean;
+}
+
+const { postId, enabled } = Astro.props;
+---
+
+{
+  enabled && (
+    <section class="comments" aria-labelledby="comments-heading" data-comments data-post-id={postId}>
+      <h2 class="comments__heading" id="comments-heading">
+        评论
+      </h2>
+
+      {/*
+        The list is filled by script. Without it, this paragraph is what the
+        reader gets — an accurate statement of the situation rather than an
+        empty box that looks like a failure.
+
+        It is a live region because the script rewrites it: a failed fetch
+        replaces this text in place, and without `aria-live` that replacement is
+        silent to a screen reader, which is left with advice ("needs
+        JavaScript") that is no longer true. The form's own status below carries
+        the same pair for the same reason.
+      */}
+      <div class="comments__list" data-comments-list>
+        <p class="comments__status" data-comments-status role="status" aria-live="polite">
+          评论列表需要 JavaScript 才能加载。
+        </p>
+      </div>
+
+      <noscript>
+        <p class="comments__note">
+          列表需要 JavaScript，但下面的表单直接提交也可以。评论提交后需要作者审核，通过后才会公开显示。
+        </p>
+      </noscript>
+
+      <form
+        class="comment-form"
+        method="post"
+        action={commentsApiPath(postId)}
+        data-comment-form
+      >
+        <h3 class="comment-form__heading">写下你的评论</h3>
+
+        <p class="comment-form__note">
+          评论提交后需要作者审核，通过后才会公开显示。邮箱仅用于获取头像，不会公开显示，也不会被本站保存。
+        </p>
+
+        <div class="comment-form__row">
+          <label class="comment-form__field">
+            <span class="comment-form__label">名称</span>
+            <input type="text" name="authorName" required maxlength="40" autocomplete="nickname" />
+          </label>
+
+          <label class="comment-form__field">
+            <span class="comment-form__label">邮箱</span>
+            <input type="email" name="email" required maxlength="254" autocomplete="email" />
+          </label>
+        </div>
+
+        <label class="comment-form__field">
+          <span class="comment-form__label">评论</span>
+          <textarea
+            name="bodyMarkdown"
+            required
+            rows="6"
+            maxlength="4000"
+            placeholder="支持 Markdown：**粗体**、*斜体*、`代码`、[链接](https://example.invalid)、列表、引用。"
+          ></textarea>
+        </label>
+
+        {/*
+          The honeypot. Not `type="hidden"`: a hidden field is trivially
+          detectable, so this one is a real input that is positioned out of the
+          viewport and removed from the accessibility tree. A person never sees
+          it, cannot focus it, and will not fill it; an automated form filler
+          completes every input it finds.
+        */}
+        <div class="comment-form__trap" aria-hidden="true">
+          <label>
+            <span>Website</span>
+            <input type="text" name="trap" tabindex="-1" autocomplete="off" />
+          </label>
+        </div>
+
+        {/*
+          Filled by the page script on load. Left empty without JavaScript,
+          which the server reads as "no timing information" rather than as a
+          failure — see the note at the top of this component.
+        */}
+        <input type="hidden" name="renderedAt" value="" data-comment-rendered-at />
+
+        <div class="comment-form__actions">
+          <button type="submit" class="comment-form__submit" data-comment-submit>
+            提交评论
+          </button>
+          <p class="comment-form__status" data-comment-form-status role="status" aria-live="polite"></p>
+        </div>
+      </form>
+    </section>
+  )
+}
+
+<script>
+  import { initComments } from '../scripts/comments.js';
+  initComments();
+</script>

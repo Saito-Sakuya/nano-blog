@@ -1,0 +1,32 @@
+---
+import { buildNow } from '../lib/content/build-context.js';
+import { rssUrl } from '../lib/routing/urls.js';
+import {
+  CODE_LICENSE_LABEL,
+  CONTENT_LICENSE_LABEL,
+  SITE_AUTHOR,
+  SITE_TIME_ZONE,
+} from '../lib/site.js';
+
+/**
+ * A deliberately plain footer: who wrote this, under what licence, and where
+ * the feed is. There are no social icons, because there are no accounts to
+ * point at.
+ *
+ * The year is the build's own year in the site's time zone, not the reader's:
+ * a footer that says 2025 because the reader's clock is behind the site's would
+ * disagree with every date inside the articles.
+ */
+const year = new Intl.DateTimeFormat('en-CA', {
+  timeZone: SITE_TIME_ZONE,
+  year: 'numeric',
+}).format(buildNow());
+---
+
+<footer class="site-footer">
+  <div class="wrap site-footer__inner">
+    <p>© {year} {SITE_AUTHOR}</p>
+    <p>内容采用 {CONTENT_LICENSE_LABEL}，代码采用 {CODE_LICENSE_LABEL}。</p>
+    <p><a href={rssUrl}>RSS</a></p>
+  </div>
+</footer>

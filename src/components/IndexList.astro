@@ -1,0 +1,87 @@
+---
+import Thumb from './Thumb.astro';
+import { displayDate } from '../lib/content/build-context.js';
+import type { PostView } from '../lib/content/collections.js';
+import { tagUrl } from '../lib/routing/urls.js';
+
+/**
+ * The compact tabular index used for every list of articles.
+ *
+ * Rows are separated by hairlines rather than wrapped in cards, so a long index
+ * stays scannable and dense. The cover is a gradient band pinned to the row's
+ * trailing edge, at the same size on every screen; on narrow screens the date
+ * and tags stack around the title while that band stays where it is.
+ *
+ * ## There is no summary in a row
+ *
+ * A row shows the date, the title, the reading time, the tags and the cover —
+ * never the description. It was rendered on narrow screens only, which made the
+ * row about 170px tall while the cover could not exceed its own height, so the
+ * band filled barely a third of the row and read as a thumbnail. Dropping it
+ * brings the row down to about 118px and lets the cover fill it the way it does
+ * on a desktop.
+ *
+ * The `description` field itself is untouched: it is still what the feed, the
+ * Open Graph card and the search index use. It is simply not list furniture.
+ */
+interface Props {
+  posts: readonly PostView[];
+  /** `archive` drops the cover for a denser year/month view. */
+  variant?: 'default' | 'archive';
+  /**
+   * The level a row's title takes in the document outline.
+   *
+   * A row title is a heading because it is the name of the article it links to,
+   * but its level depends on what the list is *inside*. On a list page the rows
+   * are the page's own content and sit directly under its `h1`, so `h2` is
+   * right. The related-articles list on an article page sits under its own
+   * `h2`, and a row there is a child of that section rather than a sibling —
+   * with `h2` the outline lost the nesting entirely, which is what a screen
+   * reader's heading list is for. So the level is the caller's decision, stated
+   * once, instead of a level baked into this component and wrong half the time.
+   */
+  headingLevel?: 'h2' | 'h3';
+}
+
+const { posts, variant = 'default', headingLevel = 'h2' } = Astro.props;
+
+/*
+ * Astro resolves a capitalised tag against the module scope, so the level has
+ * to be bound to a variable before it can be used as one. The two values are
+ * the only ones the prop admits, and narrowing here keeps the tag a literal.
+ */
+const TitleTag = headingLevel === 'h3' ? 'h3' : 'h2';
+---
+
+<ul class="index-list">
+  {
+    posts.map((post) => (
+      <li class="index-row">
+        <time class="index-row__date" datetime={post.data.publishedAt}>
+          {displayDate(post.data.publishedAt)}
+        </time>
+
+        <TitleTag class="index-row__title">
+          <a href={post.url}>{post.data.title}</a>
+        </TitleTag>
+
+        <div class="index-row__meta">
+          <span>{post.readingMinutes} 分钟</span>
+          {post.data.tags.map((tag) => (
+            <a class="tag-chip" href={tagUrl(tag.id)}>{tag.label}</a>
+          ))}
+        </div>
+
+        {variant === 'default' && (
+          <div class="index-row__thumb">
+            <Thumb
+              src={post.data.cover.src}
+              alt={post.data.cover.alt}
+              fallbackText={[...post.data.title][0] ?? '·'}
+            />
+          </div>
+        )}
+      </li>
+    ))
+  }
+</ul>

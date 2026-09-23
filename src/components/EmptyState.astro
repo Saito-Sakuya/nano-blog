@@ -1,0 +1,38 @@
+---
+import { SITE_TAGLINE } from '../lib/site.js';
+
+/**
+ * The empty production state.
+ *
+ * A blog with no published articles yet is a real, expected state — the site
+ * ships that way. It shows the site's own identity and the two things that are
+ * genuinely useful (about, feed) and nothing that would be a lie: no placeholder
+ * articles, no search box pretending to have an index behind it.
+ */
+interface Props {
+  message: string;
+  /** Hide the feed link where a feed would also be empty. */
+  showFeed?: boolean;
+}
+
+const { message, showFeed = true } = Astro.props;
+---
+
+<div class="empty-state">
+  <p class="empty-state__brand">
+    <span>ani</span><span class="brand__mark" aria-hidden="true"></span><span>nano</span>
+  </p>
+  <p>{SITE_TAGLINE}</p>
+  <p class="empty-state__message">{message}</p>
+  <p class="empty-state__links">
+    <a href="/about/">关于本站</a>
+    {showFeed && <a href="/rss.xml">RSS 订阅</a>}
+  </p>
+</div>
+
+<style>
+  .empty-state__message {
+    margin-block-start: var(--space-16);
+    color: var(--color-text);
+  }
+</style>

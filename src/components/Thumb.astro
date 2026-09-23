@@ -1,0 +1,79 @@
+---
+import { loadMediaIndex } from '../lib/media/index.js';
+import { buildPicture } from '../lib/media/picture.js';
+
+/**
+ * The cover on a list row.
+ *
+ * It fills the gradient band the row reserves for it (`.index-row__thumb`),
+ * pinned to the trailing edge and masked so it dissolves into the row. The box
+ * is sized entirely in CSS and the fallback panel sits behind the image, so a
+ * failure changes nothing about the layout and never produces a broken-image
+ * icon.
+ *
+ * `sizes` has to describe the width the band is actually drawn at, or the
+ * browser picks a derivative from the wrong rung of the ladder. The two numbers
+ * here mirror `--index-cover-width`; they are the only values in this component
+ * that must agree with the stylesheet, and
+ * `tests/e2e/index-cover-band.spec.ts` fails if they stop agreeing.
+ */
+interface Props {
+  src: string;
+  alt: string;
+  /** First character of the title, shown if the image cannot load. */
+  fallbackText: string;
+  /** `high` only for the cover above the fold on an article page. */
+  priority?: boolean;
+}
+
+const { src, alt, fallbackText, priority = false } = Astro.props;
+
+/*
+ * The rendered band is wider than it is tall and cropped with `object-fit:
+ * cover`, so the declared box is 16:9 and the attributes below only reserve
+ * space; CSS sizes the actual element.
+ */
+const picture = buildPicture(loadMediaIndex(), src, {
+  displayWidth: 240,
+  displayHeight: 135,
+  sizes: '(min-width: 48rem) 240px, 96px',
+});
+---
+
+<div class="thumb" data-media-frame>
+  <span class="thumb__fallback" data-media-fallback>{fallbackText}</span>
+  <picture>
+    {
+      picture.sources.map((source) => (
+        <source
+          type={source.type}
+          srcset={source.srcset}
+          sizes="(min-width: 48rem) 240px, 96px"
+        />
+      ))
+    }
+    <img
+      src={picture.src}
+      alt={alt}
+      width={picture.width}
+      height={picture.height}
+      data-media-image
+      loading={priority ? 'eager' : 'lazy'}
+      decoding="async"
+      fetchpriority={priority ? 'high' : 'auto'}
+    />
+  </picture>
+</div>
+
+<style>
+  .thumb {
+    inline-size: 100%;
+    block-size: 100%;
+  }
+
+  .thumb picture {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+  }
+</style>

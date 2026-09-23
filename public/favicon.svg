@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="nano-blog">
+  <!--
+    Hand-written site icon: a square canvas in the site background colour, the
+    cyan square from the wordmark, and a readable "an". No online icon service
+    and no raster fallback are involved.
+  -->
+  <rect width="64" height="64" fill="#F7F5EF" />
+  <rect x="7" y="25" width="14" height="14" fill="#00A2BD" />
+  <text
+    x="26"
+    y="45"
+    font-family="Helvetica, Arial, sans-serif"
+    font-size="34"
+    font-weight="700"
+    fill="#172125"
+  >an</text>
+</svg>

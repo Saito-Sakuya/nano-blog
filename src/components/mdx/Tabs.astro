@@ -1,0 +1,84 @@
+---
+/**
+ * Tabs.
+ *
+ * The server renders every panel in source order, each preceded by its label as
+ * a heading. That is the no-JavaScript experience and it is complete: nothing
+ * is hidden and nothing is unreachable.
+ *
+ * The enhancement script only then re-forms the markup into a real tablist. If
+ * the script fails to load, the visitor keeps the sequential version rather
+ * than an empty box.
+ */
+interface Props {
+  /** Human name for the group, used as the tablist's accessible name. */
+  label?: string;
+}
+
+const { label } = Astro.props;
+const groupId = `tabs-${Math.random().toString(36).slice(2, 9)}`;
+---
+
+<div class="tabs" data-tabs id={groupId} data-tabs-label={label ?? '选项卡'}>
+  <slot />
+</div>
+
+<style>
+  .tabs {
+    margin-block: var(--space-24);
+    border: var(--border-width) solid var(--color-border);
+    border-radius: var(--radius-4);
+    overflow: hidden;
+  }
+
+  /* Sequential form: each panel keeps its own visible heading. */
+  .tabs :global(.tabs__label) {
+    display: block;
+    padding: var(--space-8) var(--space-12);
+    background: var(--color-surface);
+    border-block-end: var(--border-width) solid var(--color-border);
+    font-size: var(--font-size-meta-lg);
+    font-weight: 600;
+  }
+
+  .tabs :global(.tabs__panel) {
+    padding: var(--space-16);
+  }
+
+  .tabs :global(.tabs__panel + .tabs__label) {
+    border-block-start: var(--border-width) solid var(--color-border);
+  }
+
+  /* Enhanced form: only the selected panel is shown. */
+  .tabs[data-enhanced='true'] :global(.tabs__label) {
+    display: none;
+  }
+
+  .tabs[data-enhanced='true'] :global(.tabs__panel[hidden]) {
+    display: none;
+  }
+
+  .tabs :global(.tabs__tablist) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    background: var(--color-surface);
+    border-block-end: var(--border-width) solid var(--color-border);
+  }
+
+  .tabs :global(.tabs__tab) {
+    min-height: 44px;
+    padding: var(--space-8) var(--space-16);
+    background: transparent;
+    border: 0;
+    border-block-end: var(--border-width-strong) solid transparent;
+    font-size: var(--font-size-meta-lg);
+    cursor: pointer;
+  }
+
+  .tabs :global(.tabs__tab[aria-selected='true']) {
+    border-block-end-color: var(--color-brand);
+    background: var(--color-brand-soft);
+    font-weight: 600;
+  }
+</style>

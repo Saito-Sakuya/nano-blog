@@ -1,0 +1,89 @@
+---
+import type { Pagination } from '../lib/routing/urls.js';
+
+/**
+ * Pagination.
+ *
+ * Directions that do not exist are simply absent. Rendering a greyed-out
+ * "previous" control would put a focusable, do-nothing element in the keyboard
+ * order, which is worse than an empty space.
+ */
+interface Props {
+  pagination: Pagination;
+  /** Accessible name for the surrounding landmark. */
+  label: string;
+}
+
+const { pagination, label } = Astro.props;
+const { previousUrl, nextUrl, links, page, totalPages, totalItems } = pagination;
+
+// Long result sets collapse to a window around the current page.
+const visible = links.filter(
+  (link) =>
+    link.current ||
+    link.page === 1 ||
+    link.page === totalPages ||
+    Math.abs(link.page - page) <= 1,
+);
+---
+
+{
+  totalPages > 1 && (
+    <nav class="pagination" aria-label={label}>
+      {previousUrl !== null && (
+        <a class="pagination__link" href={previousUrl} rel="prev">
+          上一页
+        </a>
+      )}
+
+      <ul class="pagination__list">
+        {visible.map((link, index) => {
+          const previousVisible = visible[index - 1];
+          const gap = previousVisible !== undefined && link.page - previousVisible.page > 1;
+          return (
+            <>
+              {gap && <li aria-hidden="true" class="pagination__gap">…</li>}
+              <li>
+                <a
+                  class="pagination__link"
+                  href={link.url}
+                  aria-current={link.current ? 'page' : undefined}
+                >
+                  <span class="sr-only">第 </span>
+                  {link.page}
+                  <span class="sr-only"> 页</span>
+                </a>
+              </li>
+            </>
+          );
+        })}
+      </ul>
+
+      {nextUrl !== null && (
+        <a class="pagination__link" href={nextUrl} rel="next">
+          下一页
+        </a>
+      )}
+
+      <span class="pagination__status">
+        第 {page} / {totalPages} 页，共 {totalItems} 篇
+      </span>
+    </nav>
+  )
+}
+
+<style>
+  .pagination__gap {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding-inline: var(--space-4);
+    color: var(--color-muted);
+  }
+
+  .pagination__status {
+    margin-inline-start: auto;
+    color: var(--color-muted);
+    font-size: var(--font-size-meta);
+  }
+</style>

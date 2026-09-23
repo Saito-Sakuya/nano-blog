@@ -1,0 +1,117 @@
+---
+import { loadMediaIndex } from '../../lib/media/index.js';
+import { buildPicture } from '../../lib/media/picture.js';
+
+/**
+ * A content image.
+ *
+ * `src` must resolve to a media record, so intrinsic size and the format ladder
+ * come from the media index rather than from the author. A decorative image is
+ * the only case where an empty `alt` is permitted, and it must be declared
+ * explicitly.
+ */
+interface Props {
+  src: string;
+  alt?: string;
+  caption?: string;
+  credit?: string;
+  decorative?: boolean;
+  /** Rendered width in the article column; used for the size hint. */
+  width?: number;
+  /**
+   * Override the `sizes` hint.
+   *
+   * The default matches the article column, which is where most figures live.
+   * A figure inside a `<Gallery>` renders in a grid track roughly half that
+   * wide, so it should pass the narrower hint — without it the browser picks a
+   * candidate about twice the size it needs.
+   */
+  sizes?: string;
+}
+
+const { src, alt, caption, credit, decorative = false, width = 832, sizes } = Astro.props;
+
+const resolvedAlt = decorative ? '' : (alt ?? '');
+if (!decorative && resolvedAlt.trim().length === 0) {
+  throw new Error(
+    `Figure ${src} needs alt text. Use decorative={true} only for an image that carries no information.`,
+  );
+}
+
+/**
+ * The article column is capped at 42rem from 48rem upward, so the hint follows
+ * that rather than claiming the full viewport until 75rem — between the two the
+ * previous hint asked for a candidate around 1.5x wider than the box.
+ */
+const sizesHint = sizes ?? '(min-width: 48rem) 42rem, 100vw';
+
+const picture = buildPicture(loadMediaIndex(), src, {
+  displayWidth: width,
+  displayHeight: Math.round((width * 9) / 16),
+  sizes: sizesHint,
+});
+
+// Reserve the box from the asset's own ratio, so the text below does not shift
+// when the image arrives.
+const ratio =
+  picture.intrinsic === null ? 9 / 16 : picture.intrinsic.height / picture.intrinsic.width;
+const height = Math.round(width * ratio);
+---
+
+<figure class="figure">
+  <div data-media-frame>
+    <span data-media-fallback>{decorative ? '' : (alt ?? '')}</span>
+    <picture>
+    {
+      picture.sources.map((source) => (
+        <source
+          type={source.type}
+          srcset={source.srcset}
+          sizes="(min-width: 75rem) 42rem, 100vw"
+        />
+      ))
+    }
+      <img
+        src={picture.src}
+        alt={resolvedAlt}
+        width={width}
+        height={height}
+        data-media-image
+        loading="lazy"
+        decoding="async"
+      />
+    </picture>
+  </div>
+  {(caption ?? credit) && (
+    <figcaption class="figure__caption">
+      {caption}
+      {credit && <span class="figure__credit">{credit}</span>}
+    </figcaption>
+  )}
+</figure>
+
+<style>
+  .figure {
+    margin-block: var(--space-24);
+  }
+
+  .figure [data-media-frame] {
+    border-radius: var(--radius-4);
+  }
+
+  .figure img {
+    inline-size: 100%;
+    block-size: auto;
+  }
+
+  .figure__caption {
+    margin-block-start: var(--space-8);
+    font-size: var(--font-size-meta-lg);
+    color: var(--color-muted);
+  }
+
+  .figure__credit {
+    display: block;
+    font-size: var(--font-size-meta);
+  }
+</style>

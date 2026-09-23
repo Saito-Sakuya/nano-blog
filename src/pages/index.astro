@@ -1,0 +1,18 @@
+---
+import HomeFeed from '../components/HomeFeed.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { buildMetadata } from '../lib/seo/metadata.js';
+import { blogJsonLd } from '../lib/seo/jsonld.js';
+import { SITE_TAGLINE } from '../lib/site.js';
+
+const meta = buildMetadata({
+  // The home page is the one page whose title is the site name alone.
+  title: null,
+  description: SITE_TAGLINE,
+  pathname: '/',
+});
+---
+
+<BaseLayout meta={meta} jsonLd={blogJsonLd()}>
+  <HomeFeed page={1} />
+</BaseLayout>

@@ -1,0 +1,18 @@
+---
+import DirectoryPage from '../../components/DirectoryPage.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { loadSite } from '../../lib/content/collections.js';
+import { buildMetadata } from '../../lib/seo/metadata.js';
+
+const site = await loadSite();
+
+const meta = buildMetadata({
+  title: '文章',
+  description: `按目录浏览 nano-blog 的全部公开文章，共 ${site.posts.length} 篇。`,
+  pathname: '/posts/',
+});
+---
+
+<BaseLayout meta={meta}>
+  <DirectoryPage segments={[]} page={1} />
+</BaseLayout>

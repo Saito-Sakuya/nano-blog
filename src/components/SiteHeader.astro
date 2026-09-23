@@ -1,0 +1,65 @@
+---
+import ThemeToggle from './ThemeToggle.astro';
+import { aboutUrl, archivePageUrl, postsIndexUrl, searchUrl, tagsIndexUrl } from '../lib/routing/urls.js';
+
+/**
+ * Sticky header with bookmark navigation.
+ *
+ * The current item is marked with `aria-current="page"` and shares the same
+ * visual grammar as the rest — a bookmark hanging from the top edge with a V
+ * notch cut out of its bottom.
+ */
+const path = Astro.url.pathname;
+
+interface NavItem {
+  readonly label: string;
+  readonly href: string;
+  /** Also treat these prefixes as "current" for this item. */
+  readonly matches: readonly string[];
+}
+
+const items: NavItem[] = [
+  { label: '首页', href: '/', matches: ['/'] },
+  { label: '文章', href: postsIndexUrl, matches: ['/posts/'] },
+  { label: '归档', href: archivePageUrl(1), matches: ['/archive/'] },
+  { label: '标签', href: tagsIndexUrl(), matches: ['/tags/'] },
+  { label: '关于', href: aboutUrl, matches: ['/about/'] },
+  { label: '搜索', href: searchUrl, matches: ['/search/'] },
+];
+
+function isCurrent(item: NavItem): boolean {
+  return item.matches.some((prefix) =>
+    prefix === '/' ? path === '/' : path.startsWith(prefix),
+  );
+}
+---
+
+<header class="site-header">
+  <div class="wrap site-header__inner">
+    <a class="brand" href="/">
+      <span>ani</span><span class="brand__mark" aria-hidden="true"></span><span>nano</span>
+      <span class="sr-only">，返回首页</span>
+    </a>
+
+    <nav class="site-nav" aria-label="主导航">
+      <ul class="site-nav__list">
+        {
+          items.map((item) => (
+            <li>
+              <a
+                class="bookmark"
+                href={item.href}
+                aria-current={isCurrent(item) ? 'page' : undefined}
+              >
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+        <li>
+          <ThemeToggle />
+        </li>
+      </ul>
+    </nav>
+  </div>
+</header>

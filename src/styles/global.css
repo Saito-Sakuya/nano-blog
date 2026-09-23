@@ -1,0 +1,2193 @@
+@import "./tokens.css";
+
+/*
+ * nano-blog — global styles
+ *
+ * "Warm modern editorial index": restraint, precision, warmth, a little
+ * experimental. Identity comes from typographic proportion, the bookmark
+ * navigation, compact tabular indexes, sidenotes, hairlines and the cyan
+ * square — never from large imagery, texture or decorative motion.
+ *
+ * Every colour, space, radius and duration below resolves to a token.
+ */
+
+/* ========================================================================== */
+/* Reset                                                                      */
+/* ========================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  font-size: var(--font-size-root);
+  -webkit-text-size-adjust: 100%;
+  scroll-padding-top: calc(var(--header-height) + var(--space-16));
+  /*
+   * Keep the scrollbar present on every page, not just the long ones.
+   *
+   * A classic scrollbar takes about 15px out of the viewport, so a page tall
+   * enough to scroll is narrower than one that is not. Everything here is
+   * centred with `margin-inline: auto`, so that difference moves the whole
+   * layout sideways — the header navigation included, even though nothing about
+   * the navigation changed. Moving between a short page (`/about/`, `/tags/`,
+   * `/search/`) and a long one (the feed, an article) shifted the nav by nearly
+   * 8px in each direction, which reads as the interface twitching under the
+   * click.
+   *
+   * `scrollbar-gutter: stable` was tried first and does hold the layout still,
+   * but it leaves the reserved strip empty rather than occupied: on a short page
+   * the header's background stops 15px short of the window and a pale seam of
+   * page background shows beside it, which is a different visible defect traded
+   * for the first one. `overflow-y: scroll` gives the same stable width *and*
+   * fills that strip on every page, so the right edge looks the same whether the
+   * page scrolls or not.
+   *
+   * Both fixes are invisible to the automated checks: a headless browser uses
+   * overlay scrollbars, which take no space, so neither the shift nor the seam
+   * can be measured there. `scrollbar-gutter: stable` also cannot be reproduced
+   * by forcing `overflow-y: scroll` in headless — that costs no width either.
+   * The condition only exists in a browser with classic scrollbars, which is why
+   * `scripts/verify/nav-stability.ts` runs headed and exits 2 when it cannot.
+   */
+  overflow-y: scroll;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  line-height: var(--line-height-body);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+}
+
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+::selection {
+  background: var(--color-brand-soft);
+  color: var(--color-text);
+}
+
+/* ========================================================================== */
+/* Focus                                                                      */
+/* ========================================================================== */
+
+:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-link);
+  outline-offset: var(--focus-ring-offset);
+  border-radius: var(--radius-2);
+}
+
+/* ========================================================================== */
+/* Utilities                                                                  */
+/* ========================================================================== */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  inset-inline-start: var(--space-16);
+  inset-block-start: var(--space-8);
+  z-index: 100;
+  padding: var(--space-8) var(--space-16);
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-4);
+  text-decoration: none;
+  transform: translateY(-200%);
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+/* Visible only while a status message is pending; never a layout shift. */
+.visually-hidden-live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ========================================================================== */
+/* Typography                                                                 */
+/* ========================================================================== */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 600;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  line-height: 1.08;
+  letter-spacing: -0.015em;
+}
+
+a {
+  color: var(--color-link);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+}
+
+a:hover {
+  text-decoration-thickness: 2px;
+}
+
+hr {
+  border: 0;
+  border-top: var(--border-width) solid var(--color-border);
+  margin-block: var(--space-32);
+}
+
+/* ========================================================================== */
+/* Layout                                                                     */
+/* ========================================================================== */
+
+/*
+ * The page's own margin. `.wrap` and the floating rails both read `--gutter`,
+ * which resolves per breakpoint in `tokens.css` — reading different variables is
+ * how a rail ends up a few pixels off the edge it hangs from.
+ */
+.wrap {
+  width: 100%;
+  max-width: var(--layout-max);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+main {
+  flex: 1;
+  padding-block: var(--space-32) var(--space-64);
+}
+
+/* ========================================================================== */
+/* Header and bookmark navigation                                             */
+/* ========================================================================== */
+
+.site-header {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 20;
+  background: var(--color-bg);
+  border-block-end: var(--border-width) solid var(--color-border);
+}
+
+.site-header__inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-16);
+  min-height: var(--header-height);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.28em;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--color-text);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/* The cyan square between the two words. Sized from the current font size so
+   it stays optically matched to the text at any scale. */
+.brand__mark {
+  inline-size: 0.48em;
+  block-size: 0.48em;
+  background: var(--color-brand);
+  border-radius: 0;
+  transform: translateY(-0.04em);
+}
+
+.site-nav {
+  margin-inline-start: auto;
+  min-width: 0;
+}
+
+.site-nav__list {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-4);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.site-nav__list::-webkit-scrollbar {
+  display: none;
+}
+
+/*
+ * Each navigation item is a narrow bookmark hanging from the top edge of the
+ * header: a rectangle with a 6px centred V notch cut out of its bottom.
+ */
+.bookmark {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: var(--space-4) var(--space-12);
+  font-size: 0.875rem;
+  color: var(--color-text);
+  text-decoration: none;
+  background: transparent;
+  border-block-start: var(--border-width-strong) solid transparent;
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% 100%,
+    calc(50% + 6px) 100%,
+    50% calc(100% - 6px),
+    calc(50% - 6px) 100%,
+    0 100%
+  );
+  padding-block-end: 10px;
+  white-space: nowrap;
+  transition: background-color var(--duration-120) var(--ease-standard);
+}
+
+.bookmark:hover {
+  background: color-mix(in srgb, var(--color-brand-soft) 55%, transparent);
+}
+
+.bookmark[aria-current="page"] {
+  background: var(--color-brand-soft);
+  border-block-start-color: var(--color-brand);
+}
+
+.bookmark:focus-visible {
+  outline-offset: -1px;
+}
+
+/* The theme control is a plain button sharing the bookmark shape. */
+.bookmark--button {
+  border: 0;
+  border-block-start: var(--border-width-strong) solid transparent;
+  font: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+/* ========================================================================== */
+/* Footer                                                                     */
+/* ========================================================================== */
+
+.site-footer {
+  border-block-start: var(--border-width) solid var(--color-border);
+  padding-block: var(--space-32);
+  font-size: var(--font-size-meta-lg);
+  color: var(--color-muted);
+}
+
+.site-footer__inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8) var(--space-24);
+  align-items: baseline;
+}
+
+.site-footer p {
+  margin: 0;
+}
+
+/* ========================================================================== */
+/* Page headers                                                               */
+/* ========================================================================== */
+
+.page-head {
+  padding-block-end: var(--space-24);
+  border-block-end: var(--border-width) solid var(--color-border);
+  margin-block-end: var(--space-8);
+}
+
+.page-head h1 {
+  font-size: clamp(1.6rem, 3.2vw, 2.1rem);
+  line-height: 1.15;
+}
+
+.page-head__description {
+  margin-block-start: var(--space-8);
+  color: var(--color-muted);
+  max-width: var(--measure-article);
+}
+
+/* ========================================================================== */
+/* Breadcrumbs                                                                */
+/* ========================================================================== */
+
+.breadcrumb {
+  font-size: var(--font-size-meta-lg);
+  margin-block-end: var(--space-16);
+}
+
+.breadcrumb__list {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: none;
+}
+
+.breadcrumb__list::-webkit-scrollbar {
+  display: none;
+}
+
+.breadcrumb__separator {
+  color: var(--color-muted);
+}
+
+/* ========================================================================== */
+/* Index rows — the compact tabular list used everywhere content is listed     */
+/* ========================================================================== */
+
+.index-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/*
+ * A list row, with its cover as a gradient band.
+ *
+ * The cover is not a small inline thumbnail here: it is lifted out of the flow,
+ * pinned to the row's trailing edge, and masked so it dissolves into the row as
+ * the article page's cover dissolves into its header. The row reserves the space
+ * with `padding-inline-end` and the band sizes itself from the *same* custom
+ * property, so the two can never disagree about where the text has to stop.
+ *
+ * That shared value is the whole point. On the article page the text column and
+ * the mask's clear region were once written as two independent numbers, they
+ * drifted apart, and text ended up on the image at 1.4:1 contrast. Here there is
+ * one number, read twice, and a test asserts the text stays inside it.
+ */
+/*
+ * Two rows below the tablet breakpoint: the title, then the date and metadata
+ * together on one line.
+ *
+ * The date used to have a line of its own above the title. That cost about 25px
+ * on every row, which mattered because the cover is a fixed size: the taller the
+ * row, the less of it the cover fills. With the date on its own line a one-line
+ * entry came out 118px tall and the cover filled 82% of it, while the same entry
+ * on a desktop is 109px and fills 88% — the date line was the whole difference.
+ * Sharing the metadata line brings a phone row to 109px too, and the cover fills
+ * the same 88% at both sizes.
+ *
+ * The date still reads first in the line, so its place in the reading order is
+ * unchanged; it is simply beside the tags rather than above the title.
+ */
+.index-row {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  /*
+   * The date column is `fit-content` rather than `auto`, and the metadata column
+   * is `1fr`: `auto` lets a long date push the metadata into a column too narrow
+   * to hold it, which made the metadata wrap and the row grow by a whole line.
+   * Giving the metadata everything left over, and only the date its own width,
+   * keeps a row to the two lines it is meant to have.
+   */
+  grid-template-columns: fit-content(40%) minmax(0, 1fr);
+  grid-template-areas:
+    "title title"
+    "date meta";
+  gap: var(--space-4) var(--space-12);
+  padding-block: 18px;
+  border-block-end: var(--border-width) solid var(--color-border);
+  align-items: start;
+  /*
+   * Deliberately NOT `overflow: hidden`. The band clips itself (the media frame
+   * already does), and clipping here would cut off the focus ring of every link
+   * in the row — an outline is painted outside the element's box and an
+   * ancestor's overflow removes it.
+   */
+}
+
+.index-row__date {
+  grid-area: date;
+  font-size: var(--font-size-meta);
+  color: var(--color-muted);
+  font-variant-numeric: tabular-nums;
+  /* Shares a line with the metadata below the tablet breakpoint, so it is
+     aligned to it rather than sitting on its own baseline. */
+  align-self: center;
+}
+
+.index-row__title {
+  grid-area: title;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  line-height: 1.4;
+  min-width: 0;
+}
+
+.index-row__title a {
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.index-row__title a:hover {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+}
+
+.index-row__meta {
+  grid-area: meta;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+  align-items: center;
+  font-size: var(--font-size-meta);
+  color: var(--color-muted);
+  min-inline-size: 0;
+}
+
+/*
+ * The row reserves the band's width and enough height to hold it, and only when
+ * it has a band.
+ *
+ * `:has()` rather than a modifier class because the band's presence is already
+ * expressed by the markup, and the archive variant simply has none: reserving
+ * space for a cover that is not there left a 256px hole at the end of every
+ * archive row.
+ *
+ * The reserved height is what makes every cover the same size. Row height
+ * otherwise follows the title — a one-line row is about 62px, a two-line one
+ * about 85px, and a row whose tags wrap about 94px — so before this the bands
+ * came out 50px, 73px and 82px tall and the right-hand edge of the list was a
+ * ragged column. Reserving the band's own height plus its inset on both sides
+ * means the band reaches its full height on every row, while rows with long
+ * titles still grow past the minimum as they need to (the band does not, because
+ * it is capped by its token).
+ *
+ * The `+ var(--border-width)` is not decoration: the band's `100%` resolves
+ * against this row's *padding box*, which is one border narrower than the box
+ * `min-block-size` constrains. Leaving it out made short rows resolve to 95px
+ * while tall rows resolved to 96px — a 1px difference, but exactly the kind of
+ * subtle inconsistency this rule exists to remove.
+ */
+.index-row:has(.index-row__thumb) {
+  padding-inline-end: calc(var(--index-cover-width) + var(--space-16));
+  min-block-size: calc(
+    var(--index-cover-height) + var(--index-cover-inset) * 2 +
+      var(--border-width)
+  );
+}
+
+/*
+ * The cover band.
+ *
+ * Positioned against the row rather than laid out inside it, so the text is not
+ * competing with it for columns: the row reserves the space, this occupies it.
+ * Both read `--index-cover-width`, which is why they cannot drift.
+ */
+.index-row__thumb {
+  position: absolute;
+  /*
+   * Centred with an inset above and below, and capped twice over:
+   *
+   * - by its own token, so every band is the same height;
+   * - by the row it sits in, so it can never spill past the edge and overlap a
+   *   neighbour. That was a real defect: a 96px band in a 62px row overflowed
+   *   17px past each edge and the covers overlapped by 34px.
+   *
+   * The second cap is now satisfied by the row's `min-block-size` above rather
+   * than by shrinking, so it no longer produces ragged heights — but it stays,
+   * because it is the property that makes overflow structurally impossible.
+   * Verified against the rendered boxes by `tests/e2e/index-cover-band.spec.ts`,
+   * which asserts both that bands are equal and that none escapes its row.
+   */
+  inset-block-start: 50%;
+  transform: translateY(-50%);
+  block-size: min(
+    var(--index-cover-height),
+    calc(100% - var(--index-cover-inset) * 2)
+  );
+  inset-inline-end: 0;
+  inline-size: var(--index-cover-width);
+  z-index: 0;
+  /* Decoration: it must never swallow a click meant for the row's links. */
+  pointer-events: none;
+}
+
+/* Everything the reader interacts with paints above the band. */
+.index-row > :not(.index-row__thumb) {
+  position: relative;
+  z-index: 1;
+  min-inline-size: 0;
+}
+
+/*
+ * The band is an image bleeding into the row, not a framed thumbnail: no
+ * border, no radius, and the fade masked on the frame so the fallback panel
+ * dissolves with the image rather than appearing as a hard-edged block.
+ *
+ * Transparent at the leading edge, solid before the trailing edge. The text
+ * sits outside the band entirely, so this is decoration rather than the thing
+ * making the text readable — but it is drawn from the same direction as the
+ * article cover's mask, so the two read as one treatment.
+ */
+.index-row__thumb [data-media-frame] {
+  inline-size: 100%;
+  block-size: 100%;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  /*
+   * More stops than a two-point ramp, because the band is small: on a 208px
+   * element a coarse gradient shows its own corners as visible steps, and the
+   * result reads as a cropped rectangle rather than a wash. The curve is
+   * shallower at the leading edge so the image is present across most of the
+   * band and only dissolves where it meets the text.
+   */
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    rgb(0 0 0 / 0.12) 16%,
+    rgb(0 0 0 / 0.38) 34%,
+    rgb(0 0 0 / 0.68) 54%,
+    rgb(0 0 0 / 0.9) 74%,
+    #000 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    rgb(0 0 0 / 0.12) 16%,
+    rgb(0 0 0 / 0.38) 34%,
+    rgb(0 0 0 / 0.68) 54%,
+    rgb(0 0 0 / 0.9) 74%,
+    #000 100%
+  );
+}
+
+.index-row__thumb img {
+  object-position: right center;
+}
+
+/*
+ * From the tablet breakpoint the row becomes a single line: date, title, meta
+ * side by side, with the cover band still occupying the reserved trailing space.
+ *
+ * There is no `__description` rule here any more because there is no description
+ * element at any width — see the note in `IndexList.astro`. The row's content is
+ * the same on a phone as on a desktop; only its arrangement changes.
+ */
+@media (min-width: 48rem) {
+  .index-row {
+    grid-template-columns: 96px minmax(0, 1fr) 150px;
+    grid-template-areas: "date title meta";
+    align-items: baseline;
+    gap: var(--space-16);
+  }
+
+  .index-row__date {
+    grid-area: date;
+    align-self: baseline;
+  }
+
+  .index-row__title {
+    grid-area: title;
+  }
+
+  .index-row__meta {
+    grid-area: meta;
+  }
+}
+
+/* Tag chips are plain text links with a hairline, never pill buttons. */
+.tag-chip {
+  display: inline-block;
+  font-size: var(--font-size-meta);
+  color: var(--color-muted);
+  text-decoration: none;
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-2);
+  padding: 1px var(--space-4);
+  min-height: 20px;
+}
+
+.tag-chip:hover {
+  color: var(--color-link);
+  border-color: var(--color-link);
+  text-decoration: none;
+}
+
+/* ========================================================================== */
+/* Media frames and failure                                                   */
+/* ========================================================================== */
+
+/*
+ * Every content image sits in a frame that carries its own fallback.
+ *
+ * When an image cannot load, the browser's broken-image glyph reads as a broken
+ * page, so the frame is marked and the image hidden: the fallback panel shows
+ * through at exactly the size the image would have occupied, and it inherits
+ * the image's description so nothing is lost to assistive technology. The
+ * layout never moves, because the frame's size never depended on the bytes.
+ */
+[data-media-frame] {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-2);
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+}
+
+[data-media-frame] img {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+
+/*
+ * Images fade in.
+ *
+ * The alternative is a hard pop the moment the bytes arrive, which reads as a
+ * jolt on a page of text. The fade is short enough to feel like the image
+ * settling rather than an animation, and only images the script has confirmed
+ * are still loading are ever hidden — an image already in the cache, or any
+ * image at all when the script has not run, paints immediately. Nothing can be
+ * left invisible by a load event that never fires.
+ *
+ * `prefers-reduced-motion` is honoured globally, so the transition collapses to
+ * nothing for a reader who has asked for that.
+ */
+[data-media-frame] img[data-media-loading] {
+  opacity: 0;
+}
+
+[data-media-frame] img[data-media-loaded] {
+  opacity: 1;
+  transition: opacity var(--duration-180) var(--ease-standard);
+}
+
+[data-media-fallback] {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: var(--color-brand-soft);
+  color: var(--color-text);
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-align: center;
+  padding: var(--space-8);
+}
+
+/* Until an image has failed, its fallback stays out of the way. */
+[data-media-frame]:not([data-state="failed"]) > [data-media-fallback] {
+  display: none;
+}
+
+[data-media-frame][data-state="failed"] img {
+  visibility: hidden;
+}
+
+/* The article cover keeps its 16:9 box and gains rounded corners. */
+.article-cover [data-media-frame] {
+  border-radius: var(--radius-4);
+  aspect-ratio: 16 / 9;
+  max-inline-size: 900px;
+}
+
+/*
+ * Wide screens: the cover becomes the title's own background.
+ *
+ * The image is lifted out of the flow and masked so it is solid at the right
+ * edge and dissolves to nothing going left. The text column stays in the clear
+ * part of that fade, which is what keeps it legible without painting a scrim
+ * over a photograph — the fade is doing the work, not a decoration on top.
+ *
+ * Both halves of that arrangement are load-bearing, and they have to agree:
+ *
+ * - the text is bounded to `--measure-article`, so a long title wraps instead
+ *   of running out over the opaque part of the image;
+ * - the mask's clear region is at least that wide, expressed in `rem` from the
+ *   left edge rather than as a percentage, so the geometry holds at every width
+ *   above the breakpoint instead of only at the one width it was eyeballed at.
+ *
+ * The two drifted apart once: the text was unbounded while the clear region was
+ * a fixed 36% of the header, so a long title — and the tail of the metadata row
+ * behind it — sat on saturated parts of the cover at 2.8:1 and 1.4:1 contrast.
+ * Neither axe nor Lighthouse can see that failure, because both measure text
+ * against a background colour and a photograph is not one. The pairing is
+ * asserted now, by `tests/e2e/article-cover-contrast.spec.ts`.
+ *
+ * The header is given a minimum height because the layer no longer contributes
+ * to layout: without one the block would collapse to the height of its text and
+ * then jump when the image arrived.
+ *
+ * Below the tablet breakpoint there is no room for text beside an image, so the
+ * cover reverts to an ordinary figure directly under the metadata.
+ */
+@media (min-width: 48rem) {
+  .article-head {
+    position: relative;
+    /* Without isolation a negative-z layer behind this block escapes to the
+       page's own stacking context and paints under the body background. */
+    isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-block-size: 19rem;
+    padding-block: var(--space-48) var(--space-24);
+  }
+
+  /* Everything except the cover sits above the image, and stays inside the
+     column the mask keeps clear. */
+  .article-head > :not(.article-cover) {
+    position: relative;
+    z-index: 1;
+    max-inline-size: var(--measure-article);
+  }
+
+  /* The cover is decoration and is not bounded by the text measure. */
+  .article-head > .article-cover {
+    max-inline-size: none;
+  }
+
+  .article-cover {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    margin: 0;
+    /* The layer is decoration; it must never intercept a click on the title. */
+    pointer-events: none;
+  }
+
+  .article-cover [data-media-frame] {
+    position: absolute;
+    inset: 0;
+    max-inline-size: none;
+    aspect-ratio: auto;
+    border: 0;
+    border-radius: 0;
+    background: none;
+  }
+
+  /* Anchored in rem from the left edge: fully clear across the whole text
+     measure (`--measure-article` is 42rem), then fading up to solid. A
+     percentage here would move the clear region with the viewport and put text
+     back over the image at wider widths. */
+  .article-cover img {
+    object-position: right center;
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      transparent 43rem,
+      rgb(0 0 0 / 0.45) 49rem,
+      #000 57rem
+    );
+    mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      transparent 43rem,
+      rgb(0 0 0 / 0.45) 49rem,
+      #000 57rem
+    );
+  }
+
+  /* The fallback panel exists to stand in for a thumbnail, not to flood a
+     header, so a cover that fails simply leaves the title on plain ground. */
+  .article-cover [data-media-fallback] {
+    display: none;
+  }
+}
+
+/* ========================================================================== */
+/* Article                                                                    */
+/* ========================================================================== */
+
+.article-head {
+  padding-block-end: var(--space-24);
+}
+
+.article-head h1 {
+  font-size: clamp(1.75rem, 3.6vw, 2.5rem);
+  line-height: 1.15;
+}
+
+.article-head__description {
+  margin-block-start: var(--space-16);
+  color: var(--color-muted);
+  font-size: 1.0625rem;
+  max-width: var(--measure-article);
+}
+
+.article-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4) var(--space-12);
+  align-items: center;
+  margin-block-start: var(--space-16);
+  font-size: var(--font-size-meta-lg);
+  color: var(--color-muted);
+}
+
+.article-meta__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/*
+ * Space above and below the cover — below the tablet breakpoint only.
+ *
+ * Above 48rem the cover is lifted out of the flow to sit behind the title
+ * (`margin: 0; inset: 0` in the media block above), and these margins must not
+ * apply there. Until this rule was scoped they did: same specificity, later in
+ * the source, so the wide-screen `margin: 0` was dead code and an absolutely
+ * positioned cover kept a 24px bottom margin it was never meant to have. A
+ * media query is the only thing that settles that — moving the declaration
+ * would just move which one is ignored.
+ *
+ * The bottom margin is gone even at the narrow widths that keep the top one.
+ * The cover is the last child of the header, and the header already ends with
+ * `--space-24` of padding, so keeping both stacked two identical gaps under the
+ * image — the band a reader sees and cannot explain.
+ *
+ * The top margin stays because below 48rem the cover is an ordinary figure in
+ * sequence, where it needs the separation from the metadata above it.
+ */
+@media (max-width: 47.999rem) {
+  .article-cover {
+    margin-block: var(--space-24) 0;
+  }
+}
+
+.article-credit {
+  margin-block-start: var(--space-8);
+  font-size: var(--font-size-meta);
+  color: var(--color-muted);
+  max-width: 900px;
+}
+
+/*
+ * Wide screens use three columns: a metadata rail, the article measure, and a
+ * lane reserved for sidenotes. Below 75rem the rails collapse and sidenotes
+ * become inline disclosures.
+ */
+.article-layout {
+  display: block;
+}
+
+/*
+ * The space between the header block and the body.
+ *
+ * Set here rather than on the prose's first child so that it is one number
+ * regardless of whether the article opens with a heading or a paragraph (the
+ * prose resets that child's own lead-in). At the narrow widths the floating
+ * contents tab overlaps the top of the body, so the reserved space is larger
+ * there — see the `[data-floating-rails]` rule further down.
+ */
+.article-body {
+  padding-block-start: var(--space-32);
+}
+
+@media (min-width: 75rem) {
+  .article-layout {
+    display: grid;
+    /* Track 1 is the metadata rail, track 2 the article measure, track 3 the
+       lane sidenotes float into. Track 3 holds no element of its own — the
+       floats are shifted into it with a negative margin, which is what keeps a
+       note level with the paragraph that references it. */
+    grid-template-columns: 190px minmax(0, 42rem) var(--sidenote-width);
+    gap: var(--space-32);
+    align-items: start;
+  }
+
+  .article-rail {
+    grid-column: 1;
+    position: sticky;
+    inset-block-start: calc(var(--header-height) + var(--space-24));
+    font-size: var(--font-size-meta-lg);
+  }
+
+  .article-body {
+    grid-column: 2;
+    min-width: 0;
+  }
+}
+
+@media (min-width: 48rem) and (max-width: 74.999rem) {
+  .article-body {
+    max-width: var(--measure-article);
+  }
+}
+
+/* ========================================================================== */
+/* Floating rails (below the three-column layout)                              */
+/* ========================================================================== */
+
+/*
+ * Below the wide breakpoint the contents and the sidenotes stop occupying the
+ * column and become two drawers at the screen edges instead: contents on the
+ * left, notes on the right — the same sides they occupy in the wide layout, so
+ * the page does not rearrange itself as it narrows.
+ *
+ * They are not the same kind of object, though, and this is the section where
+ * that shows. The contents list is a reference the reader keeps coming back to,
+ * so it is a tab in the corner that stays there and sticks to the viewport. A
+ * note is a remark about one paragraph: it is opened from its own reference in
+ * the text, it is anchored beside that reference, and it scrolls away with it.
+ * There is no corner tab for the notes at all — with one, the drawer appeared at
+ * the top of the article for a note that might be two thousand pixels below,
+ * which is exactly the bug the maintainer reported.
+ *
+ * Both are `<details>`, and open state is deliberately script-managed: a
+ * `<details>` is opened and closed by the browser, and CSS cannot force one open
+ * reliably across engines. Every rule here is therefore scoped to
+ * `[data-floating-rails]`, which the article script sets only while it is
+ * running and only when the viewport is narrow. Without script the rails stay in
+ * the flow and are always visible, which is the no-JavaScript reading
+ * experience, unchanged from before this existed.
+ *
+ * `z-index: 15` puts both under the sticky header (20): they sit below it on
+ * screen by construction, and the header has to stay on top when they pass it.
+ */
+
+/*
+ * Sticky on the left, absolute on the right.
+ *
+ * The contents tab is a tool: it belongs wherever the reader is, so it is sticky
+ * and rides down the viewport. A sticky rail needs no measured offset — it
+ * starts where the flow puts it and sticks once the sticky chrome would cover
+ * it, whatever that chrome happens to be. A fixed one does: the chrome is the
+ * header *plus* the source banner when one is showing, and a rail placed at the
+ * header's own height landed underneath the header, which, being later in the
+ * paint order, swallowed the click. That was measured, not predicted.
+ *
+ * A note is not a tool. It is a remark about one paragraph, so its drawer is
+ * *absolute*: anchored to the reference that opened it and scrolling with the
+ * article. Scroll on and it leaves with the paragraph it belongs to — which is
+ * what keeps a page with many notes from stacking boxes down the right-hand
+ * side, and it is also why nothing has to dismiss it. Scroll back and it is
+ * exactly where it was left, which is the whole point of anchoring it to the
+ * text rather than to the screen.
+ *
+ * The horizontal side is pulled out to the page's margin, so a rail hangs from
+ * the screen edge at exactly the gutter the rest of the page uses — both read
+ * `--gutter`, so they cannot drift.
+ */
+.article-layout[data-floating-rails] .article-rail {
+  position: sticky;
+  inset-block-start: calc(var(--header-height) + var(--space-8));
+  z-index: 15;
+  /*
+   * Zero height, with the panel overflowing.
+   *
+   * A sticky element sticks from where the flow puts it, so a rail has to sit
+   * near the top of the article to be reachable — but a rail that takes up room
+   * there would push the prose down, and opening one would shift the article
+   * under the reader's eyes. Measuring out of the flow keeps the sticky anchor
+   * at the top while the panel draws over the content, which is what a drawer
+   * does.
+   *
+   * Everything that gives the panel its size therefore lives on the panel or the
+   * list inside it, never here.
+   */
+  block-size: 0;
+  /* Hugs its content: without this the rail would take the article's measure
+     and the zero-height box would span the page. */
+  inline-size: fit-content;
+  max-inline-size: min(84vw, 20rem);
+  font-size: var(--font-size-meta-lg);
+  margin-inline: calc(-1 * var(--gutter)) auto;
+}
+
+/*
+ * The note drawer is placed against the article, not against the screen.
+ *
+ * `position: relative` is what makes the offset below article-relative, so the
+ * drawer keeps its place when the prose around it moves — a diagram that renders
+ * late grows the text above the note. Measured on the fixture article, that
+ * diagram goes from 134 to 379px tall and moves the note 245px down the
+ * document; a drawer positioned against the viewport stayed put and ended up
+ * pointing at nothing.
+ */
+.article-layout[data-floating-rails] {
+  position: relative;
+}
+
+/*
+ * The drawer has no position of its own until a note is opened.
+ *
+ * It is `hidden` in the markup, and that is its only state while closed: there
+ * is no tab in the corner any more, because a note is opened from its own
+ * reference in the text. `--sidenote-rail-top` is the distance from the top of
+ * the article down to the reference; the script writes it, and the fallback of
+ * zero is the top of the article for the instant before that runs.
+ *
+ * Nothing here sets `display`, deliberately. `hidden` is the user agent's
+ * `display: none`, and any `display` in this rule would override it and leave
+ * the drawer on screen for every reader who never opens a note.
+ */
+.article-layout[data-floating-rails] .sidenote-rail {
+  position: absolute;
+  inset-block-start: var(--sidenote-rail-top, 0);
+  inset-inline: auto calc(-1 * var(--gutter));
+  z-index: 15;
+  inline-size: fit-content;
+  max-inline-size: min(84vw, 20rem);
+  font-size: var(--font-size-meta-lg);
+  margin: 0;
+}
+
+/*
+ * The visible way into a note: a small marker in the right margin, level with
+ * the note's reference in the text.
+ *
+ * The reference in the prose is a real link and always was, but a `[1]` inside a
+ * sentence does not read as "there is something over here" — the maintainer
+ * reported the note as invisible while the reference worked. So each note also
+ * gets this chip on the right, where the note itself would be on a wide screen.
+ *
+ * It is placed by the same article-relative offset as the drawer
+ * (`--sidenote-chip-top`), which is why it tracks the reference when the page
+ * scrolls without a scroll listener of its own: both are measured from the
+ * article, not from the viewport.
+ *
+ * It is a `<button>` because it opens something; the `<a>` in the prose already
+ * carries the navigable link for readers who want one.
+ */
+.article-layout[data-floating-rails] .sidenote-chip {
+  position: absolute;
+  inset-block-start: var(--sidenote-chip-top, 0);
+  /* Sits against the same screen edge the drawer uses. */
+  inset-inline: auto calc(-1 * var(--gutter));
+  z-index: 14;
+  /*
+   * No margin, and this is not tidiness. The chip is deliberately a sibling of
+   * the reference it belongs to — that is what makes it reachable in tab order —
+   * which places it inside `.prose`, where `.prose > * + * { margin-block-start:
+   * 1.15em }` applies to it. On an absolutely positioned box a margin offsets the
+   * resolved position, so the chip rendered 16.1px (1.15 x its own 14px) below
+   * the offset it was given, and its centre missed the reference's centre by
+   * exactly that. Measured, not predicted.
+   */
+  margin: 0;
+  /*
+   * Full touch target height, and centred on the reference rather than sitting
+   * below it: the script offsets by half the chip's own height. A chip level
+   * with the line it annotates reads as belonging to it.
+   */
+  display: flex;
+  align-items: center;
+  min-block-size: 44px;
+  padding-inline: var(--space-12);
+  border: var(--border-width) solid var(--color-border);
+  border-inline-end: 0;
+  border-start-start-radius: var(--radius-max);
+  border-end-start-radius: var(--radius-max);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-overlay);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--font-size-meta-lg);
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.article-layout[data-floating-rails] .sidenote-chip:hover,
+.article-layout[data-floating-rails] .sidenote-chip:focus-visible {
+  background: var(--color-brand-soft);
+}
+
+/* A chip takes the drawer's place while the drawer is open, so both are never
+   competing for the same corner of the screen. */
+.article-layout[data-floating-rails] .sidenote-chip[hidden] {
+  display: none;
+}
+
+/*
+ * Room for the contents tab, which sits over the top of the article rather than
+ * pushing it down. Only the tab's own height is reserved: an open panel is a
+ * drawer and is meant to cover what is behind it.
+ *
+ * This is the body's base top spacing raised to clear the tab, not a second gap
+ * added to it. `--space-64` clears the tab's 46px with room to breathe; the
+ * base is `--space-32` and applies where no tab floats.
+ */
+.article-layout[data-floating-rails] .article-body {
+  padding-block-start: var(--space-64);
+}
+
+/*
+ * A panel is flush with the screen edge it hangs from, so the border on that
+ * side is dropped and the corners there are squared. A panel floating a few
+ * pixels off the edge reads as a stray box rather than as a drawer.
+ *
+ * The opaque surface is the resting state, not a leftover: a translucent panel
+ * with no blur behind it is harder to read than a solid one, so the frosted
+ * version below is added only where blur is actually available.
+ */
+.article-layout[data-floating-rails] .article-rail > .toc,
+.article-layout[data-floating-rails] .sidenote-rail {
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+  box-shadow: var(--shadow-overlay);
+}
+
+/*
+ * Frosted glass, where the engine can do it.
+ *
+ * The note drawer lands on the paragraph it is about, so it must read as a sheet
+ * laid over the page rather than as a second layer of text. The first version of
+ * this picked a fashionable 92% veil and it was wrong: over a table, whose rules
+ * are thin and high-contrast, the lines came through and crossed the note's own
+ * words. That is a legibility failure no automated gate could see — a translucent
+ * background makes axe report contrast as *incomplete* rather than measured — and
+ * it was reported by the maintainer looking at the page. The veil now sits at the
+ * value worked out in tokens.css, where the arithmetic is written down; the blur
+ * is what is left of the effect.
+ *
+ * `@supports` rather than a bare declaration with a fallback, because the two
+ * orderings behave differently: a browser that does not understand
+ * `backdrop-filter` would otherwise paint the translucent background *without*
+ * the blur, which is the unreadable case this avoids.
+ */
+@supports (
+  (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
+) {
+  .article-layout[data-floating-rails] .article-rail > .toc,
+  .article-layout[data-floating-rails] .sidenote-rail {
+    background: var(--color-surface-veil);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    backdrop-filter: blur(20px) saturate(140%);
+  }
+}
+
+/* The reader has asked for less transparency, so there is none. */
+@media (prefers-reduced-transparency: reduce) {
+  .article-layout[data-floating-rails] .article-rail > .toc,
+  .article-layout[data-floating-rails] .sidenote-rail {
+    background: var(--color-surface);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+/* Only the inner panel gets its margin cleared; the rail keeps the inline
+   margins that place it against the screen edge. */
+.article-layout[data-floating-rails] .article-rail > .toc {
+  margin-block: 0;
+}
+
+.article-layout[data-floating-rails] .article-rail > .toc {
+  border-inline-start: 0;
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+  /*
+   * No padding on the panel itself, so the summary — which is the tab — sits
+   * flush against the screen edge. The component's own padding is there for the
+   * in-flow list, where it reads as a framed box; on a tab it would inset the
+   * label by 12px and make the tab look like it had drifted off the edge. The
+   * list inside keeps its own padding below.
+   */
+  padding: 0;
+}
+
+.article-layout[data-floating-rails] .sidenote-rail {
+  border-inline-end: 0;
+  border-start-end-radius: 0;
+  border-end-end-radius: 0;
+}
+
+/*
+ * The drawer's header.
+ *
+ * The drawer is only ever on screen while it is open, so this is a header rather
+ * than a collapsed tab: it is the label above the note and the control that
+ * closes it. `cursor: pointer` is honest about the second job — the browser's own
+ * disclosure behaviour is what handles the click, as it does for the contents
+ * tab in the corner.
+ */
+.article-layout[data-floating-rails] .sidenote-rail__summary {
+  min-height: 44px;
+  padding: var(--space-8) var(--space-12);
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  white-space: nowrap;
+  border-block-end: var(--border-width) solid var(--color-border);
+}
+
+/*
+ * The contents tab: the only thing visible while closed, and the control the
+ * reader clicks to open the drawer. It carries the padding the panel no longer
+ * has, so the label sits `--space-12` from the screen edge on both sides.
+ */
+.article-layout[data-floating-rails] .toc__summary {
+  min-height: 44px;
+  padding: var(--space-8) var(--space-12);
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  white-space: nowrap;
+}
+
+/* The notes panel keeps no padding either, for the same reason as the contents
+   panel: its summary is the tab. The notes inside are padded below. */
+.article-layout[data-floating-rails] .sidenote-rail {
+  padding: 0;
+}
+
+/* The list scrolls inside the panel rather than running off the screen. */
+.article-layout[data-floating-rails] .toc[open] > nav {
+  max-block-size: calc(100vh - var(--header-height) - 9rem);
+  overflow-y: auto;
+  padding-inline: var(--space-12);
+  padding-block-end: var(--space-12);
+}
+
+.article-layout[data-floating-rails] .toc__list {
+  margin-block-start: 0;
+}
+
+/*
+ * The note panel scrolls for the same reason the list does.
+ *
+ * The cap is viewport-relative even though the drawer is not: the drawer is
+ * anchored into the article, but a note longer than the screen would still run
+ * off the bottom of it with no way to reach the rest. Capping it against the
+ * viewport and letting it scroll inside keeps the whole note reachable wherever
+ * the drawer happens to sit.
+ */
+.article-layout[data-floating-rails] .sidenote-rail__panel {
+  max-block-size: calc(100vh - var(--header-height) - 9rem);
+  overflow-y: auto;
+  padding: var(--space-12);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+/*
+ * Inside the panel a note is a plain block: it is no longer beside anything, so
+ * the float and the negative margin that placed it in the third track are gone.
+ *
+ * `scroll-margin-block-start` is cleared for the same reason it is set in the
+ * prose: it exists to keep a document-level jump clear of the sticky header, and
+ * a scroll inside the panel is neither document-level nor below the header. Left
+ * in place it would hold the note the script scrolls to below the panel's own
+ * top edge by a header's height, which reads as the panel having lost its place.
+ */
+.article-layout[data-floating-rails] .sidenote-rail__panel .sidenote {
+  float: none;
+  inline-size: auto;
+  margin: 0;
+  scroll-margin-block-start: 0;
+}
+
+/*
+ * The reference left behind where a note used to sit.
+ *
+ * A real link to the note, so it works with the panel shut, with script
+ * disabled, and in print; the script only adds the behaviour of opening the
+ * panel first.
+ *
+ * It is a block-level mark, not a superscript inside a sentence: a `:::sidenote`
+ * block sits between paragraphs in the source, so its reference marks a position
+ * between blocks rather than a point inside one.
+ *
+ * `line-height` is deliberately not zero. An earlier version set `line-height: 0`
+ * to stop the mark from adding height to a line of prose; on an inline-block that
+ * collapses the element's own box, so the reference measured 19.63 × 0 and was
+ * effectively invisible — a click target that no click could hit. The minimum
+ * block size is what keeps it a touch target.
+ */
+.sidenote-ref {
+  color: var(--color-link);
+  font-size: 0.8em;
+  text-decoration: none;
+  display: inline-block;
+  min-inline-size: 1.6em;
+  min-block-size: 1.6em;
+  line-height: 1.6;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  /* It opens a drawer in place rather than navigating, so the pointer should say
+     so; the link would otherwise inherit the text cursor from the prose. */
+  cursor: pointer;
+}
+
+.sidenote-ref:hover,
+.sidenote-ref:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.sidenote-ref::before {
+  content: "[";
+}
+
+.sidenote-ref::after {
+  content: "]";
+}
+
+/* ========================================================================== */
+/* Prose                                                                      */
+/* ========================================================================== */
+
+.prose {
+  font-size: var(--font-size-article);
+  line-height: var(--line-height-article);
+  max-width: var(--measure-article);
+}
+
+/*
+ * Space between blocks belongs to the relation between them, so the first block
+ * has none. Without this the article's opening gap depends on what the author
+ * happened to write first: an article opening with `##` inherited the heading's
+ * 3.5em lead-in (86.8px at the article size) on top of everything above it,
+ * while one opening with a paragraph started immediately. Same stylesheet, two
+ * different openings, decided by content rather than by design.
+ *
+ * The space above the body as a whole is the body's own business — see
+ * `.article-body` — which is the one place it can be set once for both cases.
+ */
+.prose > :first-child {
+  margin-block-start: 0;
+}
+
+.prose > * + * {
+  margin-block-start: 1.15em;
+}
+
+.prose h2 {
+  font-size: 1.55rem;
+  line-height: 1.3;
+  margin-block-start: 3.5em;
+  position: relative;
+}
+
+.prose h3 {
+  font-size: 1.22rem;
+  line-height: 1.4;
+  margin-block-start: 2.5em;
+}
+
+.prose ul,
+.prose ol {
+  padding-inline-start: 1.4em;
+}
+
+.prose li + li {
+  margin-block-start: 0.45em;
+}
+
+.prose blockquote {
+  border-inline-start: var(--border-width-strong) solid var(--color-border);
+  padding-inline-start: var(--space-16);
+  color: var(--color-muted);
+}
+
+.prose code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  background: color-mix(in srgb, var(--color-border) 35%, transparent);
+  padding: 0.1em 0.3em;
+  border-radius: var(--radius-2);
+}
+
+.prose pre code {
+  background: none;
+  padding: 0;
+  font-size: inherit;
+}
+
+.prose abbr {
+  text-decoration: underline dotted;
+}
+
+.prose kbd {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  border: var(--border-width) solid var(--color-border);
+  border-block-end-width: 2px;
+  border-radius: var(--radius-2);
+  padding: 0.1em 0.35em;
+}
+
+.prose mark {
+  background: var(--color-brand-soft);
+  color: var(--color-text);
+}
+
+/* Tables scroll inside their own container and never widen the page. */
+.prose .table-scroll,
+.prose table {
+  max-width: 100%;
+}
+
+.prose .table-scroll {
+  overflow-x: auto;
+}
+
+.prose table {
+  border-collapse: collapse;
+  inline-size: 100%;
+  font-size: 0.95em;
+}
+
+.prose th,
+.prose td {
+  border: var(--border-width) solid var(--color-border);
+  padding: var(--space-8) var(--space-12);
+  text-align: start;
+}
+
+.prose thead th {
+  background: var(--color-surface);
+}
+
+.prose tbody tr:nth-child(even) {
+  background: color-mix(in srgb, var(--color-surface) 60%, transparent);
+}
+
+/* ========================================================================== */
+/* Heading anchors                                                            */
+/* ========================================================================== */
+
+.heading-anchor {
+  margin-inline-start: 0.4em;
+  color: var(--color-muted);
+  text-decoration: none;
+  opacity: 0;
+  transition: opacity var(--duration-120) var(--ease-standard);
+}
+
+/* The glyph is drawn in CSS so it never becomes part of the heading's text. */
+.heading-anchor::after {
+  content: "#";
+  font-weight: 400;
+}
+
+h2:hover .heading-anchor,
+h3:hover .heading-anchor,
+.heading-anchor:focus-visible {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .heading-anchor {
+    opacity: 0.6;
+  }
+}
+
+/* ========================================================================== */
+/* Callouts                                                                   */
+/* ========================================================================== */
+
+.callout {
+  border-inline-start: 3px solid var(--color-border);
+  border-radius: 0 var(--radius-2) var(--radius-2) 0;
+  padding: var(--space-12) var(--space-16);
+  background: var(--color-surface);
+}
+
+.callout__label {
+  font-weight: 600;
+  font-size: var(--font-size-meta-lg);
+  letter-spacing: 0.06em;
+  margin-block-end: var(--space-4);
+}
+
+.callout > * + * {
+  margin-block-start: var(--space-8);
+}
+
+.callout--note {
+  border-inline-start-color: var(--color-link);
+  background: var(--color-note-soft);
+}
+
+.callout--tip {
+  border-inline-start-color: var(--color-success);
+  background: var(--color-success-soft);
+}
+
+.callout--important {
+  border-inline-start-color: var(--color-brand);
+  background: var(--color-note-soft);
+}
+
+.callout--warning {
+  border-inline-start-color: var(--color-warning);
+  background: var(--color-warning-soft);
+}
+
+.callout--caution {
+  border-inline-start-color: var(--color-danger);
+  background: var(--color-danger-soft);
+}
+
+/* ========================================================================== */
+/* Code blocks                                                                */
+/* ========================================================================== */
+
+.code-block {
+  position: relative;
+  margin-block: var(--space-24);
+}
+
+.code-block__frame {
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-4);
+  overflow: hidden;
+  background: var(--color-code-bg);
+}
+
+.code-block__bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  padding: var(--space-4) var(--space-8) var(--space-4) var(--space-12);
+  border-block-end: var(--border-width) solid var(--color-border);
+  background: var(--color-surface);
+  font-size: var(--font-size-meta);
+  font-family: var(--font-mono);
+  color: var(--color-muted);
+  min-height: 36px;
+}
+
+.code-block__title {
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.code-block__lang {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.code-block__copy {
+  margin-inline-start: auto;
+  min-height: 28px;
+  padding: var(--space-4) var(--space-8);
+  font-size: var(--font-size-meta);
+  background: transparent;
+  color: var(--color-text);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-2);
+  cursor: pointer;
+}
+
+.code-block__copy:hover {
+  border-color: var(--color-link);
+  color: var(--color-link);
+}
+
+.code-block__status {
+  font-size: var(--font-size-meta);
+  color: var(--color-muted);
+}
+
+/* Line numbers come from a CSS counter that must reset once per block. Shiki
+   emits the lines as `pre > code > span.line`, so the counter lives on the
+   `<code>` element. */
+.code-block[data-line-numbers="true"] .code-block__frame pre code {
+  counter-reset: line;
+}
+
+.code-block__frame pre {
+  margin: 0;
+  padding: var(--space-16);
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  line-height: 1.65;
+  color: var(--color-code-text);
+  background: var(--color-code-bg);
+}
+
+.code-block__frame pre code {
+  display: block;
+  min-width: max-content;
+  background: none;
+  padding: 0;
+}
+
+.code-block .line {
+  display: inline-block;
+  inline-size: 100%;
+}
+
+.code-block[data-line-numbers="true"] .line::before {
+  counter-increment: line;
+  content: counter(line);
+  display: inline-block;
+  inline-size: 2.5em;
+  margin-inline-end: var(--space-12);
+  text-align: end;
+  color: var(--color-muted);
+  user-select: none;
+}
+
+/*
+ * A highlighted line is marked by darkening the code surface and adding the
+ * brand rule at its start.
+ *
+ * A light wash — the obvious choice — lowers the contrast of every token on
+ * the line, and Lighthouse caught two github-dark colours falling to 4.45 and
+ * 4.24 against a tinted background. Darkening raises contrast instead, so the
+ * emphasis costs no legibility. The alpha is an overlay on Shiki's own
+ * background, not a surface colour, which is why it is not a token.
+ */
+.code-block .line--highlighted {
+  background: rgb(0 0 0 / 0.3);
+  box-shadow: inset 2px 0 0 var(--color-brand);
+}
+
+/* ========================================================================== */
+/* Sidenotes                                                                  */
+/* ========================================================================== */
+
+.sidenote {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--color-muted);
+  border-block-start: var(--border-width-strong) solid var(--color-brand);
+  padding-block-start: var(--space-8);
+  margin-block: var(--space-24);
+}
+
+.sidenote__marker {
+  display: inline-block;
+  min-inline-size: 1.35em;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.sidenote__label {
+  display: block;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-block-end: var(--space-4);
+}
+
+.sidenote > * + * {
+  margin-block-start: var(--space-8);
+}
+
+.sidenote summary {
+  cursor: pointer;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+/*
+ * On wide screens each note floats beside the paragraph that references it.
+ * The negative inline-end margin is exactly the note's width plus the grid gap,
+ * which lands it in the reserved third track and leaves the article measure
+ * untouched. `clear: inline-end` stops consecutive notes from overlapping.
+ */
+@media (min-width: 75rem) {
+  .sidenote {
+    float: inline-end;
+    clear: inline-end;
+    inline-size: var(--sidenote-width);
+    margin-inline-end: calc(-1 * (var(--sidenote-width) + var(--space-32)));
+    margin-block: var(--space-8) var(--space-24);
+  }
+}
+
+/* ========================================================================== */
+/* Mermaid diagrams                                                           */
+/* ========================================================================== */
+
+.mermaid-block {
+  margin-block: var(--space-24);
+  padding: var(--space-16);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-4);
+  background: var(--color-surface);
+}
+
+.mermaid-block__diagram {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.mermaid-block__diagram svg {
+  max-width: 100%;
+  block-size: auto;
+}
+
+/* The source stays visible until a diagram has actually been drawn, so a
+   failure shows the definition rather than an empty frame. */
+.mermaid-block__source {
+  margin: 0;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-meta-lg);
+  color: var(--color-muted);
+  white-space: pre;
+}
+
+.mermaid-block__source[hidden] {
+  display: none;
+}
+
+.mermaid-block__status {
+  margin-block-start: var(--space-8);
+  font-size: var(--font-size-meta-lg);
+  color: var(--color-warning);
+}
+
+/* ========================================================================== */
+/* Pagination                                                                 */
+/* ========================================================================== */
+
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-8);
+  margin-block-start: var(--space-32);
+  padding-block-start: var(--space-16);
+  border-block-start: var(--border-width) solid var(--color-border);
+  font-size: var(--font-size-meta-lg);
+}
+
+.pagination__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding-inline: var(--space-12);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-2);
+  text-decoration: none;
+  color: var(--color-text);
+}
+
+.pagination__link:hover {
+  border-color: var(--color-link);
+  color: var(--color-link);
+}
+
+.pagination__link[aria-current="page"] {
+  background: var(--color-brand-soft);
+  border-color: var(--color-brand);
+}
+
+.pagination__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* ========================================================================== */
+/* Empty states                                                               */
+/* ========================================================================== */
+
+.empty-state {
+  padding-block: var(--space-48);
+  color: var(--color-muted);
+  max-width: var(--measure-article);
+}
+
+.empty-state__brand {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.28em;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-block-end: var(--space-16);
+}
+
+.empty-state__brand .brand__mark {
+  inline-size: 0.48em;
+  block-size: 0.48em;
+  background: var(--color-brand);
+}
+
+.empty-state__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-16);
+  margin-block-start: var(--space-16);
+}
+
+/* ========================================================================== */
+/* Back to top                                                                */
+/* ========================================================================== */
+
+.back-to-top {
+  position: fixed;
+  inset-block-end: var(--space-24);
+  inset-inline-end: var(--space-24);
+  z-index: 15;
+  min-height: 44px;
+  padding: var(--space-8) var(--space-16);
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-4);
+  font-size: var(--font-size-meta-lg);
+  cursor: pointer;
+}
+
+.back-to-top:hover {
+  border-color: var(--color-link);
+  color: var(--color-link);
+}
+
+/* ========================================================================== */
+/* Share                                                                      */
+/* ========================================================================== */
+
+.share {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+  align-items: center;
+  margin-block-start: var(--space-32);
+  padding-block-start: var(--space-16);
+  border-block-start: var(--border-width) solid var(--color-border);
+}
+
+.share__button {
+  min-height: 44px;
+  padding: var(--space-8) var(--space-16);
+  background: transparent;
+  color: var(--color-text);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-2);
+  cursor: pointer;
+  font-size: var(--font-size-meta-lg);
+}
+
+.share__button:hover {
+  border-color: var(--color-link);
+  color: var(--color-link);
+}
+
+/* ========================================================================== */
+/* Motion preferences                                                         */
+/* ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html:has(:target) {
+    scroll-behavior: smooth;
+  }
+}
+
+/* ========================================================================== */
+/* Comments                                                                   */
+/* ========================================================================== */
+
+.comments {
+  margin-block-start: var(--space-48);
+  padding-block-start: var(--space-16);
+  border-block-start: var(--border-width) solid var(--color-border);
+  max-width: var(--measure-article);
+}
+
+.comments__heading {
+  font-size: 1.1rem;
+  margin-block-end: var(--space-16);
+}
+
+/* Status lines — loading, empty, failed — share one quiet treatment. */
+.comments__status,
+.comments__note {
+  color: var(--color-muted);
+  font-size: var(--font-size-meta-lg);
+  margin-block: var(--space-8);
+}
+
+.comments__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-24);
+  margin-block-end: var(--space-32);
+}
+
+.comment {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  column-gap: var(--space-12);
+  row-gap: var(--space-8);
+}
+
+.comment__header {
+  grid-column: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+  align-items: baseline;
+}
+
+.comment__avatar {
+  grid-row: 1 / span 2;
+  grid-column: 1;
+  inline-size: 40px;
+  block-size: 40px;
+  border-radius: var(--radius-4);
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+}
+
+.comment__name {
+  font-weight: 600;
+  font-size: var(--font-size-meta-lg);
+}
+
+.comment__date {
+  color: var(--color-muted);
+  font-size: var(--font-size-meta);
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * A comment body is Markdown rendered by the server, so it inherits the
+ * article's prose rules but not its scale: this is a reply, not a page.
+ */
+.comment__body {
+  grid-column: 2;
+  font-size: var(--font-size-meta-lg);
+  line-height: 1.7;
+}
+
+.comment__body > * + * {
+  margin-block-start: 0.9em;
+}
+
+.comment__body h2,
+.comment__body h3 {
+  font-size: 1rem;
+}
+
+.comment__body pre {
+  overflow-x: auto;
+}
+
+/* --- the form ------------------------------------------------------------ */
+
+.comment-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+}
+
+.comment-form__heading {
+  font-size: 1rem;
+}
+
+.comment-form__note {
+  color: var(--color-muted);
+  font-size: var(--font-size-meta);
+  max-width: var(--measure-article);
+}
+
+.comment-form__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-12);
+}
+
+.comment-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  flex: 1 1 14rem;
+  min-width: 0;
+}
+
+.comment-form__label {
+  font-size: var(--font-size-meta);
+  color: var(--color-muted);
+}
+
+.comment-form input[type="text"],
+.comment-form input[type="email"],
+.comment-form textarea {
+  font: inherit;
+  font-size: var(--font-size-meta-lg);
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-2);
+  padding: var(--space-8);
+  inline-size: 100%;
+}
+
+.comment-form textarea {
+  resize: vertical;
+  min-block-size: 8rem;
+}
+
+.comment-form__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-12);
+  align-items: center;
+}
+
+.comment-form__submit {
+  font: inherit;
+  font-size: var(--font-size-meta-lg);
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-2);
+  padding: var(--space-8) var(--space-16);
+  min-height: 44px;
+  cursor: pointer;
+}
+
+.comment-form__submit:hover:not(:disabled) {
+  border-color: var(--color-brand);
+}
+
+.comment-form__submit:disabled {
+  color: var(--color-muted);
+  cursor: progress;
+}
+
+.comment-form__status {
+  font-size: var(--font-size-meta);
+  color: var(--color-muted);
+}
+
+/*
+ * The honeypot.
+ *
+ * Positioned out of the viewport rather than `display: none`, because a field
+ * that is not rendered is a field an automated filler skips. It keeps its size
+ * and its place in the tab order being removed by `tabindex="-1"`, so a person
+ * tabbing through the form never lands on it and never sees it.
+ */
+.comment-form__trap {
+  position: absolute;
+  left: -9999px;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+}
+
+/* The view count sits in the article metadata row, with the other facts. */
+.article-meta__views {
+  font-size: var(--font-size-meta-lg);
+  color: var(--color-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ========================================================================== */
+/* Forced colours                                                             */
+/* ========================================================================== */
+
+@media (forced-colors: active) {
+  .bookmark[aria-current="page"] {
+    border-block-start-color: Highlight;
+    outline: 1px solid Highlight;
+  }
+
+  .brand__mark,
+  .empty-state__brand .brand__mark {
+    background: Highlight;
+  }
+
+  .callout,
+  .code-block__frame,
+  .sidenote,
+  .comment__avatar,
+  .comment-form input[type="text"],
+  .comment-form input[type="email"],
+  .comment-form textarea,
+  .comment-form__submit {
+    border-color: CanvasText;
+  }
+
+  .comment-form__submit:hover:not(:disabled) {
+    border-color: Highlight;
+  }
+
+  .line--highlighted {
+    outline: 2px solid Highlight;
+  }
+}

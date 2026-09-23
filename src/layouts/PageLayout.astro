@@ -1,0 +1,144 @@
+---
+import type { AstroComponentFactory } from 'astro/runtime/server/index.js';
+
+import KatexSupport from '../components/KatexSupport.astro';
+import MermaidSupport from '../components/MermaidSupport.astro';
+import TableOfContents from '../components/TableOfContents.astro';
+import { hasMathFormula, hasMermaidDiagram } from '../lib/content/body-features.js';
+import type { PageView } from '../lib/content/collections.js';
+import type { Heading } from '../lib/content/toc.js';
+import { loadMediaIndex } from '../lib/media/index.js';
+import { buildPicture } from '../lib/media/picture.js';
+import { CONTENT_LICENSE_LABEL, CONTENT_LICENSE_URL, canonicalUrl } from '../lib/site.js';
+
+/**
+ * A standalone page — `pages/**` other than `about`.
+ *
+ * It borrows the article's typography: the same heading scale, the same reading
+ * measure, the same prose rules, the same contents rail. It leaves out the
+ * parts of an article that only make sense for dated writing — there is no
+ * publish date, no reading time, no tag list, no series navigation and no
+ * related-articles block, and the cover is optional rather than required.
+ *
+ * The article script is still loaded, because the Markdown pipeline decorates
+ * this body exactly as it decorates an article body: code fences come out with
+ * copy buttons and headings come out with anchor links. Shipping those controls
+ * without the script that operates them would be a set of dead buttons.
+ */
+interface Props {
+  page: PageView;
+  Content: AstroComponentFactory;
+  headings: readonly Heading[];
+  /** Pages have no `toc` frontmatter, so the automatic rule is always used. */
+  tocMode: 'auto' | 'always' | 'never';
+}
+
+const { page, Content, headings, tocMode } = Astro.props;
+const { data } = page;
+
+const cover = data.cover;
+const coverPicture =
+  cover === undefined
+    ? null
+    : buildPicture(loadMediaIndex(), cover.src, {
+        displayWidth: 900,
+        displayHeight: 506,
+        // Handed back by `buildPicture` as `picture.sizes`, so the declared box
+        // and the `sizes` attribute are one value rather than two copies.
+        sizes: '(min-width: 48rem) 42rem, 100vw',
+      });
+
+// A page body goes through the same Markdown pipeline as an article body, so it
+// can contain a formula or a diagram and needs the same conditional payloads.
+const hasMermaid = hasMermaidDiagram(page.body);
+const hasMath = hasMathFormula(page.body);
+---
+
+<KatexSupport enabled={hasMath} />
+<MermaidSupport enabled={hasMermaid} />
+
+<div class="wrap">
+  <article data-canonical-url={canonicalUrl(page.url)}>
+    <header class="article-head" data-print-url={canonicalUrl(page.url)}>
+      <h1>{data.title}</h1>
+      <p class="article-head__description">{data.description}</p>
+
+      <div class="article-meta">
+        {
+          data.updatedAt && (
+            <time datetime={data.updatedAt} data-pagefind-meta="date">
+              更新于 {data.updatedAt.slice(0, 10)}
+            </time>
+          )
+        }
+        <a href={CONTENT_LICENSE_URL} rel="license">{CONTENT_LICENSE_LABEL}</a>
+      </div>
+    </header>
+
+    {
+      cover !== undefined && coverPicture !== null && (
+        <figure class="article-cover">
+          <div data-media-frame>
+            <span data-media-fallback>{[...data.title][0] ?? '·'}</span>
+            <picture>
+              {coverPicture.sources.map((source) => (
+                <source type={source.type} srcset={source.srcset} sizes={coverPicture.sizes} />
+              ))}
+              <img
+                src={coverPicture.src}
+                alt={cover.alt}
+                width="900"
+                height="506"
+                data-media-image
+                decoding="async"
+              />
+            </picture>
+          </div>
+        </figure>
+      )
+    }
+
+    {cover?.credit && <p class="article-credit">{cover.credit}</p>}
+
+    {/*
+      Same rails as an article, in the same order: a page's body comes out of the
+      same Markdown pipeline, so it can contain sidenotes and headings just as an
+      article can, and it should not behave differently because of which
+      collection the file came from.
+
+      The contents rail comes before the body because it is sticky and anchors
+      from where the flow puts it. The note drawer comes first for consistency
+      only — it is positioned against the article, so the script decides where it
+      appears and the markup's order does not.
+    */}
+    <div class="article-layout">
+      <div class="article-rail">
+        <TableOfContents headings={headings} mode={tocMode} />
+      </div>
+
+      <details class="sidenote-rail" id="sidenote-drawer" data-sidenote-rail hidden>
+        <summary class="sidenote-rail__summary">
+          边注
+          <span class="sidenote-rail__count" data-sidenote-count></span>
+        </summary>
+        <div class="sidenote-rail__panel" data-sidenote-panel></div>
+      </details>
+
+      <div class="article-body">
+        <div class="prose">
+          <Content />
+        </div>
+      </div>
+    </div>
+  </article>
+</div>
+
+<button class="back-to-top" type="button" data-back-to-top hidden>返回顶部</button>
+<p class="visually-hidden-live" data-live-region aria-live="polite" aria-atomic="true"></p>
+
+<script>
+  import { initArticle } from '../scripts/article.js';
+  import { initEmbeds } from '../scripts/embeds.js';
+  initArticle();
+  initEmbeds();
+</script>

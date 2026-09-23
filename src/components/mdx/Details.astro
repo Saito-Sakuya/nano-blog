@@ -1,0 +1,40 @@
+---
+/**
+ * A disclosure, built on the native `<details>` element so that open/close,
+ * keyboard handling and find-in-page behaviour come from the browser.
+ */
+interface Props {
+  summary: string;
+  open?: boolean;
+}
+
+const { summary, open = false } = Astro.props;
+---
+
+<details class="details" open={open}>
+  <summary>{summary}</summary>
+  <div class="details__body">
+    <slot />
+  </div>
+</details>
+
+<style>
+  .details {
+    margin-block: var(--space-24);
+    border: var(--border-width) solid var(--color-border);
+    border-radius: var(--radius-4);
+    padding: var(--space-8) var(--space-16);
+  }
+
+  .details summary {
+    cursor: pointer;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+  }
+
+  .details__body {
+    padding-block-start: var(--space-8);
+  }
+</style>

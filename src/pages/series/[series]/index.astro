@@ -1,0 +1,118 @@
+---
+import type { GetStaticPaths } from 'astro';
+
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import EmptyState from '../../../components/EmptyState.astro';
+import Thumb from '../../../components/Thumb.astro';
+import Pagination from '../../../components/Pagination.astro';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { displayDate } from '../../../lib/content/build-context.js';
+import { loadSite, seriesPosts } from '../../../lib/content/collections.js';
+import {
+  pageSlice,
+  paginate,
+  seriesIndexUrl,
+  seriesPageUrl,
+  tagUrl,
+} from '../../../lib/routing/urls.js';
+import { buildMetadata } from '../../../lib/seo/metadata.js';
+
+/**
+ * A single series, page one.
+ *
+ * Reading order here is the series' own `order`, not the publication date, so
+ * each row leads with its position in the series. `loadSite` already sorts
+ * every series by `order` ascending, so the array is rendered as given.
+ *
+ * Only series that `loadSite` built from public articles get a path, so an
+ * unknown series id, or one whose articles are all drafts or future-dated, has
+ * no file and the host answers 404.
+ */
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const site = await loadSite();
+
+  return site.series.map((entry) => ({ params: { series: entry.id } }));
+};
+
+const site = await loadSite();
+const seriesId = Astro.params['series'] ?? '';
+const series = site.series.find((entry) => entry.id === seriesId);
+
+if (series === undefined) {
+  return Astro.rewrite('/404');
+}
+
+const posts = seriesPosts(site, series.id);
+const pagePosts = pageSlice(posts, 1);
+const pagination = paginate(posts.length, 1, (page) => seriesPageUrl(series.id, page));
+
+const meta = buildMetadata({
+  title: `系列：${series.title}`,
+  description: `${series.title} 系列的公开文章，按系列顺序排列，共 ${posts.length} 篇。`,
+  pathname: seriesPageUrl(series.id, 1),
+});
+---
+
+<BaseLayout meta={meta}>
+  <div class="wrap">
+    <Breadcrumbs
+      items={[{ label: '系列', href: seriesIndexUrl() }, { label: series.title }]}
+    />
+
+    <div class="page-head">
+      <h1>{series.title}</h1>
+      <p class="page-head__description">
+        共 {posts.length} 篇公开文章，按系列顺序排列。
+      </p>
+    </div>
+
+    {
+      posts.length === 0 ? (
+        <EmptyState message="此系列尚无公开文章。" />
+      ) : (
+        <>
+          <ol class="index-list">
+            {pagePosts.map((post) => (
+              <li class="index-row">
+                <span class="index-row__date">#{post.data.series?.order ?? 0}</span>
+
+                <h2 class="index-row__title">
+                  <a href={post.url}>{post.data.title}</a>
+                </h2>
+
+                <div class="index-row__meta">
+                  <time datetime={post.data.publishedAt}>
+                    {displayDate(post.data.publishedAt)}
+                  </time>
+                  {post.data.tags.map((tag) => (
+                    <a class="tag-chip" href={tagUrl(tag.id)}>{tag.label}</a>
+                  ))}
+                </div>
+
+                <div class="index-row__thumb">
+                  <Thumb
+                    src={post.data.cover.src}
+                    alt={post.data.cover.alt}
+                    fallbackText={[...post.data.title][0] ?? '·'}
+                  />
+                </div>
+              </li>
+            ))}
+          </ol>
+
+          <Pagination pagination={pagination} label={`${series.title} 系列分页`} />
+        </>
+      )
+    }
+  </div>
+</BaseLayout>
+
+<style>
+  /* The series position stands where a date would, so it is set slightly
+     heavier than a date: "#3" is not a date and should not read like one. */
+  .index-row__date {
+    font-weight: 600;
+    color: var(--color-text);
+  }
+</style>

@@ -1,0 +1,70 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { getEntry, render } from 'astro:content';
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageLayout from '../../layouts/PageLayout.astro';
+import { loadSite, type PageView } from '../../lib/content/collections.js';
+import { buildMetadata } from '../../lib/seo/metadata.js';
+import { ogImagePath } from '../../lib/seo/og.js';
+
+/**
+ * Standalone pages.
+ *
+ * `pages/lab/notes.md` becomes `/lab/notes/` — the `pages/` prefix never
+ * appears in a URL, and a page can sit at any depth. `about` is the one
+ * exception: it has its own route, because `/about/` is given a
+ * fixed identity block that its body is appended to rather than replaced by.
+ *
+ * ## Why a root-level catch-all is safe here
+ *
+ * A root dynamic route would normally compete with every static route in the
+ * project. It does not here, for two reasons that reinforce each other: the
+ * parameter list is not a pattern but an explicit enumeration of the public
+ * pages, so a URL this route does not own is never generated at all; and
+ * `content:validate` refuses any page whose URL shadows a reserved route, so a
+ * page that would collide with `/posts/`, `/tags/`, `/assets/` and the rest can
+ * never reach a build in the first place.
+ */
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const site = await loadSite();
+  const paths: { params: { path: string }; props: { pageId: string } }[] = [];
+
+  for (const page of site.pages.values()) {
+    if (page.id === 'about') continue;
+    paths.push({ params: { path: page.id }, props: { pageId: page.id } });
+  }
+
+  return paths;
+};
+
+const site = await loadSite();
+const { pageId } = Astro.props as { pageId: string };
+
+const page: PageView | undefined = site.pages.get(pageId);
+if (page === undefined) {
+  throw new Error(`Unknown page id ${pageId}`);
+}
+
+const entry = await getEntry('pages', page.id);
+if (entry === undefined) {
+  throw new Error(`Page ${page.id} is missing from the collection`);
+}
+const { Content, headings } = await render(entry);
+
+const meta = buildMetadata({
+  title: page.data.title,
+  description: page.data.description,
+  pathname: page.url,
+  noindex: page.data.noindex,
+  modifiedTime: page.data.updatedAt,
+  ...(page.data.cover === undefined
+    ? {}
+    : { ogImage: ogImagePath(page.data.cover.src) }),
+});
+---
+
+<BaseLayout meta={meta} indexable={!page.data.noindex}>
+  <PageLayout page={page} Content={Content} headings={headings} tocMode="auto" />
+</BaseLayout>

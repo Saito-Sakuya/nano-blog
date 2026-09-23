@@ -1,0 +1,81 @@
+---
+title: TEST FIXTURE MDX 白名单组件示例
+description: TEST FIXTURE 逐一演示允许使用的 MDX 组件，用于验证白名单渲染与失败降级。
+publishedAt: 2026-06-02T10:00:00+08:00
+tags:
+  - id: fixture
+    label: 测试夹具
+series:
+  id: fixture-series
+  title: TEST FIXTURE 系列
+  order: 2
+cover:
+  src: /media/1e7b56dcbc1b9b39e3a3ce577f6ed549b6a5a6d7325c5acc333dad4e0cf93334/1600.webp
+  alt: TEST FIXTURE 第二张测试封面，暖色调几何图案
+  width: 1600
+  height: 900
+---
+
+## 提示组件
+
+<Callout type="NOTE">TEST FIXTURE 通过组件渲染的说明块。</Callout>
+
+<Callout type="WARNING" title="自定义标题">
+  TEST FIXTURE 带自定义标题的警告块。
+</Callout>
+
+## 图片与图库
+
+<Figure
+  src="/media/02319fee3bad68398072db39e2822a7cd3f2c4f478d0ecf85222190eedc07362/1200.webp"
+  alt="TEST FIXTURE 宽幅示意图，包含条纹与圆形色块"
+  caption="TEST FIXTURE 图片说明文字"
+  credit="自动生成"
+/>
+
+<Figure
+  src="/media/4f24213cd21d05f419d7468216286ffb24171074559ca2cba014e150a3e7c6c8/480.webp"
+  alt=""
+  decorative={true}
+/>
+
+<Gallery caption="TEST FIXTURE 图库说明">
+  <Figure
+    src="/media/02319fee3bad68398072db39e2822a7cd3f2c4f478d0ecf85222190eedc07362/1200.webp"
+    alt="TEST FIXTURE 图库中的第一张示意图"
+  />
+  <Figure
+    src="/media/a3ebc0fe4141541d420d6127389d9e789420efa8d04cfcfdcb3a0774aa8b4ed4/1600.webp"
+    alt="TEST FIXTURE 图库中的第二张示意图"
+  />
+</Gallery>
+
+## 边注组件
+
+<Sidenote label="TEST FIXTURE 组件边注">
+  这是通过 MDX 组件写的边注，编号由页面统一分配。
+</Sidenote>
+
+## 选项卡
+
+<Tabs label="TEST FIXTURE 选项卡">
+  <Tab label="第一页">
+    第一页的内容。没有 JavaScript 时，所有分页会依次显示。
+  </Tab>
+  <Tab label="第二页">第二页的内容。</Tab>
+</Tabs>
+
+## 折叠区块
+
+<Details summary="TEST FIXTURE 折叠标题">
+  折叠区块中的内容，使用原生 details 元素。
+</Details>
+
+## 视频
+
+<VideoEmbed
+  provider="youtube"
+  id="dQw4w9WgXcQ"
+  title="TEST FIXTURE 视频标题"
+  poster="/media/a3ebc0fe4141541d420d6127389d9e789420efa8d04cfcfdcb3a0774aa8b4ed4/1600.webp"
+/>

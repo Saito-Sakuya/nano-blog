@@ -1,0 +1,69 @@
+# The gate the repository already had, run by something other than memory.
+#
+# Every check here is a `pnpm` script that existed before this file: `pnpm
+# verify` runs the whole chain, and it was the only gate there was — nothing ran
+# it but a person who remembered to. That is how a step order that skipped the
+# integration tests on a fresh checkout, and a `check:types` that was red on
+# every run, survived review.
+#
+# `verify` is the whole chain on purpose: it includes both builds, the unit and
+# integration suites, the content gate, the browser runs and the performance
+# budget. A job that ran only a subset would recreate the same problem in a new
+# shape.
+name: verify
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+# A second push to the same branch makes the first run's answer irrelevant.
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      # Actions are pinned to a commit, not to a version tag.
+      #
+      # A tag is a mutable reference: whoever controls the action's repository can
+      # point `v4` somewhere else at any time, and the next run of this workflow
+      # executes whatever it now names. A commit hash cannot be moved, so this is
+      # the difference between running the code that was reviewed and running
+      # whatever is there today. The version each hash corresponds to is in the
+      # comment beside it; Dependabot or a manual bump is how they move.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4.3.0
+        with:
+          version: 12.4.1
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      # `--frozen-lockfile` because a lockfile that had to be rewritten during a
+      # verification run means the run verified something other than the commit.
+      - run: pnpm install --frozen-lockfile
+
+      # The browser runs use the system Chrome channel rather than Playwright's
+      # download, which is what `playwright.config.ts` names and therefore what
+      # the local runs used. Firefox and WebKit come from Playwright itself: the
+      # config defines both projects, and `scripts/verify/e2e.ts` runs them when
+      # Playwright's own copies are present.
+      - name: Install Chrome for the Chromium projects
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+
+      - name: Install Firefox and WebKit
+        run: pnpm exec playwright install --with-deps firefox webkit
+
+      - name: pnpm verify
+        run: pnpm verify

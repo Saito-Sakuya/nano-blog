@@ -1,0 +1,43 @@
+---
+import EmptyState from './EmptyState.astro';
+import IndexList from './IndexList.astro';
+import Pagination from './Pagination.astro';
+import { loadSite } from '../lib/content/collections.js';
+import { homePageUrl, pageSlice, paginate } from '../lib/routing/urls.js';
+import { SITE_TAGLINE } from '../lib/site.js';
+
+/**
+ * The home feed.
+ *
+ * A pure reverse-chronological stream. There is no hero, no illustration and no
+ * metric tiles: the first thing below the navigation is the most recent article.
+ */
+interface Props {
+  page: number;
+  /** Pagination links must be absolute so a deep page is not canonicalised away. */
+  absolute?: boolean;
+}
+
+const { page } = Astro.props;
+const site = await loadSite();
+const posts = pageSlice(site.posts, page);
+const pagination = paginate(site.posts.length, page, homePageUrl);
+---
+
+<div class="wrap">
+  <div class="page-head">
+    <h1>最新文章</h1>
+    <p class="page-head__description">{SITE_TAGLINE}</p>
+  </div>
+
+  {
+    site.posts.length === 0 ? (
+      <EmptyState message="尚无公开文章。" />
+    ) : (
+      <>
+        <IndexList posts={posts} />
+        <Pagination pagination={pagination} label="文章分页" />
+      </>
+    )
+  }
+</div>

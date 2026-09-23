@@ -1,0 +1,30 @@
+{
+  "extends": "astro/tsconfigs/strictest",
+  "compilerOptions": {
+    // Astro's `strictest` preset already enables both of these; they are
+    // repeated here so the project's intent is legible without reading Astro's
+    // preset, and so a future preset change cannot silently relax them.
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "useUnknownInCatchVariables": true,
+    "verbatimModuleSyntax": true,
+    // Library declarations are checked too, so a
+    // dependency whose published types are broken is caught here rather than
+    // hidden until it fails at runtime.
+    "skipLibCheck": false
+  },
+  "include": [
+    ".astro/types.d.ts",
+    "src/**/*",
+    "scripts/**/*",
+    "tests/**/*",
+    "*.ts"
+  ],
+  "exclude": [
+    "dist",
+    "dist-fixtures",
+    "node_modules",
+    ".ani-content",
+    "test-results"
+  ]
+}

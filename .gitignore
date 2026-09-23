@@ -1,0 +1,31 @@
+# Installed dependencies (restored from the lockfile with `pnpm install`)
+node_modules/
+
+# Build output
+dist/
+dist-fixtures/
+
+# Local content runtime, cache and author workspace (never committed)
+.ani-content/
+
+# Test and report output
+test-results/
+playwright-report/
+lighthouse-results/
+coverage/
+
+# Local environment files (secrets never enter the repository)
+.env
+.env.*
+!.env.example
+
+# Local tool state (not part of the project)
+.zcode/
+.mimosa/
+
+# Editor and OS noise
+.DS_Store
+Thumbs.db
+*.log
+.astro/
+.eslintcache

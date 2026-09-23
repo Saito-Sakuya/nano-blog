@@ -1,0 +1,52 @@
+{
+  // Type-checks the TypeScript half of the repository.
+  //
+  // `astro check` reads the root `tsconfig.json`, which pulls in
+  // `.astro/types.d.ts` and every component. This config points the same strict
+  // preset at the files that are not Astro components — the build, content,
+  // media and release scripts, the verification scripts, and the unit,
+  // integration and Playwright suites — so `tsc --noEmit` over them is a real
+  // check rather than a side effect of whichever component imports them.
+  //
+  // Compiler options are inherited rather than repeated: a rule that applied
+  // only here would be a rule that could drift away from the root config.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    // `tsc --noEmit` is the only way this config is used; saying so here keeps
+    // an accidental `tsc -p tsconfig.scripts.json` from emitting JavaScript
+    // beside the sources.
+    "noEmit": true
+  },
+  // `functions/` is the Cloudflare Pages Functions layer. It is checked here
+  // rather than in the root config because its files are not Astro modules and
+  // do not need the framework types; leaving it out altogether would mean the
+  // one part of the repository that runs in production with no build step in
+  // front of it was also the one part no type checker ever read.
+  "include": ["scripts/**/*", "tests/**/*", "functions/**/*", "*.ts"],
+  // `astro.config.ts` and `vitest.config.ts` are excluded with the reason
+  // recorded, not to make the check quieter:
+  //
+  //   - `astro.config.ts` imports `astro/config`, which drags Astro 7.3.2's
+  //     published declarations into the program. Those declarations do not
+  //     compile under TypeScript 6.0.3 with `skipLibCheck: false` (they
+  //     reference `ContextProvider` and `AstroAdapterClientConfig` without
+  //     declaring them), so the failure is in a dependency's types, not in this
+  //     repository's code.
+  //   - `vitest.config.ts` imports `vitest/config`, whose `ResolvedConfig`
+  //     interface is incompatible with the copy of `vite` installed alongside
+  //     it.
+  //
+  // Both files are still type-checked: the root `tsconfig.json` includes them,
+  // so `pnpm check:types` and `astro check` cover them. Everything else here —
+  // including every library `scripts/**` and `tests/**` reach, such as the AWS
+  // SDK — keeps `skipLibCheck: false` from the root config and is checked.
+  "exclude": [
+    "dist",
+    "dist-fixtures",
+    "node_modules",
+    ".ani-content",
+    "test-results",
+    "astro.config.ts",
+    "vitest.config.ts"
+  ]
+}
