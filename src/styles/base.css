@@ -1,0 +1,47 @@
+/* ========================================================================== */
+/* Focus                                                                      */
+/* ========================================================================== */
+
+:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-link);
+  outline-offset: var(--focus-ring-offset);
+  border-radius: var(--radius-2);
+}
+
+/* ========================================================================== */
+/* Typography                                                                 */
+/* ========================================================================== */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 600;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  line-height: 1.08;
+  letter-spacing: -0.015em;
+}
+
+a {
+  color: var(--color-link);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+}
+
+a:hover {
+  text-decoration-thickness: 2px;
+}
+
+hr {
+  border: 0;
+  border-top: var(--border-width) solid var(--color-border);
+  margin-block: var(--space-32);
+}

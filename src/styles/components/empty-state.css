@@ -1,0 +1,32 @@
+/* ========================================================================== */
+/* Empty states                                                               */
+/* ========================================================================== */
+
+.empty-state {
+  padding-block: var(--space-48);
+  color: var(--color-muted);
+  max-width: var(--measure-article);
+}
+
+.empty-state__brand {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.28em;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-block-end: var(--space-16);
+}
+
+.empty-state__brand .brand__mark {
+  inline-size: 0.48em;
+  block-size: 0.48em;
+  background: var(--color-brand);
+}
+
+.empty-state__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-16);
+  margin-block-start: var(--space-16);
+}

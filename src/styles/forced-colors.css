@@ -1,0 +1,34 @@
+/* ========================================================================== */
+/* Forced colours                                                             */
+/* ========================================================================== */
+
+@media (forced-colors: active) {
+  .bookmark[aria-current="page"] {
+    border-block-start-color: Highlight;
+    outline: 1px solid Highlight;
+  }
+
+  .brand__mark,
+  .empty-state__brand .brand__mark {
+    background: Highlight;
+  }
+
+  .callout,
+  .code-block__frame,
+  .sidenote,
+  .comment__avatar,
+  .comment-form input[type="text"],
+  .comment-form input[type="email"],
+  .comment-form textarea,
+  .comment-form__submit {
+    border-color: CanvasText;
+  }
+
+  .comment-form__submit:hover:not(:disabled) {
+    border-color: Highlight;
+  }
+
+  .line--highlighted {
+    outline: 2px solid Highlight;
+  }
+}

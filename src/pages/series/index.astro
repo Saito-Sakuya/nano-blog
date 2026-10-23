@@ -59,48 +59,52 @@ const meta = buildMetadata({
 </BaseLayout>
 
 <style>
-  .series-index {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
+  @import '../../styles/layers.css';
 
-  .series-index__item {
-    padding-block: var(--space-16);
-    border-block-end: var(--border-width) solid var(--color-border);
-  }
+  @layer components {
+    .series-index {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
 
-  .series-index__title {
-    font-size: 1.0625rem;
-    font-weight: 600;
-    line-height: 1.4;
-  }
+    .series-index__item {
+      padding-block: var(--space-16);
+      border-block-end: var(--border-width) solid var(--color-border);
+    }
 
-  .series-index__title a {
-    display: inline-flex;
-    align-items: center;
-    min-height: 44px;
-    color: var(--color-text);
-    text-decoration: none;
-  }
+    .series-index__title {
+      font-size: 1.0625rem;
+      font-weight: 600;
+      line-height: 1.4;
+    }
 
-  .series-index__title a:hover {
-    text-decoration: underline;
-    text-decoration-thickness: 2px;
-  }
+    .series-index__title a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 44px;
+      color: var(--color-text);
+      text-decoration: none;
+    }
 
-  .series-index__meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-4) var(--space-16);
-    margin-block-start: var(--space-4);
-    font-size: var(--font-size-meta-lg);
-    color: var(--color-muted);
-    font-variant-numeric: tabular-nums;
-  }
+    .series-index__title a:hover {
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+    }
 
-  .series-index__id {
-    font-family: var(--font-mono);
-    font-size: var(--font-size-meta);
+    .series-index__meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-4) var(--space-16);
+      margin-block-start: var(--space-4);
+      font-size: var(--font-size-meta-lg);
+      color: var(--color-muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .series-index__id {
+      font-family: var(--font-mono);
+      font-size: var(--font-size-meta);
+    }
   }
 </style>

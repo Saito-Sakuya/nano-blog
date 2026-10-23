@@ -35,13 +35,17 @@ const message =
 }
 
 <style>
-  .source-banner {
-    margin: 0;
-    padding: var(--space-8) var(--gutter-mobile);
-    background: var(--color-warning-soft);
-    color: var(--color-text);
-    border-block-end: var(--border-width) solid var(--color-warning);
-    font-size: var(--font-size-meta-lg);
-    text-align: center;
+  @import '../styles/layers.css';
+
+  @layer components {
+    .source-banner {
+      margin: 0;
+      padding: var(--space-8) var(--gutter-mobile);
+      background: var(--color-warning-soft);
+      color: var(--color-text);
+      border-block-end: var(--border-width) solid var(--color-warning);
+      font-size: var(--font-size-meta-lg);
+      text-align: center;
+    }
   }
 </style>

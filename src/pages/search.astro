@@ -82,111 +82,115 @@ const meta = buildMetadata({
 </script>
 
 <style>
-  .search-form {
-    margin-block: var(--space-24);
-    max-width: var(--measure-article);
-  }
+  @import '../styles/layers.css';
 
-  .search-form__label {
-    display: block;
-    font-size: var(--font-size-meta-lg);
-    font-weight: 600;
-    margin-block-end: var(--space-4);
-  }
+  @layer components {
+    .search-form {
+      margin-block: var(--space-24);
+      max-width: var(--measure-article);
+    }
 
-  .search-form__row {
-    display: flex;
-    gap: var(--space-8);
-  }
+    .search-form__label {
+      display: block;
+      font-size: var(--font-size-meta-lg);
+      font-weight: 600;
+      margin-block-end: var(--space-4);
+    }
 
-  .search-form__input {
-    flex: 1;
-    min-width: 0;
-    min-height: 44px;
-    padding: var(--space-8) var(--space-12);
-    background: var(--color-surface);
-    color: var(--color-text);
-    border: var(--border-width) solid var(--color-border);
-    border-radius: var(--radius-2);
-  }
+    .search-form__row {
+      display: flex;
+      gap: var(--space-8);
+    }
 
-  .search-form__submit {
-    min-height: 44px;
-    padding: var(--space-8) var(--space-16);
-    background: var(--color-surface);
-    color: var(--color-text);
-    border: var(--border-width) solid var(--color-border);
-    border-radius: var(--radius-2);
-    cursor: pointer;
-  }
+    .search-form__input {
+      flex: 1;
+      min-width: 0;
+      min-height: 44px;
+      padding: var(--space-8) var(--space-12);
+      background: var(--color-surface);
+      color: var(--color-text);
+      border: var(--border-width) solid var(--color-border);
+      border-radius: var(--radius-2);
+    }
 
-  .search-form__submit:hover {
-    border-color: var(--color-link);
-    color: var(--color-link);
-  }
+    .search-form__submit {
+      min-height: 44px;
+      padding: var(--space-8) var(--space-16);
+      background: var(--color-surface);
+      color: var(--color-text);
+      border: var(--border-width) solid var(--color-border);
+      border-radius: var(--radius-2);
+      cursor: pointer;
+    }
 
-  .search-status {
-    font-size: var(--font-size-meta-lg);
-    color: var(--color-muted);
-    margin-block-end: var(--space-16);
-  }
+    .search-form__submit:hover {
+      border-color: var(--color-link);
+      color: var(--color-link);
+    }
 
-  .search-results {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    max-width: var(--measure-article);
-  }
+    .search-status {
+      font-size: var(--font-size-meta-lg);
+      color: var(--color-muted);
+      margin-block-end: var(--space-16);
+    }
 
-  .search-results :global(.search-result) {
-    padding-block: var(--space-16);
-    border-block-end: var(--border-width) solid var(--color-border);
-  }
+    .search-results {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      max-width: var(--measure-article);
+    }
 
-  .search-results :global(.search-result__title) {
-    font-size: 1.0625rem;
-    margin: 0;
-  }
+    .search-results :global(.search-result) {
+      padding-block: var(--space-16);
+      border-block-end: var(--border-width) solid var(--color-border);
+    }
 
-  .search-results :global(.search-result__link) {
-    color: var(--color-text);
-    text-decoration: none;
-  }
+    .search-results :global(.search-result__title) {
+      font-size: 1.0625rem;
+      margin: 0;
+    }
 
-  .search-results :global(.search-result__link:hover) {
-    text-decoration: underline;
-    text-decoration-thickness: 2px;
-  }
+    .search-results :global(.search-result__link) {
+      color: var(--color-text);
+      text-decoration: none;
+    }
 
-  .search-results :global(.search-result__excerpt) {
-    margin-block-start: var(--space-4);
-    color: var(--color-muted);
-    font-size: 0.9375rem;
-  }
+    .search-results :global(.search-result__link:hover) {
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+    }
 
-  .search-results :global(.search-result__excerpt mark) {
-    background: var(--color-brand-soft);
-    color: var(--color-text);
-  }
+    .search-results :global(.search-result__excerpt) {
+      margin-block-start: var(--space-4);
+      color: var(--color-muted);
+      font-size: 0.9375rem;
+    }
 
-  .search-results :global(.search-result__meta) {
-    margin-block-start: var(--space-4);
-    font-size: var(--font-size-meta);
-    color: var(--color-muted);
-  }
+    .search-results :global(.search-result__excerpt mark) {
+      background: var(--color-brand-soft);
+      color: var(--color-text);
+    }
 
-  .search-fallback {
-    margin-block-start: var(--space-16);
-    color: var(--color-muted);
-    max-width: var(--measure-article);
-  }
+    .search-results :global(.search-result__meta) {
+      margin-block-start: var(--space-4);
+      font-size: var(--font-size-meta);
+      color: var(--color-muted);
+    }
 
-  /*
-   * The fallback is visible on purpose.
-   *
-   * It carries the no-JavaScript advice — "search needs JavaScript, here is the
-   * article index instead" — so it must be on screen until the script is
-   * running, and the script removes the element outright once it is. Hiding it
-   * from the stylesheet would mean the one reader who needs it never sees it.
-   */
+    .search-fallback {
+      margin-block-start: var(--space-16);
+      color: var(--color-muted);
+      max-width: var(--measure-article);
+    }
+
+    /*
+     * The fallback is visible on purpose.
+     *
+     * It carries the no-JavaScript advice — "search needs JavaScript, here is the
+     * article index instead" — so it must be on screen until the script is
+     * running, and the script removes the element outright once it is. Hiding it
+     * from the stylesheet would mean the one reader who needs it never sees it.
+     */
+  }
 </style>

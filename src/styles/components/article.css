@@ -1,0 +1,238 @@
+/* ========================================================================== */
+/* Article cover                                                              */
+/* ========================================================================== */
+
+/* The article cover keeps its 16:9 box and gains rounded corners. */
+.article-cover [data-media-frame] {
+  border-radius: var(--radius-4);
+  aspect-ratio: 16 / 9;
+  max-inline-size: 900px;
+}
+
+/*
+ * Wide screens: the cover becomes the title's own background.
+ *
+ * The image is lifted out of the flow and masked so it is solid at the right
+ * edge and dissolves to nothing going left. The text column stays in the clear
+ * part of that fade, which is what keeps it legible without painting a scrim
+ * over a photograph — the fade is doing the work, not a decoration on top.
+ *
+ * Both halves of that arrangement are load-bearing, and they have to agree:
+ *
+ * - the text is bounded to `--measure-article`, so a long title wraps instead
+ *   of running out over the opaque part of the image;
+ * - the mask's clear region is at least that wide, expressed in `rem` from the
+ *   left edge rather than as a percentage, so the geometry holds at every width
+ *   above the breakpoint instead of only at the one width it was eyeballed at.
+ *
+ * The two drifted apart once: the text was unbounded while the clear region was
+ * a fixed 36% of the header, so a long title — and the tail of the metadata row
+ * behind it — sat on saturated parts of the cover at 2.8:1 and 1.4:1 contrast.
+ * Neither axe nor Lighthouse can see that failure, because both measure text
+ * against a background colour and a photograph is not one. The pairing is
+ * asserted now, by `tests/e2e/article-cover-contrast.spec.ts`.
+ *
+ * The header is given a minimum height because the layer no longer contributes
+ * to layout: without one the block would collapse to the height of its text and
+ * then jump when the image arrived.
+ *
+ * Below the tablet breakpoint there is no room for text beside an image, so the
+ * cover reverts to an ordinary figure directly under the metadata.
+ */
+@media (min-width: 48rem) {
+  .article-head {
+    position: relative;
+    /* Without isolation a negative-z layer behind this block escapes to the
+       page's own stacking context and paints under the body background. */
+    isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-block-size: 19rem;
+    padding-block: var(--space-48) var(--space-24);
+  }
+
+  /* Everything except the cover sits above the image, and stays inside the
+     column the mask keeps clear. */
+  .article-head > :not(.article-cover) {
+    position: relative;
+    z-index: 1;
+    max-inline-size: var(--measure-article);
+  }
+
+  /* The cover is decoration and is not bounded by the text measure. */
+  .article-head > .article-cover {
+    max-inline-size: none;
+  }
+
+  .article-cover {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    margin: 0;
+    /* The layer is decoration; it must never intercept a click on the title. */
+    pointer-events: none;
+  }
+
+  .article-cover [data-media-frame] {
+    position: absolute;
+    inset: 0;
+    max-inline-size: none;
+    aspect-ratio: auto;
+    border: 0;
+    border-radius: 0;
+    background: none;
+  }
+
+  /* Anchored in rem from the left edge: fully clear across the whole text
+     measure (`--measure-article` is 42rem), then fading up to solid. A
+     percentage here would move the clear region with the viewport and put text
+     back over the image at wider widths. */
+  .article-cover img {
+    object-position: right center;
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      transparent 43rem,
+      rgb(0 0 0 / 0.45) 49rem,
+      #000 57rem
+    );
+    mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      transparent 43rem,
+      rgb(0 0 0 / 0.45) 49rem,
+      #000 57rem
+    );
+  }
+
+  /* The fallback panel exists to stand in for a thumbnail, not to flood a
+     header, so a cover that fails simply leaves the title on plain ground. */
+  .article-cover [data-media-fallback] {
+    display: none;
+  }
+}
+
+/* ========================================================================== */
+/* Article                                                                    */
+/* ========================================================================== */
+
+.article-head {
+  padding-block-end: var(--space-24);
+}
+
+.article-head h1 {
+  font-size: clamp(1.75rem, 3.6vw, 2.5rem);
+  line-height: 1.15;
+}
+
+.article-head__description {
+  margin-block-start: var(--space-16);
+  color: var(--color-muted);
+  font-size: 1.0625rem;
+  max-width: var(--measure-article);
+}
+
+.article-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4) var(--space-12);
+  align-items: center;
+  margin-block-start: var(--space-16);
+  font-size: var(--font-size-meta-lg);
+  color: var(--color-muted);
+}
+
+.article-meta__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/*
+ * Space above and below the cover — below the tablet breakpoint only.
+ *
+ * Above 48rem the cover is lifted out of the flow to sit behind the title
+ * (`margin: 0; inset: 0` in the media block above), and these margins must not
+ * apply there. Until this rule was scoped they did: same specificity, later in
+ * the source, so the wide-screen `margin: 0` was dead code and an absolutely
+ * positioned cover kept a 24px bottom margin it was never meant to have. A
+ * media query is the only thing that settles that — moving the declaration
+ * would just move which one is ignored.
+ *
+ * The bottom margin is gone even at the narrow widths that keep the top one.
+ * The cover is the last child of the header, and the header already ends with
+ * `--space-24` of padding, so keeping both stacked two identical gaps under the
+ * image — the band a reader sees and cannot explain.
+ *
+ * The top margin stays because below 48rem the cover is an ordinary figure in
+ * sequence, where it needs the separation from the metadata above it.
+ */
+@media (max-width: 47.999rem) {
+  .article-cover {
+    margin-block: var(--space-24) 0;
+  }
+}
+
+.article-credit {
+  margin-block-start: var(--space-8);
+  font-size: var(--font-size-meta);
+  color: var(--color-muted);
+  max-width: 900px;
+}
+
+/*
+ * Wide screens use three columns: a metadata rail, the article measure, and a
+ * lane reserved for sidenotes. Below 75rem the rails collapse and sidenotes
+ * become inline disclosures.
+ */
+.article-layout {
+  display: block;
+}
+
+/*
+ * The space between the header block and the body.
+ *
+ * Set here rather than on the prose's first child so that it is one number
+ * regardless of whether the article opens with a heading or a paragraph (the
+ * prose resets that child's own lead-in). At the narrow widths the floating
+ * contents tab overlaps the top of the body, so the reserved space is larger
+ * there — see the `[data-floating-rails]` rule in `floating-rails.css`.
+ */
+.article-body {
+  padding-block-start: var(--space-32);
+}
+
+@media (min-width: 75rem) {
+  .article-layout {
+    display: grid;
+    /* Track 1 is the metadata rail, track 2 the article measure, track 3 the
+       lane sidenotes float into. Track 3 holds no element of its own — the
+       floats are shifted into it with a negative margin, which is what keeps a
+       note level with the paragraph that references it. */
+    grid-template-columns: 190px minmax(0, 42rem) var(--sidenote-width);
+    gap: var(--space-32);
+    align-items: start;
+  }
+
+  .article-rail {
+    grid-column: 1;
+    position: sticky;
+    inset-block-start: calc(var(--header-height) + var(--space-24));
+    font-size: var(--font-size-meta-lg);
+  }
+
+  .article-body {
+    grid-column: 2;
+    min-width: 0;
+  }
+}
+
+@media (min-width: 48rem) and (max-width: 74.999rem) {
+  .article-body {
+    max-width: var(--measure-article);
+  }
+}

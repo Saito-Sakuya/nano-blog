@@ -1,0 +1,29 @@
+/* ========================================================================== */
+/* Heading anchors                                                            */
+/* ========================================================================== */
+
+.heading-anchor {
+  margin-inline-start: 0.4em;
+  color: var(--color-muted);
+  text-decoration: none;
+  opacity: 0;
+  transition: opacity var(--duration-120) var(--ease-standard);
+}
+
+/* The glyph is drawn in CSS so it never becomes part of the heading's text. */
+.heading-anchor::after {
+  content: "#";
+  font-weight: 400;
+}
+
+h2:hover .heading-anchor,
+h3:hover .heading-anchor,
+.heading-anchor:focus-visible {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .heading-anchor {
+    opacity: 0.6;
+  }
+}

@@ -1,0 +1,21 @@
+/* ========================================================================== */
+/* Footer                                                                     */
+/* ========================================================================== */
+
+.site-footer {
+  border-block-start: var(--border-width) solid var(--color-border);
+  padding-block: var(--space-32);
+  font-size: var(--font-size-meta-lg);
+  color: var(--color-muted);
+}
+
+.site-footer__inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8) var(--space-24);
+  align-items: baseline;
+}
+
+.site-footer p {
+  margin: 0;
+}

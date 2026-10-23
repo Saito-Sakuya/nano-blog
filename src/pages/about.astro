@@ -84,16 +84,20 @@ const meta = buildMetadata({
 </BaseLayout>
 
 <style>
-  .identity__brand {
-    display: inline-flex;
-    align-items: baseline;
-    gap: 0.28em;
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--color-text);
-  }
+  @import '../styles/layers.css';
 
-  .identity__body {
-    margin-block-start: var(--space-48);
+  @layer components {
+    .identity__brand {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 0.28em;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--color-text);
+    }
+
+    .identity__body {
+      margin-block-start: var(--space-48);
+    }
   }
 </style>

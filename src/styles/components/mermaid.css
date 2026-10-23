@@ -1,0 +1,42 @@
+/* ========================================================================== */
+/* Mermaid diagrams                                                           */
+/* ========================================================================== */
+
+.mermaid-block {
+  margin-block: var(--space-24);
+  padding: var(--space-16);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-4);
+  background: var(--color-surface);
+}
+
+.mermaid-block__diagram {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.mermaid-block__diagram svg {
+  max-width: 100%;
+  block-size: auto;
+}
+
+/* The source stays visible until a diagram has actually been drawn, so a
+   failure shows the definition rather than an empty frame. */
+.mermaid-block__source {
+  margin: 0;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-meta-lg);
+  color: var(--color-muted);
+  white-space: pre;
+}
+
+.mermaid-block__source[hidden] {
+  display: none;
+}
+
+.mermaid-block__status {
+  margin-block-start: var(--space-8);
+  font-size: var(--font-size-meta-lg);
+  color: var(--color-warning);
+}

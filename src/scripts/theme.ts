@@ -71,7 +71,7 @@ export function initThemeToggle(): void {
   ];
 
   // The control only exists once this script has run. Without JavaScript the
-  // stylesheet's `prefers-color-scheme` rules decide the theme, and a button
+  // stylesheet's `color-scheme: light dark` follows the system, and a button
   // that did nothing would be worse than no button at all.
   container.hidden = false;
 

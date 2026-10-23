@@ -122,8 +122,12 @@ const meta = buildMetadata({
 </BaseLayout>
 
 <style>
-  .index-row__date {
-    font-weight: 600;
-    color: var(--color-text);
+  @import '../../../../styles/layers.css';
+
+  @layer components {
+    .index-row__date {
+      font-weight: 600;
+      color: var(--color-text);
+    }
   }
 </style>

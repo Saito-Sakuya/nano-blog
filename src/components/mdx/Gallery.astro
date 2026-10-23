@@ -26,23 +26,27 @@ const { caption } = Astro.props;
 </figure>
 
 <style>
-  .gallery {
-    margin-block: var(--space-24);
-  }
+  @import '../../styles/layers.css';
 
-  .gallery__grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
-    gap: var(--space-12);
-  }
+  @layer components {
+    .gallery {
+      margin-block: var(--space-24);
+    }
 
-  .gallery__grid :global(.figure) {
-    margin: 0;
-  }
+    .gallery__grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+      gap: var(--space-12);
+    }
 
-  .gallery__caption {
-    margin-block-start: var(--space-8);
-    font-size: var(--font-size-meta-lg);
-    color: var(--color-muted);
+    .gallery__grid :global(.figure) {
+      margin: 0;
+    }
+
+    .gallery__caption {
+      margin-block-start: var(--space-8);
+      font-size: var(--font-size-meta-lg);
+      color: var(--color-muted);
+    }
   }
 </style>

@@ -1,0 +1,46 @@
+/* ========================================================================== */
+/* Callouts                                                                   */
+/* ========================================================================== */
+
+.callout {
+  border-inline-start: 3px solid var(--color-border);
+  border-radius: 0 var(--radius-2) var(--radius-2) 0;
+  padding: var(--space-12) var(--space-16);
+  background: var(--color-surface);
+}
+
+.callout__label {
+  font-weight: 600;
+  font-size: var(--font-size-meta-lg);
+  letter-spacing: 0.06em;
+  margin-block-end: var(--space-4);
+}
+
+.callout > * + * {
+  margin-block-start: var(--space-8);
+}
+
+.callout--note {
+  border-inline-start-color: var(--color-link);
+  background: var(--color-note-soft);
+}
+
+.callout--tip {
+  border-inline-start-color: var(--color-success);
+  background: var(--color-success-soft);
+}
+
+.callout--important {
+  border-inline-start-color: var(--color-brand);
+  background: var(--color-note-soft);
+}
+
+.callout--warning {
+  border-inline-start-color: var(--color-warning);
+  background: var(--color-warning-soft);
+}
+
+.callout--caution {
+  border-inline-start-color: var(--color-danger);
+  background: var(--color-danger-soft);
+}

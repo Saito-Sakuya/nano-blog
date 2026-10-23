@@ -1,0 +1,80 @@
+/* ========================================================================== */
+/* Reset                                                                      */
+/* ========================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  font-size: var(--font-size-root);
+  -webkit-text-size-adjust: 100%;
+  scroll-padding-top: calc(var(--header-height) + var(--space-16));
+  /*
+   * Keep the scrollbar present on every page, not just the long ones.
+   *
+   * A classic scrollbar takes about 15px out of the viewport, so a page tall
+   * enough to scroll is narrower than one that is not. Everything here is
+   * centred with `margin-inline: auto`, so that difference moves the whole
+   * layout sideways — the header navigation included, even though nothing about
+   * the navigation changed. Moving between a short page (`/about/`, `/tags/`,
+   * `/search/`) and a long one (the feed, an article) shifted the nav by nearly
+   * 8px in each direction, which reads as the interface twitching under the
+   * click.
+   *
+   * `scrollbar-gutter: stable` was tried first and does hold the layout still,
+   * but it leaves the reserved strip empty rather than occupied: on a short page
+   * the header's background stops 15px short of the window and a pale seam of
+   * page background shows beside it, which is a different visible defect traded
+   * for the first one. `overflow-y: scroll` gives the same stable width *and*
+   * fills that strip on every page, so the right edge looks the same whether the
+   * page scrolls or not.
+   *
+   * Both fixes are invisible to the automated checks: a headless browser uses
+   * overlay scrollbars, which take no space, so neither the shift nor the seam
+   * can be measured there. `scrollbar-gutter: stable` also cannot be reproduced
+   * by forcing `overflow-y: scroll` in headless — that costs no width either.
+   * The condition only exists in a browser with classic scrollbars, which is why
+   * `scripts/verify/nav-stability.ts` runs headed and exits 2 when it cannot.
+   */
+  overflow-y: scroll;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  line-height: var(--line-height-body);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+}
+
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+::selection {
+  background: var(--color-brand-soft);
+  color: var(--color-text);
+}

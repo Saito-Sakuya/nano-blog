@@ -1,0 +1,274 @@
+/* ========================================================================== */
+/* Index rows — the compact tabular list used everywhere content is listed     */
+/* ========================================================================== */
+
+.index-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/*
+ * A list row, with its cover as a gradient band.
+ *
+ * The cover is not a small inline thumbnail here: it is lifted out of the flow,
+ * pinned to the row's trailing edge, and masked so it dissolves into the row as
+ * the article page's cover dissolves into its header. The row reserves the space
+ * with `padding-inline-end` and the band sizes itself from the *same* custom
+ * property, so the two can never disagree about where the text has to stop.
+ *
+ * That shared value is the whole point. On the article page the text column and
+ * the mask's clear region were once written as two independent numbers, they
+ * drifted apart, and text ended up on the image at 1.4:1 contrast. Here there is
+ * one number, read twice, and a test asserts the text stays inside it.
+ */
+/*
+ * Two rows below the tablet breakpoint: the title, then the date and metadata
+ * together on one line.
+ *
+ * The date used to have a line of its own above the title. That cost about 25px
+ * on every row, which mattered because the cover is a fixed size: the taller the
+ * row, the less of it the cover fills. With the date on its own line a one-line
+ * entry came out 118px tall and the cover filled 82% of it, while the same entry
+ * on a desktop is 109px and fills 88% — the date line was the whole difference.
+ * Sharing the metadata line brings a phone row to 109px too, and the cover fills
+ * the same 88% at both sizes.
+ *
+ * The date still reads first in the line, so its place in the reading order is
+ * unchanged; it is simply beside the tags rather than above the title.
+ */
+.index-row {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  /*
+   * The date column is `fit-content` rather than `auto`, and the metadata column
+   * is `1fr`: `auto` lets a long date push the metadata into a column too narrow
+   * to hold it, which made the metadata wrap and the row grow by a whole line.
+   * Giving the metadata everything left over, and only the date its own width,
+   * keeps a row to the two lines it is meant to have.
+   */
+  grid-template-columns: fit-content(40%) minmax(0, 1fr);
+  grid-template-areas:
+    "title title"
+    "date meta";
+  gap: var(--space-4) var(--space-12);
+  padding-block: 18px;
+  border-block-end: var(--border-width) solid var(--color-border);
+  align-items: start;
+  /*
+   * Deliberately NOT `overflow: hidden`. The band clips itself (the media frame
+   * already does), and clipping here would cut off the focus ring of every link
+   * in the row — an outline is painted outside the element's box and an
+   * ancestor's overflow removes it.
+   */
+}
+
+.index-row__date {
+  grid-area: date;
+  font-size: var(--font-size-meta);
+  color: var(--color-muted);
+  font-variant-numeric: tabular-nums;
+  /* Shares a line with the metadata below the tablet breakpoint, so it is
+     aligned to it rather than sitting on its own baseline. */
+  align-self: center;
+}
+
+.index-row__title {
+  grid-area: title;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  line-height: 1.4;
+  min-width: 0;
+}
+
+.index-row__title a {
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.index-row__title a:hover {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+}
+
+.index-row__meta {
+  grid-area: meta;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+  align-items: center;
+  font-size: var(--font-size-meta);
+  color: var(--color-muted);
+  min-inline-size: 0;
+}
+
+/*
+ * The row reserves the band's width and enough height to hold it, and only when
+ * it has a band.
+ *
+ * `:has()` rather than a modifier class because the band's presence is already
+ * expressed by the markup, and the archive variant simply has none: reserving
+ * space for a cover that is not there left a 256px hole at the end of every
+ * archive row.
+ *
+ * The reserved height is what makes every cover the same size. Row height
+ * otherwise follows the title — a one-line row is about 62px, a two-line one
+ * about 85px, and a row whose tags wrap about 94px — so before this the bands
+ * came out 50px, 73px and 82px tall and the right-hand edge of the list was a
+ * ragged column. Reserving the band's own height plus its inset on both sides
+ * means the band reaches its full height on every row, while rows with long
+ * titles still grow past the minimum as they need to (the band does not, because
+ * it is capped by its token).
+ *
+ * The `+ var(--border-width)` is not decoration: the band's `100%` resolves
+ * against this row's *padding box*, which is one border narrower than the box
+ * `min-block-size` constrains. Leaving it out made short rows resolve to 95px
+ * while tall rows resolved to 96px — a 1px difference, but exactly the kind of
+ * subtle inconsistency this rule exists to remove.
+ */
+.index-row:has(.index-row__thumb) {
+  padding-inline-end: calc(var(--index-cover-width) + var(--space-16));
+  min-block-size: calc(
+    var(--index-cover-height) + var(--index-cover-inset) * 2 +
+      var(--border-width)
+  );
+}
+
+/*
+ * The cover band.
+ *
+ * Positioned against the row rather than laid out inside it, so the text is not
+ * competing with it for columns: the row reserves the space, this occupies it.
+ * Both read `--index-cover-width`, which is why they cannot drift.
+ */
+.index-row__thumb {
+  position: absolute;
+  /*
+   * Centred with an inset above and below, and capped twice over:
+   *
+   * - by its own token, so every band is the same height;
+   * - by the row it sits in, so it can never spill past the edge and overlap a
+   *   neighbour. That was a real defect: a 96px band in a 62px row overflowed
+   *   17px past each edge and the covers overlapped by 34px.
+   *
+   * The second cap is now satisfied by the row's `min-block-size` above rather
+   * than by shrinking, so it no longer produces ragged heights — but it stays,
+   * because it is the property that makes overflow structurally impossible.
+   * Verified against the rendered boxes by `tests/e2e/index-cover-band.spec.ts`,
+   * which asserts both that bands are equal and that none escapes its row.
+   */
+  inset-block-start: 50%;
+  transform: translateY(-50%);
+  block-size: min(
+    var(--index-cover-height),
+    calc(100% - var(--index-cover-inset) * 2)
+  );
+  inset-inline-end: 0;
+  inline-size: var(--index-cover-width);
+  z-index: 0;
+  /* Decoration: it must never swallow a click meant for the row's links. */
+  pointer-events: none;
+}
+
+/* Everything the reader interacts with paints above the band. */
+.index-row > :not(.index-row__thumb) {
+  position: relative;
+  z-index: 1;
+  min-inline-size: 0;
+}
+
+/*
+ * The band is an image bleeding into the row, not a framed thumbnail: no
+ * border, no radius, and the fade masked on the frame so the fallback panel
+ * dissolves with the image rather than appearing as a hard-edged block.
+ *
+ * Transparent at the leading edge, solid before the trailing edge. The text
+ * sits outside the band entirely, so this is decoration rather than the thing
+ * making the text readable — but it is drawn from the same direction as the
+ * article cover's mask, so the two read as one treatment.
+ */
+.index-row__thumb [data-media-frame] {
+  inline-size: 100%;
+  block-size: 100%;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  /*
+   * More stops than a two-point ramp, because the band is small: on a 208px
+   * element a coarse gradient shows its own corners as visible steps, and the
+   * result reads as a cropped rectangle rather than a wash. The curve is
+   * shallower at the leading edge so the image is present across most of the
+   * band and only dissolves where it meets the text.
+   */
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    rgb(0 0 0 / 0.12) 16%,
+    rgb(0 0 0 / 0.38) 34%,
+    rgb(0 0 0 / 0.68) 54%,
+    rgb(0 0 0 / 0.9) 74%,
+    #000 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    rgb(0 0 0 / 0.12) 16%,
+    rgb(0 0 0 / 0.38) 34%,
+    rgb(0 0 0 / 0.68) 54%,
+    rgb(0 0 0 / 0.9) 74%,
+    #000 100%
+  );
+}
+
+.index-row__thumb img {
+  object-position: right center;
+}
+
+/*
+ * From the tablet breakpoint the row becomes a single line: date, title, meta
+ * side by side, with the cover band still occupying the reserved trailing space.
+ *
+ * There is no `__description` rule here any more because there is no description
+ * element at any width — see the note in `IndexList.astro`. The row's content is
+ * the same on a phone as on a desktop; only its arrangement changes.
+ */
+@media (min-width: 48rem) {
+  .index-row {
+    grid-template-columns: 96px minmax(0, 1fr) 150px;
+    grid-template-areas: "date title meta";
+    align-items: baseline;
+    gap: var(--space-16);
+  }
+
+  .index-row__date {
+    grid-area: date;
+    align-self: baseline;
+  }
+
+  .index-row__title {
+    grid-area: title;
+  }
+
+  .index-row__meta {
+    grid-area: meta;
+  }
+}
+
+/* Tag chips are plain text links with a hairline, never pill buttons. */
+.tag-chip {
+  display: inline-block;
+  font-size: var(--font-size-meta);
+  color: var(--color-muted);
+  text-decoration: none;
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-2);
+  padding: 1px var(--space-4);
+  min-height: 20px;
+}
+
+.tag-chip:hover {
+  color: var(--color-link);
+  border-color: var(--color-link);
+  text-decoration: none;
+}

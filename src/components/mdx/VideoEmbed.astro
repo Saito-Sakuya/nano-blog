@@ -124,95 +124,99 @@ const externalHref =
 </figure>
 
 <style>
-  .embed {
-    margin-block: var(--space-24);
-  }
+  @import '../../styles/layers.css';
 
-  .embed__frame {
-    position: relative;
-    aspect-ratio: 16 / 9;
-    background: var(--color-code-bg);
-    border: var(--border-width) solid var(--color-border);
-    border-radius: var(--radius-4);
-    overflow: hidden;
-  }
+  @layer components {
+    .embed {
+      margin-block: var(--space-24);
+    }
 
-  /* The poster is decorative here — the title is right beside it — so its
-     fallback panel states the video's title in plain text instead. */
-  .embed__frame [data-media-fallback] {
-    padding: var(--space-16);
-    font-weight: 600;
-  }
+    .embed__frame {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      background: var(--color-code-bg);
+      border: var(--border-width) solid var(--color-border);
+      border-radius: var(--radius-4);
+      overflow: hidden;
+    }
 
-  .embed__frame img {
-    inline-size: 100%;
-    block-size: 100%;
-    object-fit: cover;
-  }
+    /* The poster is decorative here — the title is right beside it — so its
+       fallback panel states the video's title in plain text instead. */
+    .embed__frame [data-media-fallback] {
+      padding: var(--space-16);
+      font-weight: 600;
+    }
 
-  /*
-   * `:global(iframe)` is required here, not stylistic.
-   *
-   * Astro appends its scope attribute to the LAST compound selector of a scoped
-   * rule, so a plain `.embed__frame iframe` compiles to
-   * `.embed__frame[data-astro-cid-x] iframe[data-astro-cid-x]`. The iframe is
-   * built with `document.createElement` in the embed script, so it never
-   * carries that attribute and the rule never matched — the player fell back to
-   * the user agent's 300x150 default inside a 610x343 frame, occupying about a
-   * fifth of the box. Hoisting the scope onto the real ancestor is what makes
-   * the sizing apply.
-   */
-  .embed__frame :global(iframe) {
-    inline-size: 100%;
-    block-size: 100%;
-    border: 0;
-  }
+    .embed__frame img {
+      inline-size: 100%;
+      block-size: 100%;
+      object-fit: cover;
+    }
 
-  .embed__overlay {
-    position: absolute;
-    inset: auto 0 0 0;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--space-8);
-    padding: var(--space-12);
-    background: color-mix(in srgb, var(--color-code-bg) 88%, transparent);
-    color: var(--color-code-text);
-  }
+    /*
+     * `:global(iframe)` is required here, not stylistic.
+     *
+     * Astro appends its scope attribute to the LAST compound selector of a scoped
+     * rule, so a plain `.embed__frame iframe` compiles to
+     * `.embed__frame[data-astro-cid-x] iframe[data-astro-cid-x]`. The iframe is
+     * built with `document.createElement` in the embed script, so it never
+     * carries that attribute and the rule never matched — the player fell back to
+     * the user agent's 300x150 default inside a 610x343 frame, occupying about a
+     * fifth of the box. Hoisting the scope onto the real ancestor is what makes
+     * the sizing apply.
+     */
+    .embed__frame :global(iframe) {
+      inline-size: 100%;
+      block-size: 100%;
+      border: 0;
+    }
 
-  .embed__title {
-    margin: 0;
-    font-size: var(--font-size-meta-lg);
-    font-weight: 600;
-    flex: 1 1 12rem;
-    min-inline-size: 0;
-  }
+    .embed__overlay {
+      position: absolute;
+      inset: auto 0 0 0;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-8);
+      padding: var(--space-12);
+      background: color-mix(in srgb, var(--color-code-bg) 88%, transparent);
+      color: var(--color-code-text);
+    }
 
-  .embed__button {
-    min-height: 44px;
-    padding: var(--space-8) var(--space-16);
-    background: var(--color-surface);
-    color: var(--color-text);
-    border: 0;
-    border-radius: var(--radius-2);
-    cursor: pointer;
-  }
+    .embed__title {
+      margin: 0;
+      font-size: var(--font-size-meta-lg);
+      font-weight: 600;
+      flex: 1 1 12rem;
+      min-inline-size: 0;
+    }
 
-  .embed__notice {
-    flex: 1 1 100%;
-    margin: 0;
-    font-size: var(--font-size-meta);
-    color: var(--color-code-text);
-  }
+    .embed__button {
+      min-height: 44px;
+      padding: var(--space-8) var(--space-16);
+      background: var(--color-surface);
+      color: var(--color-text);
+      border: 0;
+      border-radius: var(--radius-2);
+      cursor: pointer;
+    }
 
-  .embed__caption {
-    margin-block-start: var(--space-8);
-    font-size: var(--font-size-meta-lg);
-    color: var(--color-muted);
-  }
+    .embed__notice {
+      flex: 1 1 100%;
+      margin: 0;
+      font-size: var(--font-size-meta);
+      color: var(--color-code-text);
+    }
 
-  .embed__external {
-    display: inline-block;
-    margin-inline-start: var(--space-8);
+    .embed__caption {
+      margin-block-start: var(--space-8);
+      font-size: var(--font-size-meta-lg);
+      color: var(--color-muted);
+    }
+
+    .embed__external {
+      display: inline-block;
+      margin-inline-start: var(--space-8);
+    }
   }
 </style>
