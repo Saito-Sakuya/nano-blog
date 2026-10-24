@@ -36,25 +36,29 @@ const last = items.length - 1;
 }
 
 <style>
-  .breadcrumb__item {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-8);
-  }
+  @import '../styles/layers.css';
 
-  .breadcrumb__item a {
-    color: var(--color-muted);
-    text-decoration: none;
-  }
+  @layer components {
+    .breadcrumb__item {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-8);
+    }
 
-  .breadcrumb__item a:hover {
-    color: var(--color-link);
-    text-decoration: underline;
-  }
+    .breadcrumb__item a {
+      color: var(--color-muted);
+      text-decoration: none;
+    }
 
-  /* The current page is text, not a link, and is not colour-coded alone. */
-  .breadcrumb__item [aria-current='page'] {
-    color: var(--color-text);
-    font-weight: 600;
+    .breadcrumb__item a:hover {
+      color: var(--color-link);
+      text-decoration: underline;
+    }
+
+    /* The current page is text, not a link, and is not colour-coded alone. */
+    .breadcrumb__item [aria-current='page'] {
+      color: var(--color-text);
+      font-weight: 600;
+    }
   }
 </style>

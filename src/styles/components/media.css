@@ -1,0 +1,70 @@
+/* ========================================================================== */
+/* Media frames and failure                                                   */
+/* ========================================================================== */
+
+/*
+ * Every content image sits in a frame that carries its own fallback.
+ *
+ * When an image cannot load, the browser's broken-image glyph reads as a broken
+ * page, so the frame is marked and the image hidden: the fallback panel shows
+ * through at exactly the size the image would have occupied, and it inherits
+ * the image's description so nothing is lost to assistive technology. The
+ * layout never moves, because the frame's size never depended on the bytes.
+ */
+[data-media-frame] {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-2);
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+}
+
+[data-media-frame] img {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+
+/*
+ * Images fade in.
+ *
+ * The alternative is a hard pop the moment the bytes arrive, which reads as a
+ * jolt on a page of text. The fade is short enough to feel like the image
+ * settling rather than an animation, and only images the script has confirmed
+ * are still loading are ever hidden — an image already in the cache, or any
+ * image at all when the script has not run, paints immediately. Nothing can be
+ * left invisible by a load event that never fires.
+ *
+ * `prefers-reduced-motion` is honoured globally, so the transition collapses to
+ * nothing for a reader who has asked for that.
+ */
+[data-media-frame] img[data-media-loading] {
+  opacity: 0;
+}
+
+[data-media-frame] img[data-media-loaded] {
+  opacity: 1;
+  transition: opacity var(--duration-180) var(--ease-standard);
+}
+
+[data-media-fallback] {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: var(--color-brand-soft);
+  color: var(--color-text);
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-align: center;
+  padding: var(--space-8);
+}
+
+/* Until an image has failed, its fallback stays out of the way. */
+[data-media-frame]:not([data-state="failed"]) > [data-media-fallback] {
+  display: none;
+}
+
+[data-media-frame][data-state="failed"] img {
+  visibility: hidden;
+}

@@ -1,0 +1,118 @@
+/* ========================================================================== */
+/* Code blocks                                                                */
+/* ========================================================================== */
+
+.code-block {
+  position: relative;
+  margin-block: var(--space-24);
+}
+
+.code-block__frame {
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-4);
+  overflow: hidden;
+  background: var(--color-code-bg);
+}
+
+.code-block__bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  padding: var(--space-4) var(--space-8) var(--space-4) var(--space-12);
+  border-block-end: var(--border-width) solid var(--color-border);
+  background: var(--color-surface);
+  font-size: var(--font-size-meta);
+  font-family: var(--font-mono);
+  color: var(--color-muted);
+  min-height: 36px;
+}
+
+.code-block__title {
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.code-block__lang {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.code-block__copy {
+  margin-inline-start: auto;
+  min-height: 28px;
+  padding: var(--space-4) var(--space-8);
+  font-size: var(--font-size-meta);
+  background: transparent;
+  color: var(--color-text);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-2);
+  cursor: pointer;
+}
+
+.code-block__copy:hover {
+  border-color: var(--color-link);
+  color: var(--color-link);
+}
+
+.code-block__status {
+  font-size: var(--font-size-meta);
+  color: var(--color-muted);
+}
+
+/* Line numbers come from a CSS counter that must reset once per block. Shiki
+   emits the lines as `pre > code > span.line`, so the counter lives on the
+   `<code>` element. */
+.code-block[data-line-numbers="true"] .code-block__frame pre code {
+  counter-reset: line;
+}
+
+.code-block__frame pre {
+  margin: 0;
+  padding: var(--space-16);
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  line-height: 1.65;
+  color: var(--color-code-text);
+  background: var(--color-code-bg);
+}
+
+.code-block__frame pre code {
+  display: block;
+  min-width: max-content;
+  background: none;
+  padding: 0;
+}
+
+.code-block .line {
+  display: inline-block;
+  inline-size: 100%;
+}
+
+.code-block[data-line-numbers="true"] .line::before {
+  counter-increment: line;
+  content: counter(line);
+  display: inline-block;
+  inline-size: 2.5em;
+  margin-inline-end: var(--space-12);
+  text-align: end;
+  color: var(--color-muted);
+  user-select: none;
+}
+
+/*
+ * A highlighted line is marked by darkening the code surface and adding the
+ * brand rule at its start.
+ *
+ * A light wash — the obvious choice — lowers the contrast of every token on
+ * the line, and Lighthouse caught two github-dark colours falling to 4.45 and
+ * 4.24 against a tinted background. Darkening raises contrast instead, so the
+ * emphasis costs no legibility. The alpha is an overlay on Shiki's own
+ * background, not a surface colour, which is why it is not a token.
+ */
+.code-block .line--highlighted {
+  background: rgb(0 0 0 / 0.3);
+  box-shadow: inset 2px 0 0 var(--color-brand);
+}

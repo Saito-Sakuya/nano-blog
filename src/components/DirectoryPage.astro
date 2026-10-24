@@ -108,41 +108,45 @@ if (directory.indexEntryId !== null) {
 </div>
 
 <style>
-  .directory-counts {
-    font-size: var(--font-size-meta-lg);
-    color: var(--color-muted);
-    margin-block-start: var(--space-8);
-  }
+  @import '../styles/layers.css';
 
-  .subdirectories {
-    margin-block-end: var(--space-24);
-  }
+  @layer components {
+    .directory-counts {
+      font-size: var(--font-size-meta-lg);
+      color: var(--color-muted);
+      margin-block-start: var(--space-8);
+    }
 
-  .subdirectories__list {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
-    gap: var(--space-8);
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
+    .subdirectories {
+      margin-block-end: var(--space-24);
+    }
 
-  .subdirectories__list li {
-    display: flex;
-    align-items: baseline;
-    gap: var(--space-8);
-    padding: var(--space-8) var(--space-12);
-    border: var(--border-width) solid var(--color-border);
-    border-radius: var(--radius-2);
-  }
+    .subdirectories__list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+      gap: var(--space-8);
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
 
-  .subdirectories__list span {
-    margin-inline-start: auto;
-    font-size: var(--font-size-meta);
-    color: var(--color-muted);
-  }
+    .subdirectories__list li {
+      display: flex;
+      align-items: baseline;
+      gap: var(--space-8);
+      padding: var(--space-8) var(--space-12);
+      border: var(--border-width) solid var(--color-border);
+      border-radius: var(--radius-2);
+    }
 
-  .directory-intro {
-    margin-block-end: var(--space-24);
+    .subdirectories__list span {
+      margin-inline-start: auto;
+      font-size: var(--font-size-meta);
+      color: var(--color-muted);
+    }
+
+    .directory-intro {
+      margin-block-end: var(--space-24);
+    }
   }
 </style>

@@ -49,37 +49,41 @@ const url = mediaUrl(src);
 </figure>
 
 <style>
-  .audio {
-    margin-block: var(--space-24);
-    padding: var(--space-16);
-    border: var(--border-width) solid var(--color-border);
-    border-radius: var(--radius-4);
-    background: var(--color-surface);
-  }
+  @import '../../styles/layers.css';
 
-  .audio__title {
-    font-weight: 600;
-    margin-block-end: var(--space-8);
-  }
+  @layer components {
+    .audio {
+      margin-block: var(--space-24);
+      padding: var(--space-16);
+      border: var(--border-width) solid var(--color-border);
+      border-radius: var(--radius-4);
+      background: var(--color-surface);
+    }
 
-  .audio__element {
-    inline-size: 100%;
-  }
+    .audio__title {
+      font-weight: 600;
+      margin-block-end: var(--space-8);
+    }
 
-  .audio__download {
-    margin-block-start: var(--space-8);
-    font-size: var(--font-size-meta-lg);
-  }
+    .audio__element {
+      inline-size: 100%;
+    }
 
-  .audio__transcript {
-    margin-block-start: var(--space-12);
-    font-size: var(--font-size-meta-lg);
-  }
+    .audio__download {
+      margin-block-start: var(--space-8);
+      font-size: var(--font-size-meta-lg);
+    }
 
-  .audio__transcript summary {
-    cursor: pointer;
-    min-height: 44px;
-    display: flex;
-    align-items: center;
+    .audio__transcript {
+      margin-block-start: var(--space-12);
+      font-size: var(--font-size-meta-lg);
+    }
+
+    .audio__transcript summary {
+      cursor: pointer;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+    }
   }
 </style>

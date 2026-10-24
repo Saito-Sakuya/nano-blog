@@ -66,14 +66,18 @@ const picture = buildPicture(loadMediaIndex(), src, {
 </div>
 
 <style>
-  .thumb {
-    inline-size: 100%;
-    block-size: 100%;
-  }
+  @import '../styles/layers.css';
 
-  .thumb picture {
-    display: block;
-    inline-size: 100%;
-    block-size: 100%;
+  @layer components {
+    .thumb {
+      inline-size: 100%;
+      block-size: 100%;
+    }
+
+    .thumb picture {
+      display: block;
+      inline-size: 100%;
+      block-size: 100%;
+    }
   }
 </style>

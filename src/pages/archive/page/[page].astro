@@ -125,31 +125,35 @@ const meta = buildMetadata({
 </BaseLayout>
 
 <style>
-  .archive-year + .archive-year {
-    margin-block-start: var(--space-48);
-  }
+  @import '../../../styles/layers.css';
 
-  .archive-year__title {
-    display: flex;
-    align-items: baseline;
-    gap: var(--space-8);
-    font-size: 1.25rem;
-    padding-block-end: var(--space-8);
-    border-block-end: var(--border-width-strong) solid var(--color-brand);
-  }
+  @layer components {
+    .archive-year + .archive-year {
+      margin-block-start: var(--space-48);
+    }
 
-  .archive-year__count {
-    font-size: var(--font-size-meta);
-    font-weight: 400;
-    color: var(--color-muted);
-  }
+    .archive-year__title {
+      display: flex;
+      align-items: baseline;
+      gap: var(--space-8);
+      font-size: 1.25rem;
+      padding-block-end: var(--space-8);
+      border-block-end: var(--border-width-strong) solid var(--color-brand);
+    }
 
-  .archive-month__title {
-    margin-block: var(--space-24) var(--space-4);
-    font-size: var(--font-size-meta-lg);
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    color: var(--color-muted);
-    font-variant-numeric: tabular-nums;
+    .archive-year__count {
+      font-size: var(--font-size-meta);
+      font-weight: 400;
+      color: var(--color-muted);
+    }
+
+    .archive-month__title {
+      margin-block: var(--space-24) var(--space-4);
+      font-size: var(--font-size-meta-lg);
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      color: var(--color-muted);
+      font-variant-numeric: tabular-nums;
+    }
   }
 </style>

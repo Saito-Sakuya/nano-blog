@@ -1,0 +1,28 @@
+/* ========================================================================== */
+/* Breadcrumbs                                                                */
+/* ========================================================================== */
+
+.breadcrumb {
+  font-size: var(--font-size-meta-lg);
+  margin-block-end: var(--space-16);
+}
+
+.breadcrumb__list {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: none;
+}
+
+.breadcrumb__list::-webkit-scrollbar {
+  display: none;
+}
+
+.breadcrumb__separator {
+  color: var(--color-muted);
+}

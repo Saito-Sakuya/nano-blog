@@ -1,0 +1,414 @@
+/* ========================================================================== */
+/* Floating rails (below the three-column layout)                              */
+/* ========================================================================== */
+
+/*
+ * Below the wide breakpoint the contents and the sidenotes stop occupying the
+ * column and become two drawers at the screen edges instead: contents on the
+ * left, notes on the right — the same sides they occupy in the wide layout, so
+ * the page does not rearrange itself as it narrows.
+ *
+ * They are not the same kind of object, though, and this is the section where
+ * that shows. The contents list is a reference the reader keeps coming back to,
+ * so it is a tab in the corner that stays there and sticks to the viewport. A
+ * note is a remark about one paragraph: it is opened from its own reference in
+ * the text, it is anchored beside that reference, and it scrolls away with it.
+ * There is no corner tab for the notes at all — with one, the drawer appeared at
+ * the top of the article for a note that might be two thousand pixels below,
+ * which is exactly the bug the maintainer reported.
+ *
+ * Both are `<details>`, and open state is deliberately script-managed: a
+ * `<details>` is opened and closed by the browser, and CSS cannot force one open
+ * reliably across engines. Every rule here is therefore scoped to
+ * `[data-floating-rails]`, which the article script sets only while it is
+ * running and only when the viewport is narrow. Without script the rails stay in
+ * the flow and are always visible, which is the no-JavaScript reading
+ * experience, unchanged from before this existed.
+ *
+ * `z-index: 15` puts both under the sticky header (20): they sit below it on
+ * screen by construction, and the header has to stay on top when they pass it.
+ */
+
+/*
+ * Sticky on the left, absolute on the right.
+ *
+ * The contents tab is a tool: it belongs wherever the reader is, so it is sticky
+ * and rides down the viewport. A sticky rail needs no measured offset — it
+ * starts where the flow puts it and sticks once the sticky chrome would cover
+ * it, whatever that chrome happens to be. A fixed one does: the chrome is the
+ * header *plus* the source banner when one is showing, and a rail placed at the
+ * header's own height landed underneath the header, which, being later in the
+ * paint order, swallowed the click. That was measured, not predicted.
+ *
+ * A note is not a tool. It is a remark about one paragraph, so its drawer is
+ * *absolute*: anchored to the reference that opened it and scrolling with the
+ * article. Scroll on and it leaves with the paragraph it belongs to — which is
+ * what keeps a page with many notes from stacking boxes down the right-hand
+ * side, and it is also why nothing has to dismiss it. Scroll back and it is
+ * exactly where it was left, which is the whole point of anchoring it to the
+ * text rather than to the screen.
+ *
+ * The horizontal side is pulled out to the page's margin, so a rail hangs from
+ * the screen edge at exactly the gutter the rest of the page uses — both read
+ * `--gutter`, so they cannot drift.
+ */
+.article-layout[data-floating-rails] .article-rail {
+  position: sticky;
+  inset-block-start: calc(var(--header-height) + var(--space-8));
+  z-index: 15;
+  /*
+   * Zero height, with the panel overflowing.
+   *
+   * A sticky element sticks from where the flow puts it, so a rail has to sit
+   * near the top of the article to be reachable — but a rail that takes up room
+   * there would push the prose down, and opening one would shift the article
+   * under the reader's eyes. Measuring out of the flow keeps the sticky anchor
+   * at the top while the panel draws over the content, which is what a drawer
+   * does.
+   *
+   * Everything that gives the panel its size therefore lives on the panel or the
+   * list inside it, never here.
+   */
+  block-size: 0;
+  /* Hugs its content: without this the rail would take the article's measure
+     and the zero-height box would span the page. */
+  inline-size: fit-content;
+  max-inline-size: min(84vw, 20rem);
+  font-size: var(--font-size-meta-lg);
+  margin-inline: calc(-1 * var(--gutter)) auto;
+}
+
+/*
+ * The note drawer is placed against the article, not against the screen.
+ *
+ * `position: relative` is what makes the offset below article-relative, so the
+ * drawer keeps its place when the prose around it moves — a diagram that renders
+ * late grows the text above the note. Measured on the fixture article, that
+ * diagram goes from 134 to 379px tall and moves the note 245px down the
+ * document; a drawer positioned against the viewport stayed put and ended up
+ * pointing at nothing.
+ */
+.article-layout[data-floating-rails] {
+  position: relative;
+}
+
+/*
+ * The drawer has no position of its own until a note is opened.
+ *
+ * It is `hidden` in the markup, and that is its only state while closed: there
+ * is no tab in the corner any more, because a note is opened from its own
+ * reference in the text. `--sidenote-rail-top` is the distance from the top of
+ * the article down to the reference; the script writes it, and the fallback of
+ * zero is the top of the article for the instant before that runs.
+ *
+ * Nothing here sets `display`, deliberately. `hidden` is the user agent's
+ * `display: none`, and any `display` in this rule would override it and leave
+ * the drawer on screen for every reader who never opens a note.
+ */
+.article-layout[data-floating-rails] .sidenote-rail {
+  position: absolute;
+  inset-block-start: var(--sidenote-rail-top, 0);
+  inset-inline: auto calc(-1 * var(--gutter));
+  z-index: 15;
+  inline-size: fit-content;
+  max-inline-size: min(84vw, 20rem);
+  font-size: var(--font-size-meta-lg);
+  margin: 0;
+}
+
+/*
+ * The visible way into a note: a small marker in the right margin, level with
+ * the note's reference in the text.
+ *
+ * The reference in the prose is a real link and always was, but a `[1]` inside a
+ * sentence does not read as "there is something over here" — the maintainer
+ * reported the note as invisible while the reference worked. So each note also
+ * gets this chip on the right, where the note itself would be on a wide screen.
+ *
+ * It is placed by the same article-relative offset as the drawer
+ * (`--sidenote-chip-top`), which is why it tracks the reference when the page
+ * scrolls without a scroll listener of its own: both are measured from the
+ * article, not from the viewport.
+ *
+ * It is a `<button>` because it opens something; the `<a>` in the prose already
+ * carries the navigable link for readers who want one.
+ */
+.article-layout[data-floating-rails] .sidenote-chip {
+  position: absolute;
+  inset-block-start: var(--sidenote-chip-top, 0);
+  /* Sits against the same screen edge the drawer uses. */
+  inset-inline: auto calc(-1 * var(--gutter));
+  z-index: 14;
+  /*
+   * No margin, and this is not tidiness. The chip is deliberately a sibling of
+   * the reference it belongs to — that is what makes it reachable in tab order —
+   * which places it inside `.prose`, where `.prose > * + * { margin-block-start:
+   * 1.15em }` applies to it. On an absolutely positioned box a margin offsets the
+   * resolved position, so the chip rendered 16.1px (1.15 x its own 14px) below
+   * the offset it was given, and its centre missed the reference's centre by
+   * exactly that. Measured, not predicted.
+   */
+  margin: 0;
+  /*
+   * Full touch target height, and centred on the reference rather than sitting
+   * below it: the script offsets by half the chip's own height. A chip level
+   * with the line it annotates reads as belonging to it.
+   */
+  display: flex;
+  align-items: center;
+  min-block-size: 44px;
+  padding-inline: var(--space-12);
+  border: var(--border-width) solid var(--color-border);
+  border-inline-end: 0;
+  border-start-start-radius: var(--radius-max);
+  border-end-start-radius: var(--radius-max);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-overlay);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--font-size-meta-lg);
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.article-layout[data-floating-rails] .sidenote-chip:hover,
+.article-layout[data-floating-rails] .sidenote-chip:focus-visible {
+  background: var(--color-brand-soft);
+}
+
+/* A chip takes the drawer's place while the drawer is open, so both are never
+   competing for the same corner of the screen. */
+.article-layout[data-floating-rails] .sidenote-chip[hidden] {
+  display: none;
+}
+
+/*
+ * Room for the contents tab, which sits over the top of the article rather than
+ * pushing it down. Only the tab's own height is reserved: an open panel is a
+ * drawer and is meant to cover what is behind it.
+ *
+ * This is the body's base top spacing raised to clear the tab, not a second gap
+ * added to it. `--space-64` clears the tab's 46px with room to breathe; the
+ * base is `--space-32` and applies where no tab floats.
+ */
+.article-layout[data-floating-rails] .article-body {
+  padding-block-start: var(--space-64);
+}
+
+/*
+ * A panel is flush with the screen edge it hangs from, so the border on that
+ * side is dropped and the corners there are squared. A panel floating a few
+ * pixels off the edge reads as a stray box rather than as a drawer.
+ *
+ * The opaque surface is the resting state, not a leftover: a translucent panel
+ * with no blur behind it is harder to read than a solid one, so the frosted
+ * version below is added only where blur is actually available.
+ */
+.article-layout[data-floating-rails] .article-rail > .toc,
+.article-layout[data-floating-rails] .sidenote-rail {
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+  box-shadow: var(--shadow-overlay);
+}
+
+/*
+ * Frosted glass, where the engine can do it.
+ *
+ * The note drawer lands on the paragraph it is about, so it must read as a sheet
+ * laid over the page rather than as a second layer of text. The first version of
+ * this picked a fashionable 92% veil and it was wrong: over a table, whose rules
+ * are thin and high-contrast, the lines came through and crossed the note's own
+ * words. That is a legibility failure no automated gate could see — a translucent
+ * background makes axe report contrast as *incomplete* rather than measured — and
+ * it was reported by the maintainer looking at the page. The veil now sits at the
+ * value worked out in tokens.css, where the arithmetic is written down; the blur
+ * is what is left of the effect.
+ *
+ * `@supports` rather than a bare declaration with a fallback, because the two
+ * orderings behave differently: a browser that does not understand
+ * `backdrop-filter` would otherwise paint the translucent background *without*
+ * the blur, which is the unreadable case this avoids.
+ */
+@supports (
+  (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
+) {
+  .article-layout[data-floating-rails] .article-rail > .toc,
+  .article-layout[data-floating-rails] .sidenote-rail {
+    background: var(--color-surface-veil);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    backdrop-filter: blur(20px) saturate(140%);
+  }
+}
+
+/* The reader has asked for less transparency, so there is none. */
+@media (prefers-reduced-transparency: reduce) {
+  .article-layout[data-floating-rails] .article-rail > .toc,
+  .article-layout[data-floating-rails] .sidenote-rail {
+    background: var(--color-surface);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+/* Only the inner panel gets its margin cleared; the rail keeps the inline
+   margins that place it against the screen edge. */
+.article-layout[data-floating-rails] .article-rail > .toc {
+  margin-block: 0;
+}
+
+.article-layout[data-floating-rails] .article-rail > .toc {
+  border-inline-start: 0;
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+  /*
+   * No padding on the panel itself, so the summary — which is the tab — sits
+   * flush against the screen edge. The component's own padding is there for the
+   * in-flow list, where it reads as a framed box; on a tab it would inset the
+   * label by 12px and make the tab look like it had drifted off the edge. The
+   * list inside keeps its own padding below.
+   */
+  padding: 0;
+}
+
+.article-layout[data-floating-rails] .sidenote-rail {
+  border-inline-end: 0;
+  border-start-end-radius: 0;
+  border-end-end-radius: 0;
+}
+
+/*
+ * The drawer's header.
+ *
+ * The drawer is only ever on screen while it is open, so this is a header rather
+ * than a collapsed tab: it is the label above the note and the control that
+ * closes it. `cursor: pointer` is honest about the second job — the browser's own
+ * disclosure behaviour is what handles the click, as it does for the contents
+ * tab in the corner.
+ */
+.article-layout[data-floating-rails] .sidenote-rail__summary {
+  min-height: 44px;
+  padding: var(--space-8) var(--space-12);
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  white-space: nowrap;
+  border-block-end: var(--border-width) solid var(--color-border);
+}
+
+/*
+ * The contents tab: the only thing visible while closed, and the control the
+ * reader clicks to open the drawer. It carries the padding the panel no longer
+ * has, so the label sits `--space-12` from the screen edge on both sides.
+ */
+.article-layout[data-floating-rails] .toc__summary {
+  min-height: 44px;
+  padding: var(--space-8) var(--space-12);
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  white-space: nowrap;
+}
+
+/* The notes panel keeps no padding either, for the same reason as the contents
+   panel: its summary is the tab. The notes inside are padded below. */
+.article-layout[data-floating-rails] .sidenote-rail {
+  padding: 0;
+}
+
+/* The list scrolls inside the panel rather than running off the screen. */
+.article-layout[data-floating-rails] .toc[open] > nav {
+  max-block-size: calc(100vh - var(--header-height) - 9rem);
+  overflow-y: auto;
+  padding-inline: var(--space-12);
+  padding-block-end: var(--space-12);
+}
+
+.article-layout[data-floating-rails] .toc__list {
+  margin-block-start: 0;
+}
+
+/*
+ * The note panel scrolls for the same reason the list does.
+ *
+ * The cap is viewport-relative even though the drawer is not: the drawer is
+ * anchored into the article, but a note longer than the screen would still run
+ * off the bottom of it with no way to reach the rest. Capping it against the
+ * viewport and letting it scroll inside keeps the whole note reachable wherever
+ * the drawer happens to sit.
+ */
+.article-layout[data-floating-rails] .sidenote-rail__panel {
+  max-block-size: calc(100vh - var(--header-height) - 9rem);
+  overflow-y: auto;
+  padding: var(--space-12);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+/*
+ * Inside the panel a note is a plain block: it is no longer beside anything, so
+ * the float and the negative margin that placed it in the third track are gone.
+ *
+ * `scroll-margin-block-start` is cleared for the same reason it is set in the
+ * prose: it exists to keep a document-level jump clear of the sticky header, and
+ * a scroll inside the panel is neither document-level nor below the header. Left
+ * in place it would hold the note the script scrolls to below the panel's own
+ * top edge by a header's height, which reads as the panel having lost its place.
+ */
+.article-layout[data-floating-rails] .sidenote-rail__panel .sidenote {
+  float: none;
+  inline-size: auto;
+  margin: 0;
+  scroll-margin-block-start: 0;
+}
+
+/*
+ * The reference left behind where a note used to sit.
+ *
+ * A real link to the note, so it works with the panel shut, with script
+ * disabled, and in print; the script only adds the behaviour of opening the
+ * panel first.
+ *
+ * It is a block-level mark, not a superscript inside a sentence: a `:::sidenote`
+ * block sits between paragraphs in the source, so its reference marks a position
+ * between blocks rather than a point inside one.
+ *
+ * `line-height` is deliberately not zero. An earlier version set `line-height: 0`
+ * to stop the mark from adding height to a line of prose; on an inline-block that
+ * collapses the element's own box, so the reference measured 19.63 × 0 and was
+ * effectively invisible — a click target that no click could hit. The minimum
+ * block size is what keeps it a touch target.
+ */
+.sidenote-ref {
+  color: var(--color-link);
+  font-size: 0.8em;
+  text-decoration: none;
+  display: inline-block;
+  min-inline-size: 1.6em;
+  min-block-size: 1.6em;
+  line-height: 1.6;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  /* It opens a drawer in place rather than navigating, so the pointer should say
+     so; the link would otherwise inherit the text cursor from the prose. */
+  cursor: pointer;
+}
+
+.sidenote-ref:hover,
+.sidenote-ref:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.sidenote-ref::before {
+  content: "[";
+}
+
+.sidenote-ref::after {
+  content: "]";
+}

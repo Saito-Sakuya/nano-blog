@@ -91,27 +91,31 @@ const height = Math.round(width * ratio);
 </figure>
 
 <style>
-  .figure {
-    margin-block: var(--space-24);
-  }
+  @import '../../styles/layers.css';
 
-  .figure [data-media-frame] {
-    border-radius: var(--radius-4);
-  }
+  @layer components {
+    .figure {
+      margin-block: var(--space-24);
+    }
 
-  .figure img {
-    inline-size: 100%;
-    block-size: auto;
-  }
+    .figure [data-media-frame] {
+      border-radius: var(--radius-4);
+    }
 
-  .figure__caption {
-    margin-block-start: var(--space-8);
-    font-size: var(--font-size-meta-lg);
-    color: var(--color-muted);
-  }
+    .figure img {
+      inline-size: 100%;
+      block-size: auto;
+    }
 
-  .figure__credit {
-    display: block;
-    font-size: var(--font-size-meta);
+    .figure__caption {
+      margin-block-start: var(--space-8);
+      font-size: var(--font-size-meta-lg);
+      color: var(--color-muted);
+    }
+
+    .figure__credit {
+      display: block;
+      font-size: var(--font-size-meta);
+    }
   }
 </style>

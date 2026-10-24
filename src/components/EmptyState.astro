@@ -31,8 +31,12 @@ const { message, showFeed = true } = Astro.props;
 </div>
 
 <style>
-  .empty-state__message {
-    margin-block-start: var(--space-16);
-    color: var(--color-text);
+  @import '../styles/layers.css';
+
+  @layer components {
+    .empty-state__message {
+      margin-block-start: var(--space-16);
+      color: var(--color-text);
+    }
   }
 </style>

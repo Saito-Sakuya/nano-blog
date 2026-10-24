@@ -1,0 +1,55 @@
+/* ========================================================================== */
+/* Sidenotes                                                                  */
+/* ========================================================================== */
+
+.sidenote {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--color-muted);
+  border-block-start: var(--border-width-strong) solid var(--color-brand);
+  padding-block-start: var(--space-8);
+  margin-block: var(--space-24);
+}
+
+.sidenote__marker {
+  display: inline-block;
+  min-inline-size: 1.35em;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.sidenote__label {
+  display: block;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-block-end: var(--space-4);
+}
+
+.sidenote > * + * {
+  margin-block-start: var(--space-8);
+}
+
+.sidenote summary {
+  cursor: pointer;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+/*
+ * On wide screens each note floats beside the paragraph that references it.
+ * The negative inline-end margin is exactly the note's width plus the grid gap,
+ * which lands it in the reserved third track and leaves the article measure
+ * untouched. `clear: inline-end` stops consecutive notes from overlapping.
+ */
+@media (min-width: 75rem) {
+  .sidenote {
+    float: inline-end;
+    clear: inline-end;
+    inline-size: var(--sidenote-width);
+    margin-inline-end: calc(-1 * (var(--sidenote-width) + var(--space-32)));
+    margin-block: var(--space-8) var(--space-24);
+  }
+}

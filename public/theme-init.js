@@ -10,8 +10,9 @@
  * script entirely.
  *
  * Only an explicit stored choice is applied. With nothing stored the attribute
- * is left off and the stylesheet's `prefers-color-scheme` rules decide, which
- * is what lets the site keep following the system afterwards.
+ * is left off and the stylesheet's `color-scheme: light dark` defers to the
+ * system preference, which is what lets the site keep following the system
+ * afterwards.
  */
 (function () {
   var KEY = "nano-blog-theme";

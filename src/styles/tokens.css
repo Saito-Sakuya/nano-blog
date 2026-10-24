@@ -6,36 +6,46 @@
  * and must never hard-code a colour, duration or spacing value of their own.
  *
  * Theme resolution order:
- *   1. `[data-theme="dark"]` / `[data-theme="light"]` — an explicit user choice.
- *   2. `prefers-color-scheme` — the system preference, used only when no
- *      explicit choice has been stored.
- * Every colour token is defined on bare `:root` so a page never renders with a
- * missing token, and the dark values are repeated in both blocks below.
+ *   1. `[data-theme="dark"]` / `[data-theme="light"]` — an explicit user choice,
+ *      which pins `color-scheme` to that one scheme.
+ *   2. `prefers-color-scheme` — the system preference, which `color-scheme:
+ *      light dark` defers to when no explicit choice has been stored.
+ *
+ * Every colour that differs between the themes is written once, as
+ * `light-dark(<light>, <dark>)`, and the root's `color-scheme` picks the half
+ * that applies. The dark palette used to be repeated in two blocks — one for
+ * the system preference, one for the explicit choice — which is two copies of
+ * every value waiting to disagree.
+ *
+ * `light-dark()` resolves against the `color-scheme` of the element that uses
+ * the token, not the one that defines it. Every element inherits the root's, and
+ * nothing below the root sets its own; one that did would flip every token used
+ * inside it.
  */
 
 :root {
-  color-scheme: light;
+  color-scheme: light dark;
 
   /* --- Surfaces and text ------------------------------------------------ */
-  --color-bg: #f7f5ef;
-  --color-surface: #fcfbf7;
-  --color-text: #172125;
-  --color-muted: #5d686c;
+  --color-bg: light-dark(#f7f5ef, #0e1517);
+  --color-surface: light-dark(#fcfbf7, #151e21);
+  --color-text: light-dark(#172125, #e8efef);
+  --color-muted: light-dark(#5d686c, #9aa8ab);
 
   /* --- Interactive ------------------------------------------------------ */
-  --color-link: #006f80;
+  --color-link: light-dark(#006f80, #52c6d8);
   --color-brand: #00a2bd;
-  --color-brand-soft: #d9f2f5;
-  --color-border: #cdd4d2;
+  --color-brand-soft: light-dark(#d9f2f5, #10373e);
+  --color-border: light-dark(#cdd4d2, #324044);
 
   /* --- Code ------------------------------------------------------------- */
-  --color-code-bg: #111a1d;
+  --color-code-bg: light-dark(#111a1d, #091013);
   --color-code-text: #e8efef;
 
   /* --- Status ----------------------------------------------------------- */
-  --color-danger: #a62b22;
-  --color-warning: #805900;
-  --color-success: #256245;
+  --color-danger: light-dark(#a62b22, #ff8a80);
+  --color-warning: light-dark(#805900, #f2c86b);
+  --color-success: light-dark(#256245, #7ed6a4);
 
   /*
    * Status colours are also needed as a translucent wash behind callouts and
@@ -182,50 +192,13 @@
   --index-cover-inset: 6px;
 }
 
-/* System dark theme, unless the visitor has explicitly chosen light. */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    color-scheme: dark;
-
-    --color-bg: #0e1517;
-    --color-surface: #151e21;
-    --color-text: #e8efef;
-    --color-muted: #9aa8ab;
-
-    --color-link: #52c6d8;
-    --color-brand: #00a2bd;
-    --color-brand-soft: #10373e;
-    --color-border: #324044;
-
-    --color-code-bg: #091013;
-    --color-code-text: #e8efef;
-
-    --color-danger: #ff8a80;
-    --color-warning: #f2c86b;
-    --color-success: #7ed6a4;
-  }
+/* An explicit choice wins over the system preference in either direction. */
+:root[data-theme="light"] {
+  color-scheme: light;
 }
 
-/* Explicit dark choice, which wins over a light system preference. */
 :root[data-theme="dark"] {
   color-scheme: dark;
-
-  --color-bg: #0e1517;
-  --color-surface: #151e21;
-  --color-text: #e8efef;
-  --color-muted: #9aa8ab;
-
-  --color-link: #52c6d8;
-  --color-brand: #00a2bd;
-  --color-brand-soft: #10373e;
-  --color-border: #324044;
-
-  --color-code-bg: #091013;
-  --color-code-text: #e8efef;
-
-  --color-danger: #ff8a80;
-  --color-warning: #f2c86b;
-  --color-success: #7ed6a4;
 }
 
 /*

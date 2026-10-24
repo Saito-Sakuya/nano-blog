@@ -52,64 +52,68 @@
 </script>
 
 <style>
-  .theme-toggle {
-    display: flex;
-    align-items: stretch;
-  }
+  @import '../styles/layers.css';
 
-  /*
-   * A class rule outranks the user agent's `[hidden] { display: none }`, so the
-   * `hidden` attribute alone would not keep the control off the page. Without
-   * this, a reader with JavaScript disabled sees a theme button that cannot do
-   * anything.
-   */
-  .theme-toggle[hidden] {
-    display: none;
-  }
+  @layer components {
+    .theme-toggle {
+      display: flex;
+      align-items: stretch;
+    }
 
-  /*
-   * Fixed rather than absolute: the navigation list scrolls horizontally on
-   * narrow screens and would clip an absolutely positioned child. The position
-   * is set from the trigger's bounding box by the script.
-   */
-  .theme-menu {
-    position: fixed;
-    z-index: 40;
-    min-inline-size: 9rem;
-    padding: var(--space-4);
-    margin: 0;
-    list-style: none;
-    background: var(--color-surface);
-    border: var(--border-width) solid var(--color-border);
-    border-radius: var(--radius-4);
-  }
+    /*
+     * A class rule outranks the user agent's `[hidden] { display: none }`, so the
+     * `hidden` attribute alone would not keep the control off the page. Without
+     * this, a reader with JavaScript disabled sees a theme button that cannot do
+     * anything.
+     */
+    .theme-toggle[hidden] {
+      display: none;
+    }
 
-  .theme-menu__item {
-    display: flex;
-    align-items: center;
-    inline-size: 100%;
-    min-height: 40px;
-    padding: var(--space-4) var(--space-8);
-    background: transparent;
-    border: 0;
-    border-radius: var(--radius-2);
-    font-size: var(--font-size-meta-lg);
-    text-align: start;
-    cursor: pointer;
-  }
+    /*
+     * Fixed rather than absolute: the navigation list scrolls horizontally on
+     * narrow screens and would clip an absolutely positioned child. The position
+     * is set from the trigger's bounding box by the script.
+     */
+    .theme-menu {
+      position: fixed;
+      z-index: 40;
+      min-inline-size: 9rem;
+      padding: var(--space-4);
+      margin: 0;
+      list-style: none;
+      background: var(--color-surface);
+      border: var(--border-width) solid var(--color-border);
+      border-radius: var(--radius-4);
+    }
 
-  .theme-menu__item:hover {
-    background: var(--color-brand-soft);
-  }
+    .theme-menu__item {
+      display: flex;
+      align-items: center;
+      inline-size: 100%;
+      min-height: 40px;
+      padding: var(--space-4) var(--space-8);
+      background: transparent;
+      border: 0;
+      border-radius: var(--radius-2);
+      font-size: var(--font-size-meta-lg);
+      text-align: start;
+      cursor: pointer;
+    }
 
-  .theme-menu__item[aria-checked='true'] {
-    background: var(--color-brand-soft);
-    font-weight: 600;
-  }
+    .theme-menu__item:hover {
+      background: var(--color-brand-soft);
+    }
 
-  .theme-menu__item[aria-checked='true']::after {
-    content: '✓';
-    margin-inline-start: auto;
-    color: var(--color-brand);
+    .theme-menu__item[aria-checked='true'] {
+      background: var(--color-brand-soft);
+      font-weight: 600;
+    }
+
+    .theme-menu__item[aria-checked='true']::after {
+      content: '✓';
+      margin-inline-start: auto;
+      color: var(--color-brand);
+    }
   }
 </style>

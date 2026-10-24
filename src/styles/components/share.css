@@ -1,0 +1,29 @@
+/* ========================================================================== */
+/* Share                                                                      */
+/* ========================================================================== */
+
+.share {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+  align-items: center;
+  margin-block-start: var(--space-32);
+  padding-block-start: var(--space-16);
+  border-block-start: var(--border-width) solid var(--color-border);
+}
+
+.share__button {
+  min-height: 44px;
+  padding: var(--space-8) var(--space-16);
+  background: transparent;
+  color: var(--color-text);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-2);
+  cursor: pointer;
+  font-size: var(--font-size-meta-lg);
+}
+
+.share__button:hover {
+  border-color: var(--color-link);
+  color: var(--color-link);
+}

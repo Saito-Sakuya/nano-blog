@@ -54,51 +54,55 @@ const meta = buildMetadata({
 </BaseLayout>
 
 <style>
-  .tag-index {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
+  @import '../../styles/layers.css';
 
-  .tag-index__item {
-    display: flex;
-    align-items: baseline;
-    gap: var(--space-16);
-    padding-block: var(--space-12);
-    border-block-end: var(--border-width) solid var(--color-border);
-  }
+  @layer components {
+    .tag-index {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
 
-  .tag-index__link {
-    display: inline-flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: var(--space-8);
-    min-height: 44px;
-    text-decoration: none;
-    color: var(--color-text);
-  }
+    .tag-index__item {
+      display: flex;
+      align-items: baseline;
+      gap: var(--space-16);
+      padding-block: var(--space-12);
+      border-block-end: var(--border-width) solid var(--color-border);
+    }
 
-  .tag-index__link:hover .tag-index__label {
-    text-decoration: underline;
-    text-decoration-thickness: 2px;
-  }
+    .tag-index__link {
+      display: inline-flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: var(--space-8);
+      min-height: 44px;
+      text-decoration: none;
+      color: var(--color-text);
+    }
 
-  .tag-index__label {
-    font-weight: 600;
-  }
+    .tag-index__link:hover .tag-index__label {
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+    }
 
-  /* The id is the stable part of the URL, so it is always shown next to the
-     label rather than being hidden behind it. */
-  .tag-index__id {
-    font-family: var(--font-mono);
-    font-size: var(--font-size-meta);
-    color: var(--color-muted);
-  }
+    .tag-index__label {
+      font-weight: 600;
+    }
 
-  .tag-index__count {
-    margin-inline-start: auto;
-    font-size: var(--font-size-meta-lg);
-    color: var(--color-muted);
-    font-variant-numeric: tabular-nums;
+    /* The id is the stable part of the URL, so it is always shown next to the
+       label rather than being hidden behind it. */
+    .tag-index__id {
+      font-family: var(--font-mono);
+      font-size: var(--font-size-meta);
+      color: var(--color-muted);
+    }
+
+    .tag-index__count {
+      margin-inline-start: auto;
+      font-size: var(--font-size-meta-lg);
+      color: var(--color-muted);
+      font-variant-numeric: tabular-nums;
+    }
   }
 </style>

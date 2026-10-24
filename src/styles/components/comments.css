@@ -1,0 +1,200 @@
+/* ========================================================================== */
+/* Comments                                                                   */
+/* ========================================================================== */
+
+.comments {
+  margin-block-start: var(--space-48);
+  padding-block-start: var(--space-16);
+  border-block-start: var(--border-width) solid var(--color-border);
+  max-width: var(--measure-article);
+}
+
+.comments__heading {
+  font-size: 1.1rem;
+  margin-block-end: var(--space-16);
+}
+
+/* Status lines — loading, empty, failed — share one quiet treatment. */
+.comments__status,
+.comments__note {
+  color: var(--color-muted);
+  font-size: var(--font-size-meta-lg);
+  margin-block: var(--space-8);
+}
+
+.comments__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-24);
+  margin-block-end: var(--space-32);
+}
+
+.comment {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  column-gap: var(--space-12);
+  row-gap: var(--space-8);
+}
+
+.comment__header {
+  grid-column: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+  align-items: baseline;
+}
+
+.comment__avatar {
+  grid-row: 1 / span 2;
+  grid-column: 1;
+  inline-size: 40px;
+  block-size: 40px;
+  border-radius: var(--radius-4);
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+}
+
+.comment__name {
+  font-weight: 600;
+  font-size: var(--font-size-meta-lg);
+}
+
+.comment__date {
+  color: var(--color-muted);
+  font-size: var(--font-size-meta);
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * A comment body is Markdown rendered by the server, so it inherits the
+ * article's prose rules but not its scale: this is a reply, not a page.
+ */
+.comment__body {
+  grid-column: 2;
+  font-size: var(--font-size-meta-lg);
+  line-height: 1.7;
+}
+
+.comment__body > * + * {
+  margin-block-start: 0.9em;
+}
+
+.comment__body h2,
+.comment__body h3 {
+  font-size: 1rem;
+}
+
+.comment__body pre {
+  overflow-x: auto;
+}
+
+/* --- the form ------------------------------------------------------------ */
+
+.comment-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+}
+
+.comment-form__heading {
+  font-size: 1rem;
+}
+
+.comment-form__note {
+  color: var(--color-muted);
+  font-size: var(--font-size-meta);
+  max-width: var(--measure-article);
+}
+
+.comment-form__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-12);
+}
+
+.comment-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  flex: 1 1 14rem;
+  min-width: 0;
+}
+
+.comment-form__label {
+  font-size: var(--font-size-meta);
+  color: var(--color-muted);
+}
+
+.comment-form input[type="text"],
+.comment-form input[type="email"],
+.comment-form textarea {
+  font: inherit;
+  font-size: var(--font-size-meta-lg);
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-2);
+  padding: var(--space-8);
+  inline-size: 100%;
+}
+
+.comment-form textarea {
+  resize: vertical;
+  min-block-size: 8rem;
+}
+
+.comment-form__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-12);
+  align-items: center;
+}
+
+.comment-form__submit {
+  font: inherit;
+  font-size: var(--font-size-meta-lg);
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-2);
+  padding: var(--space-8) var(--space-16);
+  min-height: 44px;
+  cursor: pointer;
+}
+
+.comment-form__submit:hover:not(:disabled) {
+  border-color: var(--color-brand);
+}
+
+.comment-form__submit:disabled {
+  color: var(--color-muted);
+  cursor: progress;
+}
+
+.comment-form__status {
+  font-size: var(--font-size-meta);
+  color: var(--color-muted);
+}
+
+/*
+ * The honeypot.
+ *
+ * Positioned out of the viewport rather than `display: none`, because a field
+ * that is not rendered is a field an automated filler skips. It keeps its size
+ * and its place in the tab order being removed by `tabindex="-1"`, so a person
+ * tabbing through the form never lands on it and never sees it.
+ */
+.comment-form__trap {
+  position: absolute;
+  left: -9999px;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+}
+
+/* The view count sits in the article metadata row, with the other facts. */
+.article-meta__views {
+  font-size: var(--font-size-meta-lg);
+  color: var(--color-muted);
+  font-variant-numeric: tabular-nums;
+}

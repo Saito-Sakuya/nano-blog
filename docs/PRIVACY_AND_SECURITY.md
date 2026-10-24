@@ -168,7 +168,7 @@ CSP 里没有 `unsafe-inline`、没有 `unsafe-eval`、没有宽泛域名、没�
 1. **`assetsInlineLimit: 0`。** Astro 默认会把足够小的组件脚本内联成 `<script>…</script>`，而内联脚本正是 `script-src 'self'` 所禁止的。把内联阈值设为 0 之后，每一个脚本都以同源文件的形式发布。
 2. **必须在首屏之前运行的那一个脚本是外部文件。** 防主题闪烁的脚本位于 `/theme-init.js`，由 `<head>` 在样式表之前同步加载。它以同源文件的形式存在，因此不需要 `unsafe-inline`。
 
-这个文件在页面绘制第一帧之前就把 `data-theme` 与 `color-scheme` 写到文档元素上，所以不会出现主题闪烁。它只在 `localStorage` 中存在明确选择时才设置属性；没有存储值时什么都不做，交给样式表的 `prefers-color-scheme` 规则决定。
+这个文件在页面绘制第一帧之前就把 `data-theme` 与 `color-scheme` 写到文档元素上，所以不会出现主题闪烁。它只在 `localStorage` 中存在明确选择时才设置属性；没有存储值时什么都不做，由样式表的 `color-scheme: light dark` 跟随系统的 `prefers-color-scheme`。
 
 ### 2.3 为什么需要 `style-src 'unsafe-inline'`
 

@@ -19,22 +19,26 @@ const { summary, open = false } = Astro.props;
 </details>
 
 <style>
-  .details {
-    margin-block: var(--space-24);
-    border: var(--border-width) solid var(--color-border);
-    border-radius: var(--radius-4);
-    padding: var(--space-8) var(--space-16);
-  }
+  @import '../../styles/layers.css';
 
-  .details summary {
-    cursor: pointer;
-    min-height: 44px;
-    display: flex;
-    align-items: center;
-    font-weight: 600;
-  }
+  @layer components {
+    .details {
+      margin-block: var(--space-24);
+      border: var(--border-width) solid var(--color-border);
+      border-radius: var(--radius-4);
+      padding: var(--space-8) var(--space-16);
+    }
 
-  .details__body {
-    padding-block-start: var(--space-8);
+    .details summary {
+      cursor: pointer;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      font-weight: 600;
+    }
+
+    .details__body {
+      padding-block-start: var(--space-8);
+    }
   }
 </style>

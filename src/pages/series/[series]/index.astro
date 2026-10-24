@@ -109,10 +109,14 @@ const meta = buildMetadata({
 </BaseLayout>
 
 <style>
-  /* The series position stands where a date would, so it is set slightly
-     heavier than a date: "#3" is not a date and should not read like one. */
-  .index-row__date {
-    font-weight: 600;
-    color: var(--color-text);
+  @import '../../../styles/layers.css';
+
+  @layer components {
+    /* The series position stands where a date would, so it is set slightly
+       heavier than a date: "#3" is not a date and should not read like one. */
+    .index-row__date {
+      font-weight: 600;
+      color: var(--color-text);
+    }
   }
 </style>

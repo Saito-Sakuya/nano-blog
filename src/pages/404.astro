@@ -58,28 +58,32 @@ const meta = buildMetadata({
 </BaseLayout>
 
 <style>
-  .not-found__list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-16);
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
+  @import '../styles/layers.css';
 
-  .not-found__item a {
-    display: inline-flex;
-    align-items: center;
-    min-height: 44px;
-    padding-inline: var(--space-16);
-    border: var(--border-width) solid var(--color-border);
-    border-radius: var(--radius-2);
-    text-decoration: none;
-    color: var(--color-text);
-  }
+  @layer components {
+    .not-found__list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-16);
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
 
-  .not-found__item a:hover {
-    border-color: var(--color-link);
-    color: var(--color-link);
+    .not-found__item a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 44px;
+      padding-inline: var(--space-16);
+      border: var(--border-width) solid var(--color-border);
+      border-radius: var(--radius-2);
+      text-decoration: none;
+      color: var(--color-text);
+    }
+
+    .not-found__item a:hover {
+      border-color: var(--color-link);
+      color: var(--color-link);
+    }
   }
 </style>

@@ -78,8 +78,12 @@ const meta = buildMetadata({
 </BaseLayout>
 
 <style>
-  .tag-id {
-    font-family: var(--font-mono);
-    font-size: var(--font-size-meta-lg);
+  @import '../../../styles/layers.css';
+
+  @layer components {
+    .tag-id {
+      font-family: var(--font-mono);
+      font-size: var(--font-size-meta-lg);
+    }
   }
 </style>

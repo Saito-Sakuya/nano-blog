@@ -1,0 +1,110 @@
+/* ========================================================================== */
+/* Header and bookmark navigation                                             */
+/* ========================================================================== */
+
+.site-header {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 20;
+  background: var(--color-bg);
+  border-block-end: var(--border-width) solid var(--color-border);
+}
+
+.site-header__inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-16);
+  min-height: var(--header-height);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.28em;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--color-text);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/* The cyan square between the two words. Sized from the current font size so
+   it stays optically matched to the text at any scale. */
+.brand__mark {
+  inline-size: 0.48em;
+  block-size: 0.48em;
+  background: var(--color-brand);
+  border-radius: 0;
+  transform: translateY(-0.04em);
+}
+
+.site-nav {
+  margin-inline-start: auto;
+  min-width: 0;
+}
+
+.site-nav__list {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-4);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.site-nav__list::-webkit-scrollbar {
+  display: none;
+}
+
+/*
+ * Each navigation item is a narrow bookmark hanging from the top edge of the
+ * header: a rectangle with a 6px centred V notch cut out of its bottom.
+ */
+.bookmark {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: var(--space-4) var(--space-12);
+  font-size: 0.875rem;
+  color: var(--color-text);
+  text-decoration: none;
+  background: transparent;
+  border-block-start: var(--border-width-strong) solid transparent;
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% 100%,
+    calc(50% + 6px) 100%,
+    50% calc(100% - 6px),
+    calc(50% - 6px) 100%,
+    0 100%
+  );
+  padding-block-end: 10px;
+  white-space: nowrap;
+  transition: background-color var(--duration-120) var(--ease-standard);
+}
+
+.bookmark:hover {
+  background: color-mix(in srgb, var(--color-brand-soft) 55%, transparent);
+}
+
+.bookmark[aria-current="page"] {
+  background: var(--color-brand-soft);
+  border-block-start-color: var(--color-brand);
+}
+
+.bookmark:focus-visible {
+  outline-offset: -1px;
+}
+
+/* The theme control is a plain button sharing the bookmark shape. */
+.bookmark--button {
+  border: 0;
+  border-block-start: var(--border-width-strong) solid transparent;
+  font: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
