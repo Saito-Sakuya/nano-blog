@@ -3,7 +3,7 @@
 /* ========================================================================== */
 
 .sidenote {
-  font-size: 0.9rem;
+  font-size: var(--step--1);
   line-height: 1.6;
   color: var(--color-muted);
   border-block-start: var(--border-width-strong) solid var(--color-brand);

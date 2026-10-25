@@ -18,7 +18,7 @@
   position: absolute;
   inset-inline-start: var(--space-16);
   inset-block-start: var(--space-8);
-  z-index: 100;
+  z-index: var(--z-skip-link);
   padding: var(--space-8) var(--space-16);
   background: var(--color-surface);
   color: var(--color-text);

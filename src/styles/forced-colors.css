@@ -31,4 +31,27 @@
   .line--highlighted {
     outline: 2px solid Highlight;
   }
+
+  /* The icon is a mask over a background fill, which forced colours replace
+     with the canvas; it is drawn in the text colour instead. */
+  .callout__label::before {
+    forced-color-adjust: none;
+    background: CanvasText;
+  }
+
+  /* The chosen theme is shown by a raised fill, which forced colours erase. */
+  .segmented__option:has(input:checked),
+  .theme-menu__item[aria-checked="true"] {
+    outline: 2px solid Highlight;
+  }
+
+  /* Forced colours do not reach into SVG fills, so the generated cover is
+     given system colours directly: the field as text, the find as highlight. */
+  .generated-cover path {
+    fill: CanvasText;
+  }
+
+  .generated-cover__find {
+    fill: Highlight;
+  }
 }

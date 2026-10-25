@@ -48,7 +48,7 @@ const meta = buildMetadata({
           enterkeyhint="search"
           data-search-input
         />
-        <button class="search-form__submit" type="submit">搜索</button>
+        <button class="button search-form__submit" type="submit">搜索</button>
       </div>
     </form>
 
@@ -110,22 +110,16 @@ const meta = buildMetadata({
       background: var(--color-surface);
       color: var(--color-text);
       border: var(--border-width) solid var(--color-border);
-      border-radius: var(--radius-2);
+      border-radius: var(--radius-4);
+      transition: border-color var(--duration-120) var(--ease-standard);
     }
 
-    .search-form__submit {
-      min-height: 44px;
-      padding: var(--space-8) var(--space-16);
-      background: var(--color-surface);
-      color: var(--color-text);
-      border: var(--border-width) solid var(--color-border);
-      border-radius: var(--radius-2);
-      cursor: pointer;
+    .search-form__input:hover {
+      border-color: var(--color-muted);
     }
 
-    .search-form__submit:hover {
+    .search-form__input:focus-visible {
       border-color: var(--color-link);
-      color: var(--color-link);
     }
 
     .search-status {
@@ -147,7 +141,7 @@ const meta = buildMetadata({
     }
 
     .search-results :global(.search-result__title) {
-      font-size: 1.0625rem;
+      font-size: var(--step-0);
       margin: 0;
     }
 
@@ -164,7 +158,7 @@ const meta = buildMetadata({
     .search-results :global(.search-result__excerpt) {
       margin-block-start: var(--space-4);
       color: var(--color-muted);
-      font-size: 0.9375rem;
+      font-size: var(--step--1);
     }
 
     .search-results :global(.search-result__excerpt mark) {

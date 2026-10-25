@@ -7,9 +7,16 @@
   margin-block: var(--space-24);
 }
 
+/*
+ * One dark object: the bar is part of the code surface, not a light strip
+ * laid on top of it. On a light page the frame's own edge is the code
+ * background, so the block reads as a single shape; on a dark page, where the
+ * code surface is close to the page, a faint outline keeps it apart.
+ */
 .code-block__frame {
-  border: var(--border-width) solid var(--color-border);
-  border-radius: var(--radius-4);
+  border: var(--border-width) solid
+    light-dark(var(--color-code-bg), var(--color-border));
+  border-radius: var(--radius-8);
   overflow: hidden;
   background: var(--color-code-bg);
 }
@@ -17,48 +24,56 @@
 .code-block__bar {
   display: flex;
   align-items: center;
-  gap: var(--space-8);
-  padding: var(--space-4) var(--space-8) var(--space-4) var(--space-12);
-  border-block-end: var(--border-width) solid var(--color-border);
-  background: var(--color-surface);
+  gap: var(--space-12);
+  padding: var(--space-4) var(--space-8) var(--space-4) var(--space-16);
+  border-block-end: var(--border-width) solid rgb(255 255 255 / 0.08);
+  background: color-mix(in srgb, var(--color-code-bg), #fff 3%);
   font-size: var(--font-size-meta);
   font-family: var(--font-mono);
-  color: var(--color-muted);
-  min-height: 36px;
+  color: var(--color-code-muted);
+  min-height: 40px;
 }
 
 .code-block__title {
-  color: var(--color-text);
+  color: var(--color-code-text);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+/* The language is a file-type hint, written the way it is typed: lowercase. */
 .code-block__lang {
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  text-transform: lowercase;
 }
 
 .code-block__copy {
   margin-inline-start: auto;
-  min-height: 28px;
-  padding: var(--space-4) var(--space-8);
+  min-height: 30px;
+  padding: var(--space-4) var(--space-12);
+  font-family: var(--font-sans);
   font-size: var(--font-size-meta);
   background: transparent;
-  color: var(--color-text);
-  border: var(--border-width) solid var(--color-border);
-  border-radius: var(--radius-2);
+  color: var(--color-code-text);
+  border: var(--border-width) solid rgb(255 255 255 / 0.18);
+  border-radius: var(--radius-4);
   cursor: pointer;
+  transition:
+    background-color var(--duration-120) var(--ease-standard),
+    border-color var(--duration-120) var(--ease-standard);
 }
 
 .code-block__copy:hover {
-  border-color: var(--color-link);
-  color: var(--color-link);
+  background: rgb(255 255 255 / 0.08);
+  border-color: rgb(255 255 255 / 0.35);
+}
+
+.code-block__copy:active {
+  background: rgb(255 255 255 / 0.14);
 }
 
 .code-block__status {
   font-size: var(--font-size-meta);
-  color: var(--color-muted);
+  color: var(--color-code-muted);
 }
 
 /* Line numbers come from a CSS counter that must reset once per block. Shiki
@@ -73,7 +88,7 @@
   padding: var(--space-16);
   overflow-x: auto;
   font-family: var(--font-mono);
-  font-size: 0.875rem;
+  font-size: var(--step--1);
   line-height: 1.65;
   color: var(--color-code-text);
   background: var(--color-code-bg);

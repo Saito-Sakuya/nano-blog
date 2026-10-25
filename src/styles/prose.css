@@ -28,14 +28,14 @@
 }
 
 .prose h2 {
-  font-size: 1.55rem;
+  font-size: var(--step-3);
   line-height: 1.3;
   margin-block-start: 3.5em;
   position: relative;
 }
 
 .prose h3 {
-  font-size: 1.22rem;
+  font-size: var(--step-2);
   line-height: 1.4;
   margin-block-start: 2.5em;
 }
@@ -97,23 +97,94 @@
   overflow-x: auto;
 }
 
+/*
+ * Tables are ruled horizontally only. A cage of borders round every cell plus
+ * a striped background made a three-row table the loudest thing in an
+ * article; rows separated by hairlines and a firm rule under the header carry
+ * the same structure quietly.
+ */
 .prose table {
   border-collapse: collapse;
   inline-size: 100%;
-  font-size: 0.95em;
+  font-size: 0.9em;
+  font-variant-numeric: tabular-nums;
 }
 
 .prose th,
 .prose td {
-  border: var(--border-width) solid var(--color-border);
-  padding: var(--space-8) var(--space-12);
+  border-block-end: var(--border-width) solid var(--color-hairline);
+  padding: var(--space-8) var(--space-12) var(--space-8) 0;
   text-align: start;
+  vertical-align: top;
+}
+
+.prose :is(th, td):last-child {
+  padding-inline-end: 0;
 }
 
 .prose thead th {
-  background: var(--color-surface);
+  border-block-end: 1.5px solid var(--color-text);
+  font-weight: 600;
 }
 
-.prose tbody tr:nth-child(even) {
-  background: color-mix(in srgb, var(--color-surface) 60%, transparent);
+/*
+ * Markdown column alignment (`:---:`, `---:`) arrives as an `align`
+ * attribute. That is a presentational hint, which any author rule outranks, so
+ * the `text-align: start` above silently undid it until these were added.
+ */
+.prose :is(th, td)[align="right"] {
+  text-align: end;
+}
+
+.prose :is(th, td)[align="center"] {
+  text-align: center;
+}
+
+/*
+ * Footnotes: a quiet section after the body, with a visible label.
+ *
+ * The label used to be visually hidden, and with `.prose h2` outranking
+ * `.sr-only` the hidden heading still took its full lead-in — 66px of
+ * unexplained space that was the only thing separating the notes from the
+ * text. The label is now real (`footnotes__label`, set in the Markdown
+ * pipeline), and the section carries its own separation: a hairline with the
+ * brand's short cyan segment at its start.
+ */
+.prose .footnotes {
+  position: relative;
+  margin-block-start: var(--space-64);
+  padding-block-start: var(--space-16);
+  border-block-start: var(--border-width) solid var(--color-border);
+  font-size: var(--step--1);
+  line-height: 1.65;
+  color: var(--color-muted);
+}
+
+.prose .footnotes::before {
+  content: "";
+  position: absolute;
+  inset-block-start: calc(-1 * var(--border-width));
+  inset-inline-start: 0;
+  inline-size: var(--space-48);
+  block-size: var(--border-width);
+  background: var(--color-brand);
+}
+
+.prose .footnotes__label {
+  margin-block: 0 var(--space-8);
+  font-size: var(--step--1);
+  color: var(--color-text);
+}
+
+.prose .footnotes ol {
+  padding-inline-start: 1.6em;
+}
+
+.prose .footnotes li + li {
+  margin-block-start: var(--space-8);
+}
+
+.prose .footnotes li::marker {
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
 }

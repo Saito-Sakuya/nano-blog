@@ -7,6 +7,7 @@ import TableOfContents from '../components/TableOfContents.astro';
 import { hasMathFormula, hasMermaidDiagram } from '../lib/content/body-features.js';
 import type { PageView } from '../lib/content/collections.js';
 import type { Heading } from '../lib/content/toc.js';
+import { coverHue, generatedCoverSvg } from '../lib/media/generated-cover.js';
 import { loadMediaIndex } from '../lib/media/index.js';
 import { buildPicture } from '../lib/media/picture.js';
 import { CONTENT_LICENSE_LABEL, CONTENT_LICENSE_URL, canonicalUrl } from '../lib/site.js';
@@ -37,6 +38,8 @@ const { page, Content, headings, tocMode } = Astro.props;
 const { data } = page;
 
 const cover = data.cover;
+// Seeds the generated cover shown if the image is missing or fails.
+const coverSeed = page.id;
 const coverPicture =
   cover === undefined
     ? null
@@ -79,7 +82,7 @@ const hasMath = hasMathFormula(page.body);
       cover !== undefined && coverPicture !== null && (
         <figure class="article-cover">
           <div data-media-frame>
-            <span data-media-fallback>{[...data.title][0] ?? '·'}</span>
+            <span data-media-fallback="generated" style={`--hue: ${coverHue(coverSeed)}`} set:html={generatedCoverSvg(coverSeed, 'card') + generatedCoverSvg(coverSeed, 'header')} />
             <picture>
               {coverPicture.sources.map((source) => (
                 <source type={source.type} srcset={source.srcset} sizes={coverPicture.sizes} />
@@ -133,7 +136,7 @@ const hasMath = hasMathFormula(page.body);
   </article>
 </div>
 
-<button class="back-to-top" type="button" data-back-to-top hidden>返回顶部</button>
+<button class="button back-to-top" type="button" data-back-to-top hidden>返回顶部</button>
 <p class="visually-hidden-live" data-live-region aria-live="polite" aria-atomic="true"></p>
 
 <script>

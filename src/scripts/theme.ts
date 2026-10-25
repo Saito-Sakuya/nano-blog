@@ -8,6 +8,10 @@
  * The menu is positioned with `position: fixed` from the trigger's bounding
  * box. The navigation list scrolls horizontally on narrow screens, and an
  * absolutely positioned child of a scrolling container would be clipped.
+ *
+ * The same three choices also appear in the narrow-screen menu sheet, as a
+ * plain radio group (`[data-theme-choice]`). Both controls read and write one
+ * `choice`, so whichever the reader uses, the other shows the same state.
  */
 
 const STORAGE_KEY = "nano-blog-theme";
@@ -69,11 +73,16 @@ export function initThemeToggle(): void {
   const items = [
     ...menu.querySelectorAll<HTMLButtonElement>("[data-theme-value]"),
   ];
+  const sheet = document.querySelector<HTMLElement>("[data-theme-sheet]");
+  const radios = [
+    ...document.querySelectorAll<HTMLInputElement>("[data-theme-choice]"),
+  ];
 
   // The control only exists once this script has run. Without JavaScript the
   // stylesheet's `color-scheme: light dark` follows the system, and a button
   // that did nothing would be worse than no button at all.
   container.hidden = false;
+  if (sheet !== null) sheet.hidden = false;
 
   let choice = readStored();
 
@@ -81,6 +90,9 @@ export function initThemeToggle(): void {
     for (const item of items) {
       const value = item.dataset["themeValue"];
       item.setAttribute("aria-checked", String(value === choice));
+    }
+    for (const radio of radios) {
+      radio.checked = radio.value === choice;
     }
     if (label !== null) {
       // The visible text carries the whole state, so the accessible name is
@@ -153,6 +165,12 @@ export function initThemeToggle(): void {
     }
   });
 
+  for (const radio of radios) {
+    radio.addEventListener("change", () => {
+      if (radio.checked && isChoice(radio.value)) select(radio.value);
+    });
+  }
+
   button.addEventListener("keydown", (event) => {
     if (event.key === "ArrowDown" || event.key === "ArrowUp") {
       event.preventDefault();
@@ -178,11 +196,15 @@ export function initThemeToggle(): void {
         event.preventDefault();
         close(true);
         break;
+      // The items sit in a row, so the horizontal arrows move too; the vertical
+      // ones keep working because that is what a menu is expected to answer.
       case "ArrowDown":
+      case "ArrowRight":
         event.preventDefault();
         focusNoScroll(items[(index + 1 + items.length) % items.length]);
         break;
       case "ArrowUp":
+      case "ArrowLeft":
         event.preventDefault();
         focusNoScroll(items[(index - 1 + items.length) % items.length]);
         break;

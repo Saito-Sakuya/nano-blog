@@ -2,6 +2,7 @@
 import Thumb from './Thumb.astro';
 import { displayDate } from '../lib/content/build-context.js';
 import type { PostView } from '../lib/content/collections.js';
+import { titleTransitionStyle } from '../lib/routing/transition.js';
 import { tagUrl } from '../lib/routing/urls.js';
 
 /**
@@ -61,7 +62,7 @@ const TitleTag = headingLevel === 'h3' ? 'h3' : 'h2';
           {displayDate(post.data.publishedAt)}
         </time>
 
-        <TitleTag class="index-row__title">
+        <TitleTag class="index-row__title" style={titleTransitionStyle(post.id)}>
           <a href={post.url}>{post.data.title}</a>
         </TitleTag>
 
@@ -77,7 +78,7 @@ const TitleTag = headingLevel === 'h3' ? 'h3' : 'h2';
             <Thumb
               src={post.data.cover.src}
               alt={post.data.cover.alt}
-              fallbackText={[...post.data.title][0] ?? '·'}
+              seed={post.id}
             />
           </div>
         )}

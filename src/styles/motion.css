@@ -21,4 +21,20 @@
   html:has(:target) {
     scroll-behavior: smooth;
   }
+
+  /*
+   * The site's one motion moment: following a link from a list, the title
+   * travels from its row into the article's heading (both carry the same
+   * `view-transition-name`; see `src/lib/routing/transition.ts`). Everything
+   * else simply cross-fades. Same-origin navigations only, and an engine
+   * without cross-document view transitions navigates as it always did.
+   */
+  @view-transition {
+    navigation: auto;
+  }
+
+  ::view-transition-group(*) {
+    animation-duration: var(--duration-240);
+    animation-timing-function: var(--ease-standard);
+  }
 }

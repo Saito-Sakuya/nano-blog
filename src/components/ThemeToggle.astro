@@ -74,31 +74,42 @@
      * Fixed rather than absolute: the navigation list scrolls horizontally on
      * narrow screens and would clip an absolutely positioned child. The position
      * is set from the trigger's bounding box by the script.
+     *
+     * The menu is drawn as a segmented row — the same control the narrow-screen
+     * sheet uses — while keeping its menu semantics: arrow keys move, Escape
+     * closes, and focus returns to the trigger.
      */
     .theme-menu {
       position: fixed;
-      z-index: 40;
-      min-inline-size: 9rem;
-      padding: var(--space-4);
+      z-index: var(--z-overlay);
+      display: flex;
+      gap: 2px;
+      padding: 3px;
       margin: 0;
       list-style: none;
-      background: var(--color-surface);
+      background: var(--color-bg);
       border: var(--border-width) solid var(--color-border);
-      border-radius: var(--radius-4);
+      border-radius: var(--radius-8);
+      box-shadow: var(--shadow-overlay);
+    }
+
+    .theme-menu[hidden] {
+      display: none;
     }
 
     .theme-menu__item {
       display: flex;
       align-items: center;
-      inline-size: 100%;
+      justify-content: center;
       min-height: 40px;
-      padding: var(--space-4) var(--space-8);
+      padding: var(--space-4) var(--space-16);
       background: transparent;
       border: 0;
-      border-radius: var(--radius-2);
+      border-radius: 5px;
       font-size: var(--font-size-meta-lg);
-      text-align: start;
+      white-space: nowrap;
       cursor: pointer;
+      transition: background-color var(--duration-120) var(--ease-standard);
     }
 
     .theme-menu__item:hover {
@@ -106,14 +117,9 @@
     }
 
     .theme-menu__item[aria-checked='true'] {
-      background: var(--color-brand-soft);
+      background: var(--color-surface);
+      box-shadow: var(--shadow-raised);
       font-weight: 600;
-    }
-
-    .theme-menu__item[aria-checked='true']::after {
-      content: '✓';
-      margin-inline-start: auto;
-      color: var(--color-brand);
     }
   }
 </style>

@@ -28,6 +28,7 @@
       --color-border: #999999;
       --color-code-bg: #f4f4f4;
       --color-code-text: #000000;
+      --color-code-muted: #333333;
     }
 
     body {

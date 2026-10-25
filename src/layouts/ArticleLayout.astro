@@ -20,8 +20,10 @@ import { hasMathFormula, hasMermaidDiagram } from '../lib/content/body-features.
 import { displayDate } from '../lib/content/build-context.js';
 import type { PostView, SeriesView } from '../lib/content/collections.js';
 import type { Heading } from '../lib/content/toc.js';
+import { coverHue, generatedCoverSvg } from '../lib/media/generated-cover.js';
 import { loadMediaIndex } from '../lib/media/index.js';
 import { buildPicture } from '../lib/media/picture.js';
+import { titleTransitionStyle } from '../lib/routing/transition.js';
 import { seriesUrl, tagUrl } from '../lib/routing/urls.js';
 import { CONTENT_LICENSE_LABEL, CONTENT_LICENSE_URL, canonicalUrl } from '../lib/site.js';
 
@@ -69,6 +71,8 @@ const mdxComponents = {
 };
 
 const cover = data.cover;
+// Seeds the generated cover shown if the image is missing or fails.
+const coverSeed = post.id;
 const coverPicture = buildPicture(loadMediaIndex(), cover.src, {
   displayWidth: 900,
   displayHeight: 506,
@@ -79,7 +83,7 @@ const coverPicture = buildPicture(loadMediaIndex(), cover.src, {
    * from the one the layout reserves — which is what a second copy of the string
    * in the template was doing.
    */
-  sizes: '(min-width: 75rem) 900px, 100vw',
+  sizes: '(min-width: 75rem) 900px, (min-width: 48rem) 42rem, 100vw',
 });
 
 // Both flags are decided at build time from the article's own source, so a page
@@ -97,7 +101,7 @@ const hasMath = hasMathFormula(post.body);
 
   <article data-canonical-url={canonicalUrl(post.url)}>
     <header class="article-head" data-print-url={canonicalUrl(post.url)}>
-      <h1>{data.title}</h1>
+      <h1 style={titleTransitionStyle(post.id)}>{data.title}</h1>
       <p class="article-head__description">{data.description}</p>
 
       <div class="article-meta">
@@ -152,7 +156,7 @@ const hasMath = hasMathFormula(post.body);
       */}
       <figure class="article-cover">
         <div data-media-frame>
-          <span data-media-fallback>{[...data.title][0] ?? '·'}</span>
+          <span data-media-fallback="generated" style={`--hue: ${coverHue(coverSeed)}`} set:html={generatedCoverSvg(coverSeed, 'card') + generatedCoverSvg(coverSeed, 'header')} />
           <picture>
             {
               coverPicture.sources.map((source) => (
@@ -267,14 +271,14 @@ const hasMath = hasMathFormula(post.body);
     <Comments postId={post.id} enabled={data.comments} />
 
     <div class="share" data-share>
-      <button class="share__button" type="button" data-share-copy>复制链接</button>
-      <button class="share__button" type="button" data-share-native hidden>系统分享</button>
+      <button class="button share__button" type="button" data-share-copy>复制链接</button>
+      <button class="button share__button" type="button" data-share-native hidden>系统分享</button>
       <span class="share__status" data-copy-status></span>
     </div>
   </article>
 </div>
 
-<button class="back-to-top" type="button" data-back-to-top hidden>返回顶部</button>
+<button class="button back-to-top" type="button" data-back-to-top hidden>返回顶部</button>
 <p class="visually-hidden-live" data-live-region aria-live="polite" aria-atomic="true"></p>
 
 <script>
@@ -326,7 +330,7 @@ const hasMath = hasMathFormula(post.body);
     }
 
     .related__heading {
-      font-size: 1.1rem;
+      font-size: var(--step-1);
       margin-block-end: var(--space-8);
     }
 

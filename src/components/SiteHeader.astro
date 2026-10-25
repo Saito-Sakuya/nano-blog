@@ -8,6 +8,15 @@ import { aboutUrl, archivePageUrl, postsIndexUrl, searchUrl, tagsIndexUrl } from
  * The current item is marked with `aria-current="page"` and shares the same
  * visual grammar as the rest — a bookmark hanging from the top edge with a V
  * notch cut out of its bottom.
+ *
+ * Below the tablet breakpoint the bookmarks give way to two buttons: search,
+ * and a menu that opens a sheet with the same links and the theme choice. The
+ * strip of bookmarks used to scroll sideways there, and the last three items —
+ * about, search, theme — were off screen with nothing to say they existed.
+ *
+ * The sheet is a native popover, so it opens, closes on Escape or an outside
+ * click, and hands focus back without any script. Only its theme choice needs
+ * the theme script, so that part stays hidden until the script reveals it.
  */
 const path = Astro.url.pathname;
 
@@ -32,6 +41,12 @@ function isCurrent(item: NavItem): boolean {
     prefix === '/' ? path === '/' : path.startsWith(prefix),
   );
 }
+
+const themeChoices = [
+  { value: 'light', label: '浅色' },
+  { value: 'dark', label: '深色' },
+  { value: 'system', label: '跟随系统' },
+] as const;
 ---
 
 <header class="site-header">
@@ -61,5 +76,54 @@ function isCurrent(item: NavItem): boolean {
         </li>
       </ul>
     </nav>
+
+    <div class="site-header__actions">
+      <a
+        class="icon-button"
+        href={searchUrl}
+        aria-label="搜索"
+        aria-current={path.startsWith('/search/') ? 'page' : undefined}
+      >
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true" focusable="false">
+          <circle cx="8.5" cy="8.5" r="5.5"></circle>
+          <path d="m13 13 4.5 4.5"></path>
+        </svg>
+      </a>
+      <button class="icon-button" type="button" popovertarget="site-menu" aria-label="菜单" data-site-menu-button>
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true" focusable="false">
+          <path d="M3 5.5h14M3 10h14M3 14.5h9"></path>
+        </svg>
+      </button>
+    </div>
   </div>
 </header>
+
+<div class="site-menu" id="site-menu" popover data-site-menu>
+  <nav aria-label="主导航">
+    <ul class="site-menu__list">
+      {
+        items.map((item) => (
+          <li>
+            <a href={item.href} aria-current={isCurrent(item) ? 'page' : undefined}>
+              {item.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+
+  <div class="site-menu__theme" data-theme-sheet hidden>
+    <p class="site-menu__label" id="site-menu-theme-label">主题</p>
+    <div class="segmented" role="radiogroup" aria-labelledby="site-menu-theme-label">
+      {
+        themeChoices.map((choice) => (
+          <label class="segmented__option">
+            <input type="radio" name="site-theme" value={choice.value} data-theme-choice={choice.value} />
+            {choice.label}
+          </label>
+        ))
+      }
+    </div>
+  </div>
+</div>

@@ -13,25 +13,12 @@
   font-size: var(--font-size-meta-lg);
 }
 
+/* Page numbers are narrow, so the button keeps a square minimum instead of
+   its usual horizontal padding. */
 .pagination__link {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
+  min-inline-size: 44px;
   padding-inline: var(--space-12);
-  border: var(--border-width) solid var(--color-border);
-  border-radius: var(--radius-2);
-  text-decoration: none;
-  color: var(--color-text);
-}
-
-.pagination__link:hover {
-  border-color: var(--color-link);
-  color: var(--color-link);
-}
-
-.pagination__link[aria-current="page"] {
-  background: var(--color-brand-soft);
-  border-color: var(--color-brand);
+  font-variant-numeric: tabular-nums;
 }
 
 .pagination__list {

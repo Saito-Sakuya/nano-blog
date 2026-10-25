@@ -1,54 +1,61 @@
 ---
+import { coverHue, generatedCoverSvg } from '../lib/media/generated-cover.js';
 import { loadMediaIndex } from '../lib/media/index.js';
 import { buildPicture } from '../lib/media/picture.js';
 
 /**
  * The cover on a list row.
  *
- * It fills the gradient band the row reserves for it (`.index-row__thumb`),
+ * On a phone it is a square tile beside the title; from the tablet breakpoint
+ * it fills the gradient band the row reserves for it (`.index-row__thumb`),
  * pinned to the trailing edge and masked so it dissolves into the row. The box
  * is sized entirely in CSS and the fallback panel sits behind the image, so a
  * failure changes nothing about the layout and never produces a broken-image
  * icon.
  *
- * `sizes` has to describe the width the band is actually drawn at, or the
- * browser picks a derivative from the wrong rung of the ladder. The two numbers
- * here mirror `--index-cover-width`; they are the only values in this component
- * that must agree with the stylesheet, and
- * `tests/e2e/index-cover-band.spec.ts` fails if they stop agreeing.
+ * The fallback is a generated cover in both shapes, tile and band; the
+ * stylesheet shows the one that matches the breakpoint. It only appears when
+ * the image is missing or fails.
+ *
+ * `sizes` has to describe the width the cover is actually drawn at, or the
+ * browser picks a derivative from the wrong rung of the ladder. The numbers
+ * here mirror `--index-cover-tile` and `--index-cover-width`; they are the only
+ * values in this component that must agree with the stylesheet.
  */
 interface Props {
   src: string;
   alt: string;
-  /** First character of the title, shown if the image cannot load. */
-  fallbackText: string;
+  /** Seeds the generated cover shown if the image cannot load: the post id. */
+  seed: string;
   /** `high` only for the cover above the fold on an article page. */
   priority?: boolean;
 }
 
-const { src, alt, fallbackText, priority = false } = Astro.props;
+const { src, alt, seed, priority = false } = Astro.props;
 
 /*
  * The rendered band is wider than it is tall and cropped with `object-fit:
  * cover`, so the declared box is 16:9 and the attributes below only reserve
  * space; CSS sizes the actual element.
  */
+const SIZES = '(min-width: 75rem) 240px, (min-width: 48rem) 160px, 64px';
 const picture = buildPicture(loadMediaIndex(), src, {
   displayWidth: 240,
   displayHeight: 135,
-  sizes: '(min-width: 48rem) 240px, 96px',
+  sizes: SIZES,
 });
+const fallbackSvg = generatedCoverSvg(seed, 'tile') + generatedCoverSvg(seed, 'band');
 ---
 
 <div class="thumb" data-media-frame>
-  <span class="thumb__fallback" data-media-fallback>{fallbackText}</span>
+  <span class="thumb__fallback" data-media-fallback="generated" style={`--hue: ${coverHue(seed)}`} set:html={fallbackSvg} />
   <picture>
     {
       picture.sources.map((source) => (
         <source
           type={source.type}
           srcset={source.srcset}
-          sizes="(min-width: 48rem) 240px, 96px"
+          sizes={SIZES}
         />
       ))
     }

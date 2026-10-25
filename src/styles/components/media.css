@@ -55,9 +55,69 @@
   background: var(--color-brand-soft);
   color: var(--color-text);
   font-weight: 600;
-  font-size: 0.875rem;
+  font-size: var(--step--1);
   text-align: center;
   padding: var(--space-8);
+}
+
+/*
+ * A generated cover in the fallback slot (`src/lib/media/generated-cover.ts`).
+ *
+ * The squares take their colour from `--cover-ink`, defined here on the panel
+ * rather than on `:root`: a custom property resolves `var(--hue)` where it is
+ * declared, so a root definition would give every cover the same colour. The
+ * panel carries its post's `--hue` inline.
+ */
+[data-media-fallback="generated"] {
+  --cover-ink: light-dark(
+    oklch(0.56 0.075 var(--hue, 200)),
+    oklch(0.76 0.07 var(--hue, 200))
+  );
+  padding: 0;
+  background: color-mix(in oklch, var(--cover-ink) 7%, var(--color-bg));
+}
+
+.generated-cover {
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.generated-cover path {
+  fill: var(--cover-ink);
+}
+
+.generated-cover__find {
+  fill: var(--color-brand);
+}
+
+/*
+ * Each panel carries its cover in two shapes and the breakpoint picks one: a
+ * list row's tile or band, an article's card or header. The widths match the
+ * layouts those shapes are drawn for.
+ */
+.generated-cover--band,
+.generated-cover--header {
+  display: none;
+}
+
+@media (min-width: 48rem) {
+  .generated-cover--tile {
+    display: none;
+  }
+
+  .generated-cover--band {
+    display: block;
+  }
+}
+
+@media (min-width: 75rem) {
+  .generated-cover--card {
+    display: none;
+  }
+
+  .generated-cover--header {
+    display: block;
+  }
 }
 
 /* Until an image has failed, its fallback stays out of the way. */

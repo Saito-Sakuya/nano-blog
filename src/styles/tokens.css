@@ -41,6 +41,8 @@
   /* --- Code ------------------------------------------------------------- */
   --color-code-bg: light-dark(#111a1d, #091013);
   --color-code-text: #e8efef;
+  /* Secondary text on the code surface, which is dark in both themes. */
+  --color-code-muted: #9aa8ab;
 
   /* --- Status ----------------------------------------------------------- */
   --color-danger: light-dark(#a62b22, #ff8a80);
@@ -101,6 +103,13 @@
     transparent
   );
 
+  /*
+   * A rule quieter than `--color-border`, for divisions inside a block (table
+   * rows, menu items) where a full border would compete with the block's own
+   * outline.
+   */
+  --color-hairline: color-mix(in oklch, var(--color-border) 60%, transparent);
+
   /* --- Spacing (nine fixed steps) --------------------------------------- */
   --space-4: 4px;
   --space-8: 8px;
@@ -121,8 +130,26 @@
   /* Nothing in this design is rounder than 8px. */
   --radius-max: 8px;
 
-  /* --- Elevation (search overlay only) ---------------------------------- */
-  --shadow-overlay: 0 16px 48px rgb(0 0 0 / 0.14);
+  /*
+   * --- Elevation ---------------------------------------------------------
+   *
+   * Two levels and no more. `raised` sits on the page (the back-to-top button,
+   * the header once the page has scrolled); `overlay` floats over content and
+   * has to separate from it (menus, drawers). A dark page needs a much darker
+   * shadow to read as depth at all, hence the light-dark pairs.
+   */
+  --shadow-raised:
+    0 1px 2px light-dark(rgb(23 33 37 / 0.06), rgb(0 0 0 / 0.4)),
+    0 2px 8px light-dark(rgb(23 33 37 / 0.05), rgb(0 0 0 / 0.3));
+  --shadow-overlay:
+    0 2px 6px light-dark(rgb(23 33 37 / 0.06), rgb(0 0 0 / 0.45)),
+    0 16px 40px light-dark(rgb(23 33 37 / 0.12), rgb(0 0 0 / 0.5));
+
+  /* --- Stacking ---------------------------------------------------------- */
+  --z-rail: 15;
+  --z-header: 20;
+  --z-overlay: 40;
+  --z-skip-link: 100;
 
   /* --- Motion ----------------------------------------------------------- */
   --duration-120: 120ms;
@@ -136,9 +163,8 @@
 
   /* --- Typography ------------------------------------------------------- */
   --font-sans:
-    ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC",
-    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC",
-    sans-serif;
+    ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
   --font-mono:
     ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", Menlo,
     monospace;
@@ -154,6 +180,21 @@
   /* Metadata and indexes never go below 12px. */
   --font-size-meta: 12px;
   --font-size-meta-lg: 14px;
+
+  /*
+   * The type scale: seven steps, roughly 1.2 apart. Every font size in the
+   * stylesheets is one of these, the two meta sizes above (which are steps -2
+   * and -1 under their older names), or an `em` relative to its context.
+   * The three largest grow with the viewport between a phone and a desktop.
+   */
+  --step--2: 0.75rem; /* 12 */
+  --step--1: 0.875rem; /* 14 */
+  --step-0: 1rem; /* 16 */
+  --step-1: 1.125rem; /* 18 */
+  --step-2: 1.3125rem; /* 21 */
+  --step-3: clamp(1.375rem, 1.2rem + 0.6vw, 1.625rem); /* 22–26 */
+  --step-4: clamp(1.75rem, 1.4rem + 1.4vw, 2.5rem); /* 28–40 */
+  --step-5: clamp(2rem, 1.5rem + 2.2vw, 3rem); /* 32–48 */
 
   /* --- Layout ----------------------------------------------------------- */
   --layout-max: 1200px;
@@ -172,22 +213,27 @@
   --header-height: 64px;
   --sidenote-width: 240px;
   /*
-   * Width of the cover band on a list row.
+   * Width of the cover band on a list row, from the tablet breakpoint up.
    *
    * The band is positioned rather than laid out, so this value is read twice —
    * to reserve the space it occupies and to size the band itself. Keeping it in
    * one place is what stops the two from disagreeing, which is the failure mode
-   * that once put article text on top of the cover image.
+   * that once put article text on top of the cover image. Below the tablet
+   * breakpoint there is no band: the cover is a square tile (below).
    */
-  --index-cover-width: 96px;
+  --index-cover-width: 160px;
   /*
-   * One height at every width. The band is the row's cover, so it is sized to
-   * fill the row rather than to sit inside it as a thumbnail; a shorter value on
-   * narrow screens made the same list read as a different design on a phone. The
-   * row reserves this height, so the band reaches it on every row and the
-   * right-hand edge of the list stays a straight line.
+   * One band height at every width that has a band. The row reserves this
+   * height, so the band reaches it on every row and the right-hand edge of the
+   * list stays a straight line.
    */
   --index-cover-height: 96px;
+  /*
+   * The phone cover: a square tile laid out beside the title. A band on a phone
+   * took 112px from a 330px row, so even short titles wrapped; the tile takes
+   * 80px and the title gets the rest.
+   */
+  --index-cover-tile: 64px;
   /* Gap kept between a cover band and the row edges above and below it. */
   --index-cover-inset: 6px;
 }
@@ -213,17 +259,20 @@
   }
 }
 
-/* From the tablet breakpoint there is room for the cover band to widen. The
-   height is deliberately not overridden: it is the same at every width. */
+/*
+ * The band widens in two steps. At 240px on a tablet it left the title about
+ * 170px, which broke short titles mid-phrase; 160px there and 240px only once
+ * the page has its full width. The height is the same at every width.
+ */
 @media (min-width: 48rem) {
   :root {
-    --index-cover-width: 240px;
     --gutter: var(--gutter-tablet);
   }
 }
 
 @media (min-width: 75rem) {
   :root {
+    --index-cover-width: 240px;
     --gutter: var(--gutter-desktop);
   }
 }

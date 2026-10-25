@@ -25,7 +25,7 @@
  * the flow and are always visible, which is the no-JavaScript reading
  * experience, unchanged from before this existed.
  *
- * `z-index: 15` puts both under the sticky header (20): they sit below it on
+ * `--z-rail` puts both under the sticky header (`--z-header`): they sit below it on
  * screen by construction, and the header has to stay on top when they pass it.
  */
 
@@ -55,7 +55,7 @@
 .article-layout[data-floating-rails] .article-rail {
   position: sticky;
   inset-block-start: calc(var(--header-height) + var(--space-8));
-  z-index: 15;
+  z-index: var(--z-rail);
   /*
    * Zero height, with the panel overflowing.
    *
@@ -109,7 +109,7 @@
   position: absolute;
   inset-block-start: var(--sidenote-rail-top, 0);
   inset-inline: auto calc(-1 * var(--gutter));
-  z-index: 15;
+  z-index: var(--z-rail);
   inline-size: fit-content;
   max-inline-size: min(84vw, 20rem);
   font-size: var(--font-size-meta-lg);
@@ -138,7 +138,7 @@
   inset-block-start: var(--sidenote-chip-top, 0);
   /* Sits against the same screen edge the drawer uses. */
   inset-inline: auto calc(-1 * var(--gutter));
-  z-index: 14;
+  z-index: calc(var(--z-rail) - 1);
   /*
    * No margin, and this is not tidiness. The chip is deliberately a sibling of
    * the reference it belongs to — that is what makes it reachable in tab order —
