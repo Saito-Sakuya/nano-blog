@@ -12,6 +12,35 @@
 /* Typography                                                                 */
 /* ========================================================================== */
 
+/*
+ * Chinese and Latin text set together.
+ *
+ * `text-autospace` adds the thin gap between a Han character and an adjacent
+ * Latin letter or digit that writers otherwise type as a space by hand (and
+ * forget half the time). Where a space was typed, nothing is added.
+ * `text-spacing-trim` removes the blank half of a full-width bracket or
+ * punctuation mark at the start of a line, so lines start flush. An engine
+ * that knows neither simply sets the text as before.
+ */
+body {
+  text-autospace: normal;
+  text-spacing-trim: trim-start;
+}
+
+/* Running text avoids leaving a single character alone on its last line. */
+p,
+li,
+dd,
+figcaption,
+blockquote {
+  text-wrap: pretty;
+}
+
+/* Dates and counts line up wherever they appear. */
+time {
+  font-variant-numeric: tabular-nums;
+}
+
 h1,
 h2,
 h3,
@@ -24,7 +53,7 @@ h6 {
 }
 
 h1 {
-  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-size: var(--step-5);
   line-height: 1.08;
   letter-spacing: -0.015em;
 }

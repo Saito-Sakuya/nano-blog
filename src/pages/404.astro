@@ -44,12 +44,12 @@ const meta = buildMetadata({
 
     <nav class="not-found" aria-label="可浏览的入口">
       <ul class="not-found__list">
-        <li class="not-found__item"><a href="/">首页</a></li>
-        <li class="not-found__item"><a href={postsIndexUrl}>文章</a></li>
-        <li class="not-found__item"><a href={archivePageUrl(1)}>归档</a></li>
+        <li class="not-found__item"><a class="button" href="/">首页</a></li>
+        <li class="not-found__item"><a class="button" href={postsIndexUrl}>文章</a></li>
+        <li class="not-found__item"><a class="button" href={archivePageUrl(1)}>归档</a></li>
         {
           hasSearchableContent && (
-            <li class="not-found__item"><a href={searchUrl}>搜索</a></li>
+            <li class="not-found__item"><a class="button" href={searchUrl}>搜索</a></li>
           )
         }
       </ul>
@@ -68,22 +68,6 @@ const meta = buildMetadata({
       list-style: none;
       padding: 0;
       margin: 0;
-    }
-
-    .not-found__item a {
-      display: inline-flex;
-      align-items: center;
-      min-height: 44px;
-      padding-inline: var(--space-16);
-      border: var(--border-width) solid var(--color-border);
-      border-radius: var(--radius-2);
-      text-decoration: none;
-      color: var(--color-text);
-    }
-
-    .not-found__item a:hover {
-      border-color: var(--color-link);
-      color: var(--color-link);
     }
   }
 </style>

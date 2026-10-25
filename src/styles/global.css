@@ -20,11 +20,10 @@
 @import "./tokens.css" layer(tokens);
 @import "./reset.css" layer(reset);
 @import "./base.css" layer(base);
-@import "./utilities.css" layer(utilities);
-@import "./motion.css" layer(utilities);
 @import "./layout.css" layer(layout);
 @import "./prose.css" layer(prose);
 
+@import "./components/button.css" layer(components);
 @import "./components/site-header.css" layer(components);
 @import "./components/site-footer.css" layer(components);
 @import "./components/page-head.css" layer(components);
@@ -44,3 +43,6 @@
 @import "./components/share.css" layer(components);
 @import "./components/comments.css" layer(components);
 @import "./forced-colors.css" layer(components);
+
+@import "./utilities.css" layer(utilities);
+@import "./motion.css" layer(utilities);

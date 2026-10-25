@@ -24,11 +24,14 @@ function markFailed(image: HTMLImageElement): void {
 
   const fallback = frame.querySelector<HTMLElement>("[data-media-fallback]");
   const description = image.getAttribute("alt") ?? "";
-  if (
+  // A generated cover is decoration (its SVG is `aria-hidden`), so a panel
+  // holding one still has to speak for the image. Any other panel with markup
+  // of its own already says what it shows.
+  const speaksForImage =
     fallback !== null &&
-    description.trim().length > 0 &&
-    fallback.childElementCount === 0
-  ) {
+    (fallback.childElementCount === 0 ||
+      fallback.dataset["mediaFallback"] === "generated");
+  if (fallback !== null && speaksForImage && description.trim().length > 0) {
     // The panel speaks for the image it replaces, so the description is not
     // lost when the image leaves the accessibility tree.
     fallback.setAttribute("role", "img");

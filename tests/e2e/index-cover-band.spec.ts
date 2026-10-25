@@ -1,21 +1,28 @@
 import { expect, MEDIA_ORIGIN, test, visit } from "./fixtures.js";
 
 /**
- * The cover band on a list row.
+ * The cover on a list row.
  *
- * A row's cover is lifted out of the flow, pinned to the trailing edge and
- * masked so it dissolves into the row, in the same visual language as the
- * article page's cover. Because it is positioned rather than laid out, the
- * geometry is not enforced by anything visible: the row has to reserve the
- * space, the band has to stay inside it, and the text has to stop before it.
- * Three numbers from two files have to agree, and if they drift the failure is
- * either text over an image (unreadable, and invisible to axe, which measures
- * text against background *colours*) or covers overlapping each other.
+ * From the tablet breakpoint a row's cover is a band: lifted out of the flow,
+ * pinned to the trailing edge and masked so it dissolves into the row, in the
+ * same visual language as the article page's cover. Because it is positioned
+ * rather than laid out, the geometry is not enforced by anything visible: the
+ * row has to reserve the space, the band has to stay inside it, and the text
+ * has to stop before it. Three numbers from two files have to agree, and if
+ * they drift the failure is either text over an image (unreadable, and
+ * invisible to axe, which measures text against background *colours*) or
+ * covers overlapping each other.
  *
- * The tests below assert exactly those three things, at four widths, against
- * the rendered boxes rather than against the stylesheet. They are the reason
- * this arrangement can be trusted; without them it is only as good as the last
- * time somebody looked at it.
+ * On a phone the cover is a square tile laid out in the row's grid instead. A
+ * band there took a third of the row and made even short titles wrap. The
+ * tile keeps the first three properties — text clear of it, inside its row,
+ * never touching the next — and adds its own: it is square and the same size
+ * on every row.
+ *
+ * The tests below assert those things, at four widths, against the rendered
+ * boxes rather than against the stylesheet. They are the reason this
+ * arrangement can be trusted; without them it is only as good as the last time
+ * somebody looked at it.
  */
 
 /*
@@ -35,6 +42,12 @@ const LIST_PAGES = [
 ] as const;
 
 const WIDTHS = [390, 768, 1280, 1536] as const;
+
+/** Below this width the cover is a tile rather than a band. */
+const TABLET = 768;
+
+/** `--index-cover-tile`. */
+const TILE = 64;
 
 /** Read the boxes the browser actually produced. */
 const MEASURE = `(() => {
@@ -60,7 +73,7 @@ const MEASURE = `(() => {
 
       return {
         row: { top: rowBox.top, bottom: rowBox.bottom },
-        band: bandBox === null ? null : { left: bandBox.left, top: bandBox.top, bottom: bandBox.bottom, width: bandBox.width },
+        band: bandBox === null ? null : { left: bandBox.left, top: bandBox.top, bottom: bandBox.bottom, width: bandBox.width, height: bandBox.height },
         texts,
       };
     }),
@@ -74,6 +87,7 @@ interface Row {
     top: number;
     bottom: number;
     width: number;
+    height: number;
   } | null;
   readonly texts: { right: number; tag: string; cls: string }[];
 }
@@ -172,11 +186,12 @@ for (const width of WIDTHS) {
          * comes from a longer title as well as those extra lines allow.
          *
          * The threshold is the band's own height plus its inset, over the
-         * shortest row — comfortably met at 82% measured on a phone and 88% on a
-         * desktop, and missed by a wide margin if the band ever shrinks back to
-         * a thumbnail or a row grows a block of content it should not have.
+         * shortest row — comfortably met at 88% on a desktop, and missed by a
+         * wide margin if the band ever shrinks back to a thumbnail or a row
+         * grows a block of content it should not have. It applies only where
+         * there is a band: the phone tile is meant to sit beside the text.
          */
-        if (heights.length > 0) {
+        if (width >= TABLET && heights.length > 0) {
           const banded = rows.filter((entry) => entry.band !== null);
           const shortestRow = Math.min(
             ...banded.map((entry) => entry.row.bottom - entry.row.top),
@@ -188,6 +203,27 @@ for (const width of WIDTHS) {
             problems.push(
               `the cover fills only ${(fill * 100).toFixed(1)}% of the shortest row at ${width}px (${bandHeight.toFixed(1)}px band in a ${shortestRow.toFixed(1)}px row) — it should fill the row, not sit inside it as a thumbnail`,
             );
+          }
+        }
+
+        /*
+         * 6. On a phone the cover is a square tile of one fixed size.
+         *
+         * Checks 1–4 already hold it clear of the text, inside its row and apart
+         * from its neighbours; this holds the shape. A band that came back on a
+         * phone would be wider than tall and fail here.
+         */
+        if (width < TABLET) {
+          for (const [index, entry] of rows.entries()) {
+            if (entry.band === null) continue;
+            if (
+              Math.abs(entry.band.width - TILE) > 1 ||
+              Math.abs(entry.band.height - TILE) > 1
+            ) {
+              problems.push(
+                `row ${index}: the phone cover is ${entry.band.width.toFixed(1)}×${entry.band.height.toFixed(1)}px, not a ${String(TILE)}px tile`,
+              );
+            }
           }
         }
 

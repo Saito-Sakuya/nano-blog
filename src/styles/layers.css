@@ -24,10 +24,10 @@
  *   tokens      custom properties only
  *   reset       box model and element normalisation
  *   base        element defaults: focus ring, headings, links
- *   utilities   single-purpose helpers and global preferences
  *   layout      the page frame (`.wrap`, `main`)
  *   prose       the reading column's element rules
  *   components  every named piece of UI, including component `<style>` blocks
+ *   utilities   single-purpose helpers and global preferences, which win
  *   print       paper overrides, which win over everything on screen
  *
  * `prose` sits under `components` because blocks inside an article — code,
@@ -35,12 +35,11 @@
  * rhythm, and they always did: before layers they won by coming later in the
  * file. A layer states that relationship instead of leaving it to file order.
  *
- * `utilities` sits low, which is not where utilities usually go, and that is
- * deliberate. It is where the utilities section sat in the stylesheet before
- * layers, so it keeps the precedence the rendered site was built against. The
- * difference is visible: GFM footnotes open with an `sr-only` heading, and
- * `.prose h2` outranks `.sr-only` here, so that heading keeps its 3.5em lead-in
- * and is what separates the footnotes from the body. Raising this layer to the
- * top removes the gap, so it has to come with footnote styling of its own.
+ * `utilities` is above `components` so that a helper like `.sr-only` means
+ * what it says wherever it is used. Before layers it sat early in the file and
+ * lost to anything later of equal weight: inside an article, `.prose h2`
+ * gave a visually hidden footnote heading its full lead-in, and that 66px gap
+ * was the only thing separating the notes from the text. The footnotes now
+ * have a visible label and their own spacing, so the helper can win.
  */
-@layer tokens, reset, base, utilities, layout, prose, components, print;
+@layer tokens, reset, base, layout, prose, components, utilities, print;

@@ -10,7 +10,7 @@
 }
 
 .comments__heading {
-  font-size: 1.1rem;
+  font-size: var(--step-1);
   margin-block-end: var(--space-16);
 }
 
@@ -81,7 +81,7 @@
 
 .comment__body h2,
 .comment__body h3 {
-  font-size: 1rem;
+  font-size: var(--step-0);
 }
 
 .comment__body pre {
@@ -97,7 +97,7 @@
 }
 
 .comment-form__heading {
-  font-size: 1rem;
+  font-size: var(--step-0);
 }
 
 .comment-form__note {
@@ -133,14 +133,41 @@
   color: var(--color-text);
   background: var(--color-surface);
   border: var(--border-width) solid var(--color-border);
-  border-radius: var(--radius-2);
-  padding: var(--space-8);
+  border-radius: var(--radius-4);
+  padding: var(--space-8) var(--space-12);
   inline-size: 100%;
+  transition: border-color var(--duration-120) var(--ease-standard);
 }
 
+.comment-form input[type="text"]:hover,
+.comment-form input[type="email"]:hover,
+.comment-form textarea:hover {
+  border-color: var(--color-muted);
+}
+
+.comment-form input[type="text"]:focus-visible,
+.comment-form input[type="email"]:focus-visible,
+.comment-form textarea:focus-visible {
+  border-color: var(--color-link);
+}
+
+/*
+ * A field the reader has already left in an invalid state — an address that
+ * is not one — says so with its edge. `:user-invalid` waits for interaction,
+ * so an untouched form is never shown as full of errors.
+ */
+.comment-form input:user-invalid,
+.comment-form textarea:user-invalid {
+  border-color: var(--color-danger);
+}
+
+/* The box grows with what is written rather than scrolling inside itself; an
+   engine without `field-sizing` keeps the fixed height and the drag handle. */
 .comment-form textarea {
+  field-sizing: content;
   resize: vertical;
   min-block-size: 8rem;
+  max-block-size: 60vh;
 }
 
 .comment-form__actions {
@@ -150,24 +177,9 @@
   align-items: center;
 }
 
-.comment-form__submit {
-  font: inherit;
-  font-size: var(--font-size-meta-lg);
-  color: var(--color-text);
-  background: var(--color-surface);
-  border: var(--border-width) solid var(--color-border);
-  border-radius: var(--radius-2);
-  padding: var(--space-8) var(--space-16);
-  min-height: 44px;
-  cursor: pointer;
-}
-
-.comment-form__submit:hover:not(:disabled) {
-  border-color: var(--color-brand);
-}
-
+/* While a comment is being sent the button is disabled, and that wait is
+   what the cursor says — not "not allowed". */
 .comment-form__submit:disabled {
-  color: var(--color-muted);
   cursor: progress;
 }
 

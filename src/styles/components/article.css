@@ -2,11 +2,20 @@
 /* Article cover                                                              */
 /* ========================================================================== */
 
-/* The article cover keeps its 16:9 box and gains rounded corners. */
+/* In the flow the article cover keeps a 16:9 box with rounded corners. */
 .article-cover [data-media-frame] {
-  border-radius: var(--radius-4);
+  border-radius: var(--radius-8);
   aspect-ratio: 16 / 9;
   max-inline-size: 900px;
+}
+
+/* On a tablet it is a wider, shorter strip, held to the text measure: a full
+   16:9 frame across the column was taller than the screen's first view. */
+@media (min-width: 48rem) and (max-width: 74.999rem) {
+  .article-cover [data-media-frame] {
+    aspect-ratio: 2 / 1;
+    max-inline-size: var(--measure-article);
+  }
 }
 
 /*
@@ -36,10 +45,16 @@
  * to layout: without one the block would collapse to the height of its text and
  * then jump when the image arrived.
  *
- * Below the tablet breakpoint there is no room for text beside an image, so the
- * cover reverts to an ordinary figure directly under the metadata.
+ * Only a cover inside the header moves. A standalone page puts its cover after
+ * the header, and an unscoped rule here positioned that figure against
+ * whatever ancestor happened to be positioned.
+ *
+ * This starts at the wide breakpoint, not the tablet one. The mask's clear
+ * region is the text measure, 43rem, and on a tablet that is nearly the whole
+ * header: the cover behind the title was a sliver at the right edge. Below 75rem
+ * the cover is an ordinary figure directly under the metadata.
  */
-@media (min-width: 48rem) {
+@media (min-width: 75rem) {
   .article-head {
     position: relative;
     /* Without isolation a negative-z layer behind this block escapes to the
@@ -65,7 +80,7 @@
     max-inline-size: none;
   }
 
-  .article-cover {
+  .article-head .article-cover {
     position: absolute;
     inset: 0;
     z-index: 0;
@@ -74,7 +89,7 @@
     pointer-events: none;
   }
 
-  .article-cover [data-media-frame] {
+  .article-head .article-cover [data-media-frame] {
     position: absolute;
     inset: 0;
     max-inline-size: none;
@@ -88,7 +103,7 @@
      measure (`--measure-article` is 42rem), then fading up to solid. A
      percentage here would move the clear region with the viewport and put text
      back over the image at wider widths. */
-  .article-cover img {
+  .article-head .article-cover img {
     object-position: right center;
     -webkit-mask-image: linear-gradient(
       to right,
@@ -106,10 +121,32 @@
     );
   }
 
-  /* The fallback panel exists to stand in for a thumbnail, not to flood a
-     header, so a cover that fails simply leaves the title on plain ground. */
-  .article-cover [data-media-fallback] {
-    display: none;
+  /*
+   * A cover that fails shows its generated fallback in the same place, under
+   * the same kind of fade, so the header keeps its shape. The panel drops its
+   * tint: behind a title it would read as a box, not as a cover.
+   *
+   * Its fade is steeper than the photograph's. The text measure stays clear
+   * either way (the clear region is the same 43rem), and the squares are not
+   * text that needs a contrast ramp; a steeper fade keeps the brand square,
+   * which the generator places past 52rem, at full strength.
+   */
+  .article-head .article-cover [data-media-fallback] {
+    background: none;
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      transparent 43rem,
+      rgb(0 0 0 / 0.55) 47rem,
+      #000 50rem
+    );
+    mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      transparent 43rem,
+      rgb(0 0 0 / 0.55) 47rem,
+      #000 50rem
+    );
   }
 }
 
@@ -122,14 +159,14 @@
 }
 
 .article-head h1 {
-  font-size: clamp(1.75rem, 3.6vw, 2.5rem);
+  font-size: var(--step-4);
   line-height: 1.15;
 }
 
 .article-head__description {
   margin-block-start: var(--space-16);
   color: var(--color-muted);
-  font-size: 1.0625rem;
+  font-size: var(--step-1);
   max-width: var(--measure-article);
 }
 
@@ -153,9 +190,9 @@
 }
 
 /*
- * Space above and below the cover — below the tablet breakpoint only.
+ * Space above and below the cover — below the wide breakpoint only.
  *
- * Above 48rem the cover is lifted out of the flow to sit behind the title
+ * From 75rem the cover is lifted out of the flow to sit behind the title
  * (`margin: 0; inset: 0` in the media block above), and these margins must not
  * apply there. Until this rule was scoped they did: same specificity, later in
  * the source, so the wide-screen `margin: 0` was dead code and an absolutely
@@ -168,10 +205,10 @@
  * `--space-24` of padding, so keeping both stacked two identical gaps under the
  * image — the band a reader sees and cannot explain.
  *
- * The top margin stays because below 48rem the cover is an ordinary figure in
+ * The top margin stays because below 75rem the cover is an ordinary figure in
  * sequence, where it needs the separation from the metadata above it.
  */
-@media (max-width: 47.999rem) {
+@media (max-width: 74.999rem) {
   .article-cover {
     margin-block: var(--space-24) 0;
   }

@@ -509,7 +509,10 @@ function placeSidenoteRail(
   if (layout === null) return;
 
   const summary = rail.querySelector<HTMLElement>("summary");
-  const summaryHeight = summary === null ? 0 : summary.offsetHeight;
+  // The exact height, not `offsetHeight`: that rounds, and a header that is a
+  // fraction taller than its rounded height overlaps the reference.
+  const summaryHeight =
+    summary === null ? 0 : summary.getBoundingClientRect().height;
 
   const layoutTop = layout.getBoundingClientRect().top;
   let top = anchor.getBoundingClientRect().top - layoutTop - summaryHeight;
@@ -524,7 +527,8 @@ function placeSidenoteRail(
 
   rail.style.setProperty(
     "--sidenote-rail-top",
-    `${Math.round(Math.max(0, top))}px`,
+    // Floored, so a sub-pixel remainder lifts the header clear of the mark.
+    `${Math.floor(Math.max(0, top))}px`,
   );
 }
 

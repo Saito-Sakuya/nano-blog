@@ -1,11 +1,12 @@
 import { initMediaFallbacks } from "./media.js";
+import { initSiteMenu } from "./site-menu.js";
 
 /**
  * The small script every page loads.
  *
- * Deliberately tiny: a keyboard route to the search page, and the thumbnail
- * failure handler. Neither is page-specific, and both must be available
- * wherever the reader happens to be. Everything heavier is loaded only by the
+ * Deliberately tiny: a keyboard route to the search page, the thumbnail
+ * failure handler, and the placement of the narrow-screen menu. None is
+ * page-specific, and all must be available wherever the reader happens to be. Everything heavier is loaded only by the
  * pages that need it.
  */
 
@@ -52,4 +53,5 @@ function initSearchShortcut(): void {
 export function initGlobal(): void {
   initSearchShortcut();
   initMediaFallbacks();
+  initSiteMenu();
 }

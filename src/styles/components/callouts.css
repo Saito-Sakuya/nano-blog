@@ -2,18 +2,42 @@
 /* Callouts                                                                   */
 /* ========================================================================== */
 
+/*
+ * Each type carries a tone (the rule, the label, the icon) and an icon.
+ *
+ * Five types told apart by the colour of a 3px rule were five shades of the
+ * same box to anyone not reading colour closely. The icon gives each a shape of
+ * its own. Icons are same-origin SVG files used as masks and filled with the
+ * label's colour, so they follow the theme and stay inside `img-src 'self'`.
+ */
 .callout {
-  border-inline-start: 3px solid var(--color-border);
-  border-radius: 0 var(--radius-2) var(--radius-2) 0;
+  --callout-tone: var(--color-border);
+
+  border-inline-start: 3px solid var(--callout-tone);
+  border-radius: 0 var(--radius-4) var(--radius-4) 0;
   padding: var(--space-12) var(--space-16);
   background: var(--color-surface);
 }
 
 .callout__label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
   font-weight: 600;
   font-size: var(--font-size-meta-lg);
   letter-spacing: 0.06em;
   margin-block-end: var(--space-4);
+  color: var(--callout-tone);
+}
+
+.callout__label::before {
+  content: "";
+  flex: none;
+  inline-size: 16px;
+  block-size: 16px;
+  background: currentColor;
+  -webkit-mask: var(--callout-icon) center / contain no-repeat;
+  mask: var(--callout-icon) center / contain no-repeat;
 }
 
 .callout > * + * {
@@ -21,26 +45,41 @@
 }
 
 .callout--note {
-  border-inline-start-color: var(--color-link);
+  --callout-tone: var(--color-link);
+  --callout-icon: url("/icons/callouts/note.svg");
   background: var(--color-note-soft);
 }
 
 .callout--tip {
-  border-inline-start-color: var(--color-success);
+  --callout-tone: var(--color-success);
+  --callout-icon: url("/icons/callouts/tip.svg");
   background: var(--color-success-soft);
 }
 
+/* The brand cyan is too light to set text in, so the rule and icon take it and
+   the label stays in the text colour. */
 .callout--important {
-  border-inline-start-color: var(--color-brand);
+  --callout-tone: var(--color-brand);
+  --callout-icon: url("/icons/callouts/important.svg");
   background: var(--color-note-soft);
 }
 
+.callout--important .callout__label {
+  color: var(--color-text);
+}
+
+.callout--important .callout__label::before {
+  background: var(--color-brand);
+}
+
 .callout--warning {
-  border-inline-start-color: var(--color-warning);
+  --callout-tone: var(--color-warning);
+  --callout-icon: url("/icons/callouts/warning.svg");
   background: var(--color-warning-soft);
 }
 
 .callout--caution {
-  border-inline-start-color: var(--color-danger);
+  --callout-tone: var(--color-danger);
+  --callout-icon: url("/icons/callouts/caution.svg");
   background: var(--color-danger-soft);
 }

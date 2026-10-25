@@ -1,3 +1,5 @@
+import type { Page } from "@playwright/test";
+
 import { MEDIA_ORIGIN, expect, test, visit } from "./fixtures.js";
 import { isBrowserCancelledRequest } from "./request-cancellation.js";
 
@@ -26,6 +28,38 @@ const BASE_ORIGIN = process.env["E2E_BASE_URL"] ?? "http://localhost:4321";
  */
 const WEBKIT_TAB_ORDER =
   "WebKit omits links from the default Tab order, so keyboard focus assertions cannot hold in that engine.";
+
+/**
+ * Below the tablet breakpoint the bookmark navigation and its theme menu give
+ * way to a menu sheet, opened from `[data-site-menu-button]`, which holds the
+ * same links and the theme choice as a radio group (`[data-theme-choice]`).
+ * The tests below exercise whichever control the viewport actually shows.
+ */
+function isNarrow(page: Page): boolean {
+  return (page.viewportSize()?.width ?? 1280) < 768;
+}
+
+async function openThemeControl(page: Page): Promise<void> {
+  if (!isNarrow(page)) {
+    await page.locator("[data-theme-button]").click();
+    return;
+  }
+  if (!(await page.locator("[data-site-menu]").isVisible())) {
+    await page.locator("[data-site-menu-button]").click();
+  }
+}
+
+async function chooseTheme(
+  page: Page,
+  value: "light" | "dark" | "system",
+): Promise<void> {
+  await openThemeControl(page);
+  if (isNarrow(page)) {
+    await page.locator(`[data-theme-choice="${value}"]`).check();
+  } else {
+    await page.locator(`[data-theme-value="${value}"]`).click();
+  }
+}
 
 test.describe("document shell", () => {
   test("the home page loads with the right language and title", async ({
@@ -212,24 +246,26 @@ test.describe("theme", () => {
   test("the theme control is available and switches", async ({ page }) => {
     await visit(page, "/");
 
-    const toggle = page.locator("[data-theme-toggle]");
-    await expect(toggle).toBeVisible();
+    if (isNarrow(page)) {
+      await openThemeControl(page);
+      await expect(page.locator("[data-theme-sheet]")).toBeVisible();
+    } else {
+      await expect(page.locator("[data-theme-toggle]")).toBeVisible();
+      await openThemeControl(page);
+      await expect(page.locator("[data-theme-menu]")).toBeVisible();
+      await page.keyboard.press("Escape");
+    }
 
-    await page.locator("[data-theme-button]").click();
-    await expect(page.locator("[data-theme-menu]")).toBeVisible();
-
-    await page.locator('[data-theme-value="dark"]').click();
+    await chooseTheme(page, "dark");
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
 
-    await page.locator("[data-theme-button]").click();
-    await page.locator('[data-theme-value="light"]').click();
+    await chooseTheme(page, "light");
     await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
   });
 
   test("an explicit choice survives a reload", async ({ page }) => {
     await visit(page, "/");
-    await page.locator("[data-theme-button]").click();
-    await page.locator('[data-theme-value="dark"]').click();
+    await chooseTheme(page, "dark");
 
     await page.reload();
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
@@ -237,8 +273,7 @@ test.describe("theme", () => {
 
   test("the choice is applied before first paint", async ({ page }) => {
     await visit(page, "/");
-    await page.locator("[data-theme-button]").click();
-    await page.locator('[data-theme-value="dark"]').click();
+    await chooseTheme(page, "dark");
     await page.reload();
 
     // The attribute must already be set by the time the body exists, which is
@@ -251,12 +286,10 @@ test.describe("theme", () => {
 
   test("following the system clears the explicit choice", async ({ page }) => {
     await visit(page, "/");
-    await page.locator("[data-theme-button]").click();
-    await page.locator('[data-theme-value="dark"]').click();
+    await chooseTheme(page, "dark");
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
 
-    await page.locator("[data-theme-button]").click();
-    await page.locator('[data-theme-value="system"]').click();
+    await chooseTheme(page, "system");
     await expect(page.locator("html")).not.toHaveAttribute(
       "data-theme",
       "dark",
@@ -303,8 +336,13 @@ test.describe("theme", () => {
       await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
     };
 
-    await clickAt("[data-theme-button]");
-    await clickAt('[data-theme-value="dark"]');
+    if (isNarrow(page)) {
+      await clickAt("[data-site-menu-button]");
+      await clickAt('[data-theme-choice="dark"]');
+    } else {
+      await clickAt("[data-theme-button]");
+      await clickAt('[data-theme-value="dark"]');
+    }
     await page.waitForTimeout(150);
 
     expect(await page.evaluate(() => window.scrollY)).toBe(before);
@@ -316,18 +354,40 @@ test.describe("theme", () => {
   }) => {
     test.skip(browserName === "webkit", WEBKIT_TAB_ORDER);
     await visit(page, "/");
-    await page.locator("[data-theme-button]").click();
-    await expect(page.locator("[data-theme-menu]")).toBeVisible();
+
+    // On a phone the menu is the sheet, and its trigger is the menu button.
+    const menu = isNarrow(page) ? "[data-site-menu]" : "[data-theme-menu]";
+    const trigger = isNarrow(page)
+      ? "[data-site-menu-button]"
+      : "[data-theme-button]";
+
+    await page.locator(trigger).click();
+    await expect(page.locator(menu)).toBeVisible();
 
     await page.keyboard.press("Escape");
-    await expect(page.locator("[data-theme-menu]")).toBeHidden();
-    await expect(page.locator("[data-theme-button]")).toBeFocused();
+    await expect(page.locator(menu)).toBeHidden();
+    await expect(page.locator(trigger)).toBeFocused();
   });
 });
 
 test.describe("keyboard navigation", () => {
   test("every header link is reachable by keyboard", async ({ page }) => {
     await visit(page, "/");
+
+    // On a phone the links are in the menu sheet: Tab to its button, open it
+    // with Enter, and the sheet's links follow the button in the Tab order.
+    if (isNarrow(page)) {
+      for (let index = 0; index < 8; index += 1) {
+        await page.keyboard.press("Tab");
+        const onMenu = await page.evaluate(
+          () =>
+            document.activeElement?.hasAttribute("data-site-menu-button") ===
+            true,
+        );
+        if (onMenu) break;
+      }
+      await page.keyboard.press("Enter");
+    }
 
     const labels: string[] = [];
     for (let index = 0; index < 9; index += 1) {

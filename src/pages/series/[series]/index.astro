@@ -4,6 +4,7 @@ import type { GetStaticPaths } from 'astro';
 import Breadcrumbs from '../../../components/Breadcrumbs.astro';
 import EmptyState from '../../../components/EmptyState.astro';
 import Thumb from '../../../components/Thumb.astro';
+import { titleTransitionStyle } from '../../../lib/routing/transition.js';
 import Pagination from '../../../components/Pagination.astro';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import { displayDate } from '../../../lib/content/build-context.js';
@@ -77,7 +78,7 @@ const meta = buildMetadata({
               <li class="index-row">
                 <span class="index-row__date">#{post.data.series?.order ?? 0}</span>
 
-                <h2 class="index-row__title">
+                <h2 class="index-row__title" style={titleTransitionStyle(post.id)}>
                   <a href={post.url}>{post.data.title}</a>
                 </h2>
 
@@ -94,7 +95,7 @@ const meta = buildMetadata({
                   <Thumb
                     src={post.data.cover.src}
                     alt={post.data.cover.alt}
-                    fallbackText={[...post.data.title][0] ?? '·'}
+                    seed={post.id}
                   />
                 </div>
               </li>

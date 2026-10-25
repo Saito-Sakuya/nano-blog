@@ -31,7 +31,7 @@ const visible = links.filter(
   totalPages > 1 && (
     <nav class="pagination" aria-label={label}>
       {previousUrl !== null && (
-        <a class="pagination__link" href={previousUrl} rel="prev">
+        <a class="button pagination__link" href={previousUrl} rel="prev">
           上一页
         </a>
       )}
@@ -45,7 +45,7 @@ const visible = links.filter(
               {gap && <li aria-hidden="true" class="pagination__gap">…</li>}
               <li>
                 <a
-                  class="pagination__link"
+                  class="button pagination__link"
                   href={link.url}
                   aria-current={link.current ? 'page' : undefined}
                 >
@@ -60,7 +60,7 @@ const visible = links.filter(
       </ul>
 
       {nextUrl !== null && (
-        <a class="pagination__link" href={nextUrl} rel="next">
+        <a class="button pagination__link" href={nextUrl} rel="next">
           下一页
         </a>
       )}

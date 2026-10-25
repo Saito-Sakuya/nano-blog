@@ -45,6 +45,10 @@ export function createMarkdownProcessor() {
     remarkRehype: {
       footnoteLabel: "脚注",
       footnoteBackLabel: "返回引用",
+      // The library hides the label (`sr-only`). It is shown instead, as the
+      // footnotes section's own heading: hidden, it still took a heading's
+      // full lead-in inside `.prose`, and the gap it left was unexplained.
+      footnoteLabelProperties: { className: ["footnotes__label"] },
     },
     // Each entry is an *attacher* — a function unified calls with the plugin's
     // options, whose return value becomes the tree transformer. Calling one of

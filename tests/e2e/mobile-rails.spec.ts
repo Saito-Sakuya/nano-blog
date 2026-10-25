@@ -530,13 +530,24 @@ test.describe("the note drawer and the note it belongs to", () => {
     await page.waitForTimeout(250);
     expect((await readState(page)).sidenoteOpen).toBe(true);
 
+    // "Blank" means nothing that would take the click itself: not a control and
+    // not the drawer. Plain prose qualifies — whether the point lands on a
+    // paragraph or the gap between two depends on the type scale, not on this.
     const blank = await page.evaluate(() => {
       const x = Math.round(window.innerWidth * 0.18);
       const y = Math.round(window.innerHeight * 0.7);
       const hit = document.elementFromPoint(x, y);
-      return { x, y, tag: hit?.tagName ?? null };
+      const taken =
+        hit === null ||
+        hit.closest(
+          "a, button, summary, details, input, textarea, select, label, [data-sidenote-rail], .sidenote-chip",
+        ) !== null;
+      return { x, y, tag: hit?.tagName ?? null, taken };
     });
-    expect(blank.tag, "the blank point for this test is not blank").toBe("DIV");
+    expect(
+      blank.taken,
+      `the blank point for this test is not blank (${String(blank.tag)})`,
+    ).toBe(false);
 
     await page.mouse.click(blank.x, blank.y);
     await page.waitForTimeout(250);

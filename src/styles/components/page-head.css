@@ -9,7 +9,7 @@
 }
 
 .page-head h1 {
-  font-size: clamp(1.6rem, 3.2vw, 2.1rem);
+  font-size: var(--step-5);
   line-height: 1.15;
 }
 
