@@ -12,6 +12,7 @@ import {
   pageNumbers,
   postsIndexUrl,
 } from '../../../lib/routing/urls.js';
+import { coverHue } from '../../../lib/media/generated-cover.js';
 import { buildMetadata } from '../../../lib/seo/metadata.js';
 import { blogPostingJsonLd } from '../../../lib/seo/jsonld.js';
 import { ogImagePath } from '../../../lib/seo/og.js';
@@ -154,6 +155,7 @@ function seriesContextFor(post: PostView): SeriesContext | null {
         <BaseLayout
           meta={meta}
           indexable
+          progressHue={coverHue(post.id)}
           jsonLd={blogPostingJsonLd({
             data: post.data,
             id: post.id,

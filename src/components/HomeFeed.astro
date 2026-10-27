@@ -1,16 +1,24 @@
 ---
 import EmptyState from './EmptyState.astro';
+import FeaturedPosts from './FeaturedPosts.astro';
 import IndexList from './IndexList.astro';
 import Pagination from './Pagination.astro';
+import { displayDate } from '../lib/content/build-context.js';
 import { loadSite } from '../lib/content/collections.js';
-import { homePageUrl, pageSlice, paginate } from '../lib/routing/urls.js';
-import { SITE_TAGLINE } from '../lib/site.js';
+import { coverHue, generatedCoverSvg } from '../lib/media/generated-cover.js';
+import { homePageUrl, pageSlice, paginate, seriesIndexUrl } from '../lib/routing/urls.js';
+import { SITE_NAME } from '../lib/site.js';
 
 /**
  * The home feed.
  *
- * A pure reverse-chronological stream. There is no hero, no illustration and no
- * metric tiles: the first thing below the navigation is the most recent article.
+ * Page 1 opens with what the writer chose to put first — up to four featured
+ * articles (`featured: true`, newest first) and the three most recently added
+ * series — and then the reverse-chronological stream. Either block is left out
+ * when there is nothing to put in it. Deeper pages are the stream alone.
+ *
+ * There is no slogan or hero text: the page's heading is the site's name, for
+ * the outline, and the first thing a reader sees is an article.
  */
 interface Props {
   page: number;
@@ -18,24 +26,80 @@ interface Props {
   absolute?: boolean;
 }
 
+const FEATURED_LIMIT = 4;
+const SERIES_LIMIT = 3;
+
 const { page } = Astro.props;
 const site = await loadSite();
 const posts = pageSlice(site.posts, page);
 const pagination = paginate(site.posts.length, page, homePageUrl);
+
+const first = page === 1;
+const featured = first
+  ? site.posts.filter((post) => post.data.featured).slice(0, FEATURED_LIMIT)
+  : [];
+const series = first ? site.series.slice(0, SERIES_LIMIT) : [];
 ---
 
 <div class="wrap">
-  <div class="page-head">
-    <h1>最新文章</h1>
-    <p class="page-head__description">{SITE_TAGLINE}</p>
-  </div>
+  {
+    first ? (
+      <h1 class="sr-only">{SITE_NAME}</h1>
+    ) : (
+      <div class="page-head">
+        <h1>最新文章</h1>
+      </div>
+    )
+  }
 
   {
     site.posts.length === 0 ? (
       <EmptyState message="尚无公开文章。" />
     ) : (
       <>
-        <IndexList posts={posts} />
+        {featured.length > 0 && <FeaturedPosts posts={featured} />}
+
+        {series.length > 0 && (
+          <section class="home-section" aria-labelledby="series-heading">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow"><span class="px" aria-hidden="true" />Series</p>
+                <h2 id="series-heading">系列</h2>
+              </div>
+              <a href={seriesIndexUrl()}>全部系列</a>
+            </div>
+            <ul class="series-grid" role="list">
+              {series.map((entry) => (
+                <li class="series-card" style={`--hue: ${coverHue(entry.id)}`}>
+                  <span class="series-card__tile" data-media-fallback="generated" set:html={generatedCoverSvg(entry.id, 'tile')} />
+                  <div>
+                    <h3 class="series-card__title">
+                      <a href={entry.url}>{entry.title}</a>
+                    </h3>
+                    <p class="series-card__meta">
+                      {String(entry.count).padStart(2, '0')} 篇 · 更新于{' '}
+                      <time datetime={entry.latest}>{displayDate(entry.latest)}</time>
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {first ? (
+          <section class="home-section" aria-labelledby="latest-heading">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow"><span class="px" aria-hidden="true" />Latest</p>
+                <h2 id="latest-heading">最新文章</h2>
+              </div>
+            </div>
+            <IndexList posts={posts} headingLevel="h3" />
+          </section>
+        ) : (
+          <IndexList posts={posts} />
+        )}
         <Pagination pagination={pagination} label="文章分页" />
       </>
     )

@@ -1,5 +1,7 @@
 ---
 import '../styles/global.css';
+// The display face is preloaded: it sets every heading, and without the hint
+// the browser only discovers it after the stylesheet has been parsed.
 // Imported by URL so it can be attached with `media="print"` and so a screen
 // reader never has to download rules it will not use.
 import printStylesUrl from '../styles/print.css?url';
@@ -37,9 +39,14 @@ interface Props {
    * index itself contains. A page marked `noindex: true` also leaves it off.
    */
   indexable?: boolean;
+  /**
+   * Set on article pages: the post's cover hue. The header then shows a
+   * reading-progress bar in that colour.
+   */
+  progressHue?: number | undefined;
 }
 
-const { meta, jsonLd, indexable = false } = Astro.props;
+const { meta, jsonLd, indexable = false, progressHue } = Astro.props;
 
 /*
  * Warm the connection to the media host, but only when this build actually has
@@ -76,7 +83,7 @@ const showPreconnect =
   <body>
     <a class="skip-link" href="#main">跳到正文</a>
     <SourceBanner />
-    <SiteHeader />
+    <SiteHeader progressHue={progressHue} />
     <main id="main" tabindex="-1" data-pagefind-body={indexable ? '' : undefined} data-pagefind-ignore={indexable ? undefined : 'all'}>
       <slot />
     </main>

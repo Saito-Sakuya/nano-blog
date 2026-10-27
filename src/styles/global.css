@@ -1,10 +1,11 @@
 /*
  * nano-blog — global styles
  *
- * "Warm modern editorial index": restraint, precision, warmth, a little
- * experimental. Identity comes from typographic proportion, the bookmark
- * navigation, compact tabular indexes, sidenotes, hairlines and the cyan
- * square — never from large imagery, texture or decorative motion.
+ * "Pixel editorial": an editorial index whose one motif is the brand's cyan
+ * square, used as a system — square markers, rules made of squares, buttons
+ * with a hard pixel shadow. Warm paper and ink carry the page, amber marks
+ * interaction, and each article takes its own colour from its cover. Motion
+ * only ever says something happened; nothing moves on its own.
  *
  * Every colour, space, radius and duration resolves to a token.
  *
@@ -27,6 +28,7 @@
 @import "./components/site-header.css" layer(components);
 @import "./components/site-footer.css" layer(components);
 @import "./components/page-head.css" layer(components);
+@import "./components/home.css" layer(components);
 @import "./components/breadcrumbs.css" layer(components);
 @import "./components/index-list.css" layer(components);
 @import "./components/media.css" layer(components);

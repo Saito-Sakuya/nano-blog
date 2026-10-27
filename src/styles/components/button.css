@@ -20,17 +20,20 @@
   gap: var(--space-8);
   min-height: 44px;
   padding: var(--space-8) var(--space-16);
-  border: var(--border-width) solid var(--color-border);
+  border: 1.5px solid var(--color-text);
   border-radius: var(--radius-4);
   background: var(--color-surface);
   color: var(--color-text);
+  box-shadow: var(--shadow-pixel);
   font: inherit;
+  font-family: var(--font-display);
   font-size: var(--font-size-meta-lg);
+  font-weight: 600;
   line-height: 1.3;
   text-decoration: none;
   cursor: pointer;
   transition:
-    border-color var(--duration-120) var(--ease-standard),
+    box-shadow var(--duration-120) var(--ease-standard),
     color var(--duration-120) var(--ease-standard),
     background-color var(--duration-120) var(--ease-standard),
     translate var(--duration-120) var(--ease-standard);
@@ -43,20 +46,21 @@
 }
 
 .button:hover {
-  border-color: var(--color-link);
-  color: var(--color-link);
+  background: var(--color-hover);
 }
 
-/* Pressed: a one-pixel settle and a tint, so the click visibly landed. */
+/* Pressed: the button sinks into its own shadow, so the click visibly landed. */
 .button:active {
-  translate: 0 1px;
-  background: var(--color-brand-soft);
+  translate: 3px 3px;
+  box-shadow: 0 0 0 var(--shadow-ink);
 }
 
 .button:disabled,
 .button[aria-disabled="true"] {
   border-style: dashed;
+  border-color: var(--color-border);
   background: transparent;
+  box-shadow: none;
   color: var(--color-muted);
   cursor: not-allowed;
   translate: none;
@@ -64,23 +68,23 @@
 
 /* The current page in a pager is a button that is already pressed. */
 .button[aria-current="page"] {
-  border-color: var(--color-brand);
-  background: var(--color-brand-soft);
-  color: var(--color-text);
+  background: var(--color-text);
+  box-shadow: none;
+  color: var(--color-bg);
+  translate: 3px 3px;
 }
 
 /*
- * The one primary action on a page (posting a comment). Filled with the link
- * colour, which clears 4.5:1 against its text in both themes; the brand cyan
- * does not.
+ * The one primary action on a page (posting a comment), in amber. Amber is a
+ * light fill in both themes, so the text on it is always the dark accent ink.
  */
 .button--primary {
-  border-color: var(--color-link);
-  background: var(--color-link);
-  color: light-dark(#ffffff, #0e1517);
+  border-color: var(--pixel-ink);
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
 }
 
 .button--primary:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--color-link), var(--color-text) 18%);
-  color: light-dark(#ffffff, #0e1517);
+  background: color-mix(in oklch, var(--color-accent), white 18%);
+  color: var(--color-accent-ink);
 }

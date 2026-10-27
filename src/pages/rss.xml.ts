@@ -11,7 +11,7 @@ import {
   CONTENT_LICENSE_URL,
   MEDIA_ORIGIN,
   SITE_NAME,
-  SITE_TAGLINE,
+  SITE_DESCRIPTION,
   canonicalUrl,
 } from "../lib/site.js";
 
@@ -217,7 +217,7 @@ export const GET: APIRoute = async () => {
 
   return rss({
     title: SITE_NAME,
-    description: SITE_TAGLINE,
+    description: SITE_DESCRIPTION,
     site: `${canonicalUrl("/")}`.replace(/\/$/u, ""),
     trailingSlash: true,
     xmlns: {

@@ -28,6 +28,11 @@
     border-color: Highlight;
   }
 
+  .reading-progress {
+    forced-color-adjust: none;
+    background: Highlight;
+  }
+
   .line--highlighted {
     outline: 2px solid Highlight;
   }
@@ -39,9 +44,12 @@
     background: CanvasText;
   }
 
-  /* The chosen theme is shown by a raised fill, which forced colours erase. */
+  /* The chosen theme, the current page and the card in view are shown by a
+     fill, which forced colours erase. */
   .segmented__option:has(input:checked),
-  .theme-menu__item[aria-checked="true"] {
+  .theme-menu__item[aria-checked="true"],
+  .button[aria-current="page"],
+  .carousel__marker[aria-current="true"] {
     outline: 2px solid Highlight;
   }
 

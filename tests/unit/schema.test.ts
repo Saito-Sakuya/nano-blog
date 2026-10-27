@@ -110,7 +110,7 @@ describe("postSchema — accepted input", () => {
 
 describe("postSchema — rejected input", () => {
   it("rejects an unknown key rather than ignoring it", () => {
-    const input = { ...validPost(), featured: true };
+    const input = { ...validPost(), pinned: true };
     expect(postSchema.safeParse(input).success).toBe(false);
   });
 

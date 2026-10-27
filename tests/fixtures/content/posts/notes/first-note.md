@@ -19,6 +19,7 @@ cover:
   height: 900
   credit: TEST FIXTURE 自动生成的图案，无外部来源
 toc: auto
+featured: true
 ---
 
 ## 段落与内联标记

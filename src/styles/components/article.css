@@ -159,8 +159,14 @@
 }
 
 .article-head h1 {
-  font-size: var(--step-4);
-  line-height: 1.15;
+  font-size: clamp(2rem, 1.3rem + 2.6vw, 3.25rem);
+  line-height: 1.08;
+  letter-spacing: -0.035em;
+}
+
+.post ::selection {
+  background: var(--post-soft);
+  color: var(--color-text);
 }
 
 .article-head__description {
@@ -176,8 +182,13 @@
   gap: var(--space-4) var(--space-12);
   align-items: center;
   margin-block-start: var(--space-16);
-  font-size: var(--font-size-meta-lg);
+  font-family: var(--font-meta);
+  font-size: var(--font-size-meta);
   color: var(--color-muted);
+}
+
+.article-meta a:not(.tag-chip) {
+  color: var(--post-link, var(--color-link));
 }
 
 .article-meta__list {

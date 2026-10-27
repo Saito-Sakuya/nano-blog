@@ -79,13 +79,24 @@ interface Run {
 /** Text runs in the article header, in document order. */
 const COLLECT_RUNS = `(() => {
   const runs = [];
+  // The palette is written in OKLCH, and engines serialise a computed colour in
+  // the space it was written in. Painting it onto a canvas and reading the
+  // pixel back gives the sRGB the screen shows, whatever the syntax.
+  const context = document.createElement("canvas").getContext("2d", { willReadFrequently: true });
+  const toRgb = (color) => {
+    context.clearRect(0, 0, 1, 1);
+    context.fillStyle = color;
+    context.fillRect(0, 0, 1, 1);
+    const [r, g, b] = context.getImageData(0, 0, 1, 1).data;
+    return "rgb(" + r + ", " + g + ", " + b + ")";
+  };
   const add = (label, el, large) => {
     if (el === null) return;
     const rect = el.getBoundingClientRect();
     if (rect.width < 1 || rect.height < 1) return;
     runs.push({
       label,
-      color: getComputedStyle(el).color,
+      color: toRgb(getComputedStyle(el).color),
       large,
       x: rect.x,
       y: rect.y,

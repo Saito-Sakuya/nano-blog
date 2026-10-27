@@ -148,7 +148,8 @@
 .comment-form input[type="text"]:focus-visible,
 .comment-form input[type="email"]:focus-visible,
 .comment-form textarea:focus-visible {
-  border-color: var(--color-link);
+  border-color: var(--color-text);
+  box-shadow: 3px 3px 0 var(--color-accent);
 }
 
 /*

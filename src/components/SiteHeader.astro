@@ -20,6 +20,13 @@ import { aboutUrl, archivePageUrl, postsIndexUrl, searchUrl, tagsIndexUrl } from
  */
 const path = Astro.url.pathname;
 
+interface Props {
+  /** The article's cover hue; when set, a reading-progress bar runs along the header's foot. */
+  progressHue?: number | undefined;
+}
+
+const { progressHue } = Astro.props;
+
 interface NavItem {
   readonly label: string;
   readonly href: string;
@@ -50,6 +57,11 @@ const themeChoices = [
 ---
 
 <header class="site-header">
+  {
+    progressHue !== undefined && (
+      <div class="reading-progress" data-post-accent style={`--post-hue: ${progressHue}`} aria-hidden="true" />
+    )
+  }
   <div class="wrap site-header__inner">
     <a class="brand" href="/">
       <span>ani</span><span class="brand__mark" aria-hidden="true"></span><span>nano</span>

@@ -91,11 +91,11 @@ const show = shouldRenderToc(headings, mode);
     }
 
     /* The section being read is marked, and the mark is not colour alone: it
-       also gains the brand rule and a heavier weight. */
+       also gains a rule in the article's colour and a heavier weight. */
     .toc__item a[aria-current='true'] {
       color: var(--color-text);
       font-weight: 600;
-      box-shadow: inset 2px 0 0 var(--color-brand);
+      box-shadow: inset 3px 0 0 var(--post-accent, var(--color-brand));
       padding-inline-start: var(--space-8);
     }
 

@@ -59,7 +59,11 @@ export const SITE_ENV: SiteEnv = parseSiteEnv(process.env["SITE_ENV"]);
 
 export const SITE_NAME = "nano-blog";
 export const SITE_AUTHOR = "Nano";
-export const SITE_TAGLINE = "记录微小发现，也保存复杂思考。";
+/**
+ * The site's description, for the feed and for pages that have none of their
+ * own. A plain statement of what the site is, never shown as page furniture.
+ */
+export const SITE_DESCRIPTION = "Nano 的个人博客。";
 export const SITE_LANG = "zh-CN";
 
 /**

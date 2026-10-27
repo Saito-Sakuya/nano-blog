@@ -40,9 +40,71 @@
   margin-block-start: 2.5em;
 }
 
+/*
+ * Section numbers, 01, 02, …, only in an article with three or more sections,
+ * where they help a reader keep their place; a short note is left unnumbered.
+ * Only the body's own `h2`s count — the footnotes label sits inside its
+ * section, not directly in the prose. An engine without `:has()` simply shows
+ * no numbers.
+ */
+.prose {
+  counter-reset: section;
+}
+
+.prose:has(> h2:nth-of-type(3)) > h2 {
+  counter-increment: section;
+}
+
+.prose:has(> h2:nth-of-type(3)) > h2::before {
+  content: counter(section, decimal-leading-zero) / "";
+  margin-inline-end: 0.6em;
+  font-family: var(--font-meta);
+  font-size: 0.6em;
+  font-weight: 600;
+  letter-spacing: 0;
+  vertical-align: 0.2em;
+  color: var(--post-accent, var(--color-accent-text));
+}
+
+/* A square before each subsection, in the article's colour. */
+.prose > h3::before {
+  content: "";
+  display: inline-block;
+  inline-size: 0.42em;
+  block-size: 0.42em;
+  margin-inline-end: 0.5em;
+  vertical-align: 0.12em;
+  background: var(--post-accent, var(--color-brand));
+}
+
+/* Links in the body take the article's colour, with a heavier underline. */
+.prose a:not([data-footnote-ref], [data-footnote-backref], .heading-anchor) {
+  color: var(--post-link, var(--color-link));
+  text-decoration-color: color-mix(
+    in oklch,
+    var(--post-accent, var(--color-link)) 60%,
+    transparent
+  );
+  text-decoration-thickness: 2px;
+}
+
+.prose
+  a:not([data-footnote-ref], [data-footnote-backref], .heading-anchor):hover {
+  text-decoration-color: var(--post-accent, var(--color-link));
+}
+
+.prose [data-footnote-ref] {
+  color: var(--post-link, var(--color-link));
+  font-family: var(--font-meta);
+}
+
 .prose ul,
 .prose ol {
   padding-inline-start: 1.4em;
+}
+
+.prose li::marker {
+  color: var(--post-accent, var(--color-muted));
 }
 
 .prose li + li {
@@ -50,15 +112,19 @@
 }
 
 .prose blockquote {
-  border-inline-start: var(--border-width-strong) solid var(--color-border);
-  padding-inline-start: var(--space-16);
-  color: var(--color-muted);
+  border-inline-start: 4px solid var(--post-accent, var(--color-border));
+  padding: var(--space-12) var(--space-16);
+  background: var(--post-soft, transparent);
+  color: var(--color-text);
 }
 
 .prose code {
   font-family: var(--font-mono);
   font-size: 0.9em;
-  background: color-mix(in srgb, var(--color-border) 35%, transparent);
+  background: var(
+    --post-soft,
+    color-mix(in srgb, var(--color-border) 35%, transparent)
+  );
   padding: 0.1em 0.3em;
   border-radius: var(--radius-2);
 }
@@ -123,7 +189,8 @@
 }
 
 .prose thead th {
-  border-block-end: 1.5px solid var(--color-text);
+  border-block-end: 2px solid var(--color-text);
+  font-family: var(--font-display);
   font-weight: 600;
 }
 
@@ -148,7 +215,7 @@
  * unexplained space that was the only thing separating the notes from the
  * text. The label is now real (`footnotes__label`, set in the Markdown
  * pipeline), and the section carries its own separation: a hairline with the
- * brand's short cyan segment at its start.
+ * article's short coloured segment at its start.
  */
 .prose .footnotes {
   position: relative;
@@ -163,11 +230,11 @@
 .prose .footnotes::before {
   content: "";
   position: absolute;
-  inset-block-start: calc(-1 * var(--border-width));
+  inset-block-start: -2px;
   inset-inline-start: 0;
   inline-size: var(--space-48);
-  block-size: var(--border-width);
-  background: var(--color-brand);
+  block-size: 3px;
+  background: var(--post-accent, var(--color-brand));
 }
 
 .prose .footnotes__label {
