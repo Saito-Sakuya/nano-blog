@@ -2,7 +2,6 @@
 import '../styles/global.css';
 // The display face is preloaded: it sets every heading, and without the hint
 // the browser only discovers it after the stylesheet has been parsed.
-import displayFontUrl from '../assets/fonts/space-grotesk-latin-wght-normal.woff2?url';
 // Imported by URL so it can be attached with `media="print"` and so a screen
 // reader never has to download rules it will not use.
 import printStylesUrl from '../styles/print.css?url';
@@ -77,7 +76,6 @@ const showPreconnect =
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     {showPreconnect && <link rel="preconnect" href={MEDIA_ORIGIN} />}
     <script is:inline src="/theme-init.js"></script>
-    <link rel="preload" href={displayFontUrl} as="font" type="font/woff2" crossorigin />
     <SeoHead meta={meta} jsonLd={jsonLd} />
     <link rel="stylesheet" href={printStylesUrl} media="print" />
   </head>

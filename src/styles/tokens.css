@@ -29,21 +29,6 @@
  * meaning "this one". Everything else hovers in neutral ink.
  */
 
-/*
- * The display face, for headings and the wordmark. Latin and digits only:
- * Chinese text, and Chinese punctuation in particular, must keep the CJK
- * font's full-width forms, so the range stops before U+2000. 22KB, variable
- * weight, OFL (see `assets/fonts/space-grotesk-OFL.txt`).
- */
-@font-face {
-  font-family: "Space Grotesk";
-  src: url("../assets/fonts/space-grotesk-latin-wght-normal.woff2")
-    format("woff2");
-  font-weight: 300 700;
-  font-display: swap;
-  unicode-range: U+0020-007E, U+00A0-00FF, U+20AC, U+2122;
-}
-
 :root {
   color-scheme: light dark;
 
@@ -224,8 +209,8 @@
   --font-mono:
     ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", Menlo,
     monospace;
-  /* Headings: the display face for Latin, the system face for everything else. */
-  --font-display: "Space Grotesk", var(--font-sans);
+  /* Headings: the system face too; the site downloads no fonts (budget: 0 bytes). */
+  --font-display: var(--font-sans);
   /* Dates, counts, tags and kickers: the system monospace, nothing downloaded. */
   --font-meta: var(--font-mono);
 
