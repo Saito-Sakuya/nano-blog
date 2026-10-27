@@ -5,7 +5,7 @@
  * fails to load used to leave a pale panel with the title's first character in
  * it. This draws something better for that panel: a field of small squares in
  * a hue derived from the post, denser towards one edge, with exactly one
- * larger square in the brand cyan — the small find the tagline is about.
+ * larger square in the brand cyan: one small find in the field.
  *
  * It is only ever a fallback. A post's own cover image is always drawn first;
  * this sits behind it in the frame's fallback slot and shows when the image is

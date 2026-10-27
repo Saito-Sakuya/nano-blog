@@ -2,11 +2,21 @@
 /* Footer                                                                     */
 /* ========================================================================== */
 
+/* The footer opens with the same row of squares that closes the header. */
 .site-footer {
-  border-block-start: var(--border-width) solid var(--color-border);
+  position: relative;
   padding-block: var(--space-32);
-  font-size: var(--font-size-meta-lg);
+  font-family: var(--font-meta);
+  font-size: var(--font-size-meta);
   color: var(--color-muted);
+}
+
+.site-footer::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  block-size: var(--pixel);
+  background: var(--rule-pixel);
 }
 
 .site-footer__inner {

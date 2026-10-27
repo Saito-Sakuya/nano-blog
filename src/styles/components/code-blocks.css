@@ -34,6 +34,19 @@
   min-height: 40px;
 }
 
+/* Three squares open the bar: the brand's, a neutral one, the article's. */
+.code-block__bar::before {
+  content: "";
+  flex: none;
+  inline-size: 8px;
+  block-size: 8px;
+  margin-inline-end: 24px;
+  background: var(--color-brand);
+  box-shadow:
+    12px 0 0 var(--color-code-muted),
+    24px 0 0 var(--post-accent, var(--color-brand));
+}
+
 .code-block__title {
   color: var(--color-code-text);
   overflow: hidden;
@@ -118,8 +131,8 @@
 }
 
 /*
- * A highlighted line is marked by darkening the code surface and adding the
- * brand rule at its start.
+ * A highlighted line is marked by darkening the code surface and adding a
+ * rule in the article's colour at its start.
  *
  * A light wash — the obvious choice — lowers the contrast of every token on
  * the line, and Lighthouse caught two github-dark colours falling to 4.45 and
@@ -129,5 +142,5 @@
  */
 .code-block .line--highlighted {
   background: rgb(0 0 0 / 0.3);
-  box-shadow: inset 2px 0 0 var(--color-brand);
+  box-shadow: inset 3px 0 0 var(--post-accent, var(--color-brand));
 }

@@ -1,0 +1,112 @@
+---
+import { displayDate } from '../lib/content/build-context.js';
+import type { PostView } from '../lib/content/collections.js';
+import { coverHue, generatedCoverSvg } from '../lib/media/generated-cover.js';
+import { loadMediaIndex } from '../lib/media/index.js';
+import { buildPicture } from '../lib/media/picture.js';
+
+/**
+ * The featured cards at the top of the home page.
+ *
+ * A row of large cards that snaps one card at a time. It never moves on its
+ * own: a carousel that advances while someone is reading it takes the text away
+ * mid-sentence (WCAG 2.2.2). The list is an ordinary scrolling list, so it
+ * works by swipe, trackpad and keyboard scrolling with no script at all; the
+ * script only adds the step buttons and the square markers, which are hidden
+ * until it runs.
+ *
+ * Each card carries its post's cover hue as `--hue`, which tints the card and
+ * colours the generated cover drawn behind the image.
+ */
+interface Props {
+  posts: readonly PostView[];
+}
+
+const { posts } = Astro.props;
+const media = loadMediaIndex();
+const SIZES = '(min-width: 75rem) 600px, (min-width: 48rem) 50vw, 100vw';
+const total = String(posts.length).padStart(2, '0');
+---
+
+<section class="featured" aria-labelledby="featured-heading" data-carousel>
+  <div class="section-head">
+    <div>
+      <p class="eyebrow"><span class="px" aria-hidden="true"></span>Featured</p>
+      <h2 id="featured-heading">精选</h2>
+    </div>
+    <div class="carousel__controls" data-carousel-controls hidden>
+      <ul class="carousel__markers" aria-label="选择精选">
+        {
+          posts.map((post, index) => (
+            <li>
+              <button
+                class="carousel__marker"
+                type="button"
+                data-carousel-marker={index}
+                aria-label={`第 ${index + 1} 篇：${post.data.title}`}
+              />
+            </li>
+          ))
+        }
+      </ul>
+      <button class="carousel__step" type="button" data-carousel-step="-1" aria-label="上一篇精选">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true" focusable="false"><path d="M12 4 6 10l6 6"></path></svg>
+      </button>
+      <button class="carousel__step" type="button" data-carousel-step="1" aria-label="下一篇精选">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true" focusable="false"><path d="m8 4 6 6-6 6"></path></svg>
+      </button>
+    </div>
+  </div>
+
+  <ul class="carousel" role="list" data-carousel-track>
+    {
+      posts.map((post, index) => {
+        const picture = buildPicture(media, post.data.cover.src, {
+          displayWidth: 640,
+          displayHeight: 360,
+          sizes: SIZES,
+        });
+        return (
+          <li class="slide" style={`--hue: ${coverHue(post.id)}`} data-carousel-slide>
+            <div class="slide__cover" data-media-frame>
+              <span data-media-fallback="generated" set:html={generatedCoverSvg(post.id, 'card')} />
+              <picture>
+                {picture.sources.map((source) => (
+                  <source type={source.type} srcset={source.srcset} sizes={SIZES} />
+                ))}
+                <img
+                  src={picture.src}
+                  alt=""
+                  width="640"
+                  height="360"
+                  data-media-image
+                  loading={index === 0 ? 'eager' : 'lazy'}
+                  decoding="async"
+                />
+              </picture>
+            </div>
+            <div class="slide__body">
+              <span class="slide__flag">
+                <span class="px" aria-hidden="true"></span>精选 {String(index + 1).padStart(2, '0')}/{total}
+              </span>
+              <h3 class="slide__title">
+                <a href={post.url}>{post.data.title}</a>
+              </h3>
+              <p class="slide__lede">{post.data.description}</p>
+              <p class="slide__meta">
+                <time datetime={post.data.publishedAt}>{displayDate(post.data.publishedAt)}</time>
+                <span>{post.readingMinutes} 分钟</span>
+                {post.data.series && <span>系列 · {post.data.series.title}</span>}
+              </p>
+            </div>
+          </li>
+        );
+      })
+    }
+  </ul>
+</section>
+
+<script>
+  import { initCarousels } from '../scripts/carousel.js';
+  initCarousels();
+</script>

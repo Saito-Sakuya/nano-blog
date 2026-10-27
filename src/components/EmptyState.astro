@@ -1,5 +1,4 @@
 ---
-import { SITE_TAGLINE } from '../lib/site.js';
 
 /**
  * The empty production state.
@@ -22,7 +21,6 @@ const { message, showFeed = true } = Astro.props;
   <p class="empty-state__brand">
     <span>ani</span><span class="brand__mark" aria-hidden="true"></span><span>nano</span>
   </p>
-  <p>{SITE_TAGLINE}</p>
   <p class="empty-state__message">{message}</p>
   <p class="empty-state__links">
     <a href="/about/">关于本站</a>

@@ -194,6 +194,11 @@ export const postSchema = z
      * switch is enforced on both sides rather than only in the markup.
      */
     comments: z.boolean().default(true),
+    /*
+     * Whether the article is one of the home page's featured cards. The home
+     * page shows the newest four; a fifth is simply not shown there.
+     */
+    featured: z.boolean().default(false),
     ogTitle: boundedText("ogTitle", 1, 70).optional(),
     ogDescription: boundedText("ogDescription", 40, 160).optional(),
   })

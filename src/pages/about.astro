@@ -11,14 +11,13 @@ import {
   CONTENT_LICENSE_URL,
   CODE_LICENSE_LABEL,
   SITE_NAME,
-  SITE_TAGLINE,
 } from '../lib/site.js';
 
 /**
  * About.
  *
  * The identity block below is the whole page when there is no public
- * `pages/about.md`: the site name, its tagline, the anonymity statement, the
+ * `pages/about.md`: the site name, the anonymity statement, the
  * content licence and the feed. Nothing is filled in around it — no author
  * story, no location, no technology résumé, no contact details — because none
  * of those are facts the site holds, and inventing them would be inventing a
@@ -67,7 +66,6 @@ const meta = buildMetadata({
       <p class="identity__brand">
         <span>ani</span><span class="brand__mark" aria-hidden="true"></span><span>nano</span>
       </p>
-      <p>{SITE_TAGLINE}</p>
       <p>由 Nano 匿名写作。</p>
       <p>
         本站内容采用

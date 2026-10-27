@@ -3,9 +3,14 @@
 /* ========================================================================== */
 
 :focus-visible {
-  outline: var(--focus-ring-width) solid var(--color-link);
+  outline: var(--focus-ring-width) solid var(--color-accent);
   outline-offset: var(--focus-ring-offset);
-  border-radius: var(--radius-2);
+  border-radius: 0;
+}
+
+::selection {
+  background: var(--color-brand-soft);
+  color: var(--color-text);
 }
 
 /* ========================================================================== */
@@ -36,8 +41,9 @@ blockquote {
   text-wrap: pretty;
 }
 
-/* Dates and counts line up wherever they appear. */
+/* Dates and counts line up wherever they appear, in the meta face. */
 time {
+  font-family: var(--font-meta);
   font-variant-numeric: tabular-nums;
 }
 
@@ -47,7 +53,9 @@ h3,
 h4,
 h5,
 h6 {
-  font-weight: 600;
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.015em;
   line-height: 1.2;
   text-wrap: balance;
 }
@@ -55,7 +63,7 @@ h6 {
 h1 {
   font-size: var(--step-5);
   line-height: 1.08;
-  letter-spacing: -0.015em;
+  letter-spacing: -0.03em;
 }
 
 a {
@@ -67,6 +75,15 @@ a {
 
 a:hover {
   text-decoration-thickness: 2px;
+}
+
+/* A square in the current accent: the site's one recurring mark. */
+.px {
+  display: inline-block;
+  flex: none;
+  inline-size: 0.5em;
+  block-size: 0.5em;
+  background: var(--px-color, var(--color-accent));
 }
 
 hr {

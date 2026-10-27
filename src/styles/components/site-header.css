@@ -7,7 +7,52 @@
   inset-block-start: 0;
   z-index: var(--z-header);
   background: var(--color-bg);
-  border-block-end: var(--border-width) solid var(--color-border);
+}
+
+/* The lower edge is a row of squares rather than a hairline. */
+.site-header::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  block-size: 2px;
+  background: var(--rule-pixel);
+  pointer-events: none;
+}
+
+/*
+ * Reading progress, on an article page: a bar along the header's lower edge,
+ * in the article's own colour, driven by the page's scroll with no listener.
+ * An engine without scroll-driven animations shows nothing rather than a bar
+ * that never moves.
+ */
+.reading-progress {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 1;
+  block-size: 3px;
+  background: var(--post-accent, var(--color-brand));
+  transform-origin: 0 50%;
+  scale: 0 1;
+  pointer-events: none;
+}
+
+@supports (animation-timeline: scroll()) {
+  .reading-progress {
+    animation: reading-progress linear both;
+    animation-timeline: scroll(root);
+  }
+
+  @keyframes reading-progress {
+    to {
+      scale: 1 1;
+    }
+  }
+}
+
+@supports not (animation-timeline: scroll()) {
+  .reading-progress {
+    display: none;
+  }
 }
 
 .site-header__inner {
@@ -22,9 +67,10 @@
   align-items: baseline;
   gap: 0.28em;
   /* The wordmark keeps its own size: it is a logo, not a step of the text. */
-  font-size: 1.05rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
   color: var(--color-text);
   text-decoration: none;
   white-space: nowrap;
@@ -33,11 +79,24 @@
 /* The cyan square between the two words. Sized from the current font size so
    it stays optically matched to the text at any scale. */
 .brand__mark {
-  inline-size: 0.48em;
-  block-size: 0.48em;
+  inline-size: 0.5em;
+  block-size: 0.5em;
   background: var(--color-brand);
   border-radius: 0;
-  transform: translateY(-0.04em);
+  transform: translateY(-0.02em);
+}
+
+/* The square blinks like a cursor while the wordmark is hovered. */
+@media (prefers-reduced-motion: no-preference) {
+  .brand:hover .brand__mark {
+    animation: brand-cursor 1s steps(1) infinite;
+  }
+
+  @keyframes brand-cursor {
+    50% {
+      background: var(--color-accent);
+    }
+  }
 }
 
 .site-nav {
@@ -69,7 +128,9 @@
   align-items: center;
   min-height: 44px;
   padding: var(--space-4) var(--space-12);
+  font-family: var(--font-display);
   font-size: var(--step--1);
+  font-weight: 500;
   color: var(--color-text);
   text-decoration: none;
   background: transparent;
@@ -89,12 +150,15 @@
 }
 
 .bookmark:hover {
-  background: color-mix(in srgb, var(--color-brand-soft) 55%, transparent);
+  background: var(--color-hover);
 }
 
+/* The current page is one of amber's four places. */
 .bookmark[aria-current="page"] {
-  background: var(--color-brand-soft);
-  border-block-start-color: var(--color-brand);
+  background: var(--color-accent);
+  border-block-start-color: var(--pixel-ink);
+  color: var(--color-accent-ink);
+  font-weight: 700;
 }
 
 .bookmark:focus-visible {
@@ -203,7 +267,7 @@
 .icon-button:hover,
 .icon-button[aria-current="page"],
 .icon-button[aria-expanded="true"] {
-  background: var(--color-brand-soft);
+  background: var(--color-hover);
 }
 
 .icon-button svg {
@@ -230,7 +294,7 @@
   padding: var(--space-8) var(--gutter) var(--space-24);
   overflow: auto;
   border: 0;
-  border-block-end: var(--border-width) solid var(--color-border);
+  border-block-end: 1.5px solid var(--color-text);
   background: var(--color-surface);
   color: var(--color-text);
   box-shadow: var(--shadow-overlay);
@@ -253,7 +317,9 @@
   padding-inline: var(--space-12);
   border-inline-start: var(--border-width-strong) solid transparent;
   color: var(--color-text);
+  font-family: var(--font-display);
   font-size: var(--step-0);
+  font-weight: 500;
   text-decoration: none;
 }
 
@@ -262,13 +328,13 @@
 }
 
 .site-menu__list a:hover {
-  background: color-mix(in srgb, var(--color-brand-soft) 55%, transparent);
+  background: var(--color-hover);
 }
 
 .site-menu__list a[aria-current="page"] {
-  border-inline-start-color: var(--color-brand);
-  background: var(--color-brand-soft);
-  font-weight: 600;
+  border-inline-start: 6px solid var(--color-accent);
+  background: var(--color-hover);
+  font-weight: 700;
 }
 
 .site-menu__label {
@@ -326,7 +392,7 @@
   display: grid;
   place-items: center;
   min-block-size: 40px;
-  border-radius: 5px;
+  border-radius: var(--radius-2);
   font-size: var(--step--1);
   cursor: pointer;
   transition: background-color var(--duration-120) var(--ease-standard);
@@ -342,16 +408,17 @@
 }
 
 .segmented__option:hover {
-  background: var(--color-brand-soft);
+  background: var(--color-hover);
 }
 
+/* The checked option is filled with ink: the choice, not a call to action. */
 .segmented__option:has(input:checked) {
-  background: var(--color-surface);
-  box-shadow: var(--shadow-raised);
-  font-weight: 600;
+  background: var(--color-text);
+  color: var(--color-bg);
+  font-weight: 700;
 }
 
 .segmented__option:has(input:focus-visible) {
-  outline: var(--focus-ring-width) solid var(--color-link);
+  outline: var(--focus-ring-width) solid var(--color-accent);
   outline-offset: 1px;
 }

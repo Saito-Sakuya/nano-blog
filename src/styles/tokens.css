@@ -21,22 +21,54 @@
  * the token, not the one that defines it. Every element inherits the root's, and
  * nothing below the root sets its own; one that did would flip every token used
  * inside it.
+ *
+ * The palette is written in OKLCH so a hue can be held while its lightness is
+ * chosen for contrast: warm paper by day, cyan-tinted ink by night, the brand
+ * cyan, and amber as the one accent. Amber is kept to four places — the
+ * primary action, focus, the current page and the featured flag — so it keeps
+ * meaning "this one". Everything else hovers in neutral ink.
  */
+
+/*
+ * The display face, for headings and the wordmark. Latin and digits only:
+ * Chinese text, and Chinese punctuation in particular, must keep the CJK
+ * font's full-width forms, so the range stops before U+2000. 22KB, variable
+ * weight, OFL (see `assets/fonts/space-grotesk-OFL.txt`).
+ */
+@font-face {
+  font-family: "Space Grotesk";
+  src: url("../assets/fonts/space-grotesk-latin-wght-normal.woff2")
+    format("woff2");
+  font-weight: 300 700;
+  font-display: swap;
+  unicode-range: U+0020-007E, U+00A0-00FF, U+20AC, U+2122;
+}
 
 :root {
   color-scheme: light dark;
 
   /* --- Surfaces and text ------------------------------------------------ */
-  --color-bg: light-dark(#f7f5ef, #0e1517);
-  --color-surface: light-dark(#fcfbf7, #151e21);
-  --color-text: light-dark(#172125, #e8efef);
-  --color-muted: light-dark(#5d686c, #9aa8ab);
+  --color-bg: light-dark(oklch(0.975 0.008 85), oklch(0.165 0.022 222));
+  --color-surface: light-dark(oklch(0.99 0.005 85), oklch(0.205 0.026 222));
+  --color-text: light-dark(oklch(0.22 0.022 228), oklch(0.94 0.012 200));
+  --color-muted: light-dark(oklch(0.47 0.02 228), oklch(0.73 0.022 210));
 
   /* --- Interactive ------------------------------------------------------ */
-  --color-link: light-dark(#006f80, #52c6d8);
-  --color-brand: #00a2bd;
-  --color-brand-soft: light-dark(#d9f2f5, #10373e);
-  --color-border: light-dark(#cdd4d2, #324044);
+  --color-link: light-dark(oklch(0.47 0.1 222), oklch(0.81 0.1 208));
+  --color-brand: light-dark(oklch(0.67 0.125 215), oklch(0.76 0.12 210));
+  --color-brand-soft: light-dark(oklch(0.94 0.035 210), oklch(0.29 0.05 216));
+  --color-border: light-dark(oklch(0.86 0.012 200), oklch(0.34 0.032 218));
+
+  /*
+   * Amber. `accent` is a fill — the primary button, the current page, the
+   * featured flag, the focus ring — and anything written on it uses
+   * `accent-ink`. Amber as text needs a darker step by day to clear 4.5:1.
+   */
+  --color-accent: light-dark(oklch(0.83 0.165 82), oklch(0.82 0.15 80));
+  --color-accent-ink: oklch(0.23 0.05 70);
+  --color-accent-text: light-dark(oklch(0.5 0.115 62), oklch(0.85 0.14 82));
+  /* The neutral wash under a hovered control. */
+  --color-hover: color-mix(in oklch, var(--color-text) 7%, transparent);
 
   /* --- Code ------------------------------------------------------------- */
   --color-code-bg: light-dark(#111a1d, #091013);
@@ -110,6 +142,30 @@
    */
   --color-hairline: color-mix(in oklch, var(--color-border) 60%, transparent);
 
+  /*
+   * --- Pixels --------------------------------------------------------------
+   *
+   * The wordmark's square is the site's one recurring mark: square markers,
+   * rules drawn as a row of squares, and a hard offset shadow that a button
+   * sinks into when pressed.
+   *
+   * `pixel-ink` is the dark edge drawn against amber, near-black in both
+   * themes. `shadow-ink` is the offset shadow's colour, and the two differ by
+   * night: a near-black shadow on a dark page has nothing to be seen against,
+   * so it is a mid-tone there — a solid step up from the page and well below
+   * the text, so it reads as a block behind the card rather than a glow.
+   */
+  --pixel: 4px;
+  --pixel-ink: light-dark(oklch(0.22 0.022 228), oklch(0.08 0.02 222));
+  --shadow-ink: light-dark(oklch(0.22 0.022 228), oklch(0.46 0.035 215));
+  --shadow-pixel: 3px 3px 0 var(--shadow-ink);
+  --shadow-pixel-lg: 6px 6px 0 var(--shadow-ink);
+  --rule-pixel: repeating-linear-gradient(
+    to right,
+    var(--color-border) 0 var(--pixel),
+    transparent var(--pixel) calc(var(--pixel) * 2)
+  );
+
   /* --- Spacing (nine fixed steps) --------------------------------------- */
   --space-4: 4px;
   --space-8: 8px;
@@ -124,11 +180,11 @@
   /* --- Borders and radii ------------------------------------------------ */
   --border-width: 1px;
   --border-width-strong: 2px;
-  --radius-2: 2px;
-  --radius-4: 4px;
-  --radius-8: 8px;
-  /* Nothing in this design is rounder than 8px. */
-  --radius-max: 8px;
+  --radius-2: 1px;
+  --radius-4: 2px;
+  --radius-8: 4px;
+  /* Nothing in this design is rounder than 4px: squares, not pills. */
+  --radius-max: 4px;
 
   /*
    * --- Elevation ---------------------------------------------------------
@@ -168,6 +224,10 @@
   --font-mono:
     ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", Menlo,
     monospace;
+  /* Headings: the display face for Latin, the system face for everything else. */
+  --font-display: "Space Grotesk", var(--font-sans);
+  /* Dates, counts, tags and kickers: the system monospace, nothing downloaded. */
+  --font-meta: var(--font-mono);
 
   --font-size-root: 16px;
   --line-height-body: 1.7;
@@ -182,10 +242,10 @@
   --font-size-meta-lg: 14px;
 
   /*
-   * The type scale: seven steps, roughly 1.2 apart. Every font size in the
+   * The type scale: eight steps, roughly 1.2 apart. Every font size in the
    * stylesheets is one of these, the two meta sizes above (which are steps -2
    * and -1 under their older names), or an `em` relative to its context.
-   * The three largest grow with the viewport between a phone and a desktop.
+   * The four largest grow with the viewport between a phone and a desktop.
    */
   --step--2: 0.75rem; /* 12 */
   --step--1: 0.875rem; /* 14 */
@@ -195,6 +255,7 @@
   --step-3: clamp(1.375rem, 1.2rem + 0.6vw, 1.625rem); /* 22–26 */
   --step-4: clamp(1.75rem, 1.4rem + 1.4vw, 2.5rem); /* 28–40 */
   --step-5: clamp(2rem, 1.5rem + 2.2vw, 3rem); /* 32–48 */
+  --step-6: clamp(2.5rem, 1.6rem + 3.6vw, 4.25rem); /* 40–68 */
 
   /* --- Layout ----------------------------------------------------------- */
   --layout-max: 1200px;
@@ -238,6 +299,14 @@
   --index-cover-inset: 6px;
 }
 
+/* Wider-gamut screens get the same hues with more chroma. */
+@media (color-gamut: p3) {
+  :root {
+    --color-accent: light-dark(oklch(0.83 0.19 82), oklch(0.83 0.175 80));
+    --color-brand: light-dark(oklch(0.68 0.15 212), oklch(0.77 0.145 208));
+  }
+}
+
 /* An explicit choice wins over the system preference in either direction. */
 :root[data-theme="light"] {
   color-scheme: light;
@@ -275,4 +344,30 @@
     --index-cover-width: 240px;
     --gutter: var(--gutter-desktop);
   }
+}
+
+/*
+ * Per-post accent.
+ *
+ * An article takes its generated cover's hue as its own colour: the element
+ * carries `data-post-accent` and sets `--post-hue`, and everything inside that
+ * used to be "the link colour" — links, quotes, list markers, the section
+ * numbers, the highlighted code line — reads these instead. Lightness and
+ * chroma are fixed per theme and only the hue moves, so the contrast measured
+ * for one post holds for every post. The reading-progress bar in the header
+ * carries the same attribute, since it sits outside the article.
+ */
+[data-post-accent] {
+  --post-accent: light-dark(
+    oklch(0.6 0.13 var(--post-hue, 215)),
+    oklch(0.78 0.12 var(--post-hue, 215))
+  );
+  --post-link: light-dark(
+    oklch(0.48 0.12 var(--post-hue, 215)),
+    oklch(0.82 0.1 var(--post-hue, 215))
+  );
+  --post-soft: light-dark(
+    oklch(0.95 0.03 var(--post-hue, 215)),
+    oklch(0.28 0.045 var(--post-hue, 215))
+  );
 }

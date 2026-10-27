@@ -6,7 +6,8 @@
   font-size: var(--step--1);
   line-height: 1.6;
   color: var(--color-muted);
-  border-block-start: var(--border-width-strong) solid var(--color-brand);
+  border-block-start: var(--border-width-strong) solid
+    var(--post-accent, var(--color-brand));
   padding-block-start: var(--space-8);
   margin-block: var(--space-24);
 }

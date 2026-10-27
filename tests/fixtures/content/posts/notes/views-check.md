@@ -10,6 +10,7 @@ cover:
   alt: TEST FIXTURE 用于验证阅读量统计的测试封面图案
   width: 1600
   height: 900
+featured: true
 ---
 
 ## TEST FIXTURE 阅读量

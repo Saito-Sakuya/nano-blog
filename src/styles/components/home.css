@@ -1,0 +1,367 @@
+/* ========================================================================== */
+/* Home: section heads, featured carousel, series cards                       */
+/* ========================================================================== */
+
+/* A monospace kicker above a heading: "■ FEATURED". */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  font-family: var(--font-meta);
+  font-size: var(--step--2);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--space-16);
+  margin-block: var(--space-64) var(--space-16);
+}
+
+.section-head h2 {
+  margin-block-start: var(--space-4);
+  font-size: var(--step-3);
+}
+
+.featured > .section-head {
+  margin-block-start: var(--space-32);
+}
+
+/* --- Carousel controls ---------------------------------------------------- */
+
+.carousel__controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+}
+
+/* `display` above would otherwise win over the `hidden` the markup ships with. */
+.carousel__controls[hidden] {
+  display: none;
+}
+
+.carousel__markers {
+  display: flex;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* A 12px square that keeps a 24px hit area without growing visibly. */
+.carousel__marker {
+  position: relative;
+  display: block;
+  inline-size: 12px;
+  block-size: 12px;
+  padding: 0;
+  border: 1.5px solid var(--color-text);
+  background: transparent;
+  cursor: pointer;
+  transition:
+    inline-size var(--duration-180) var(--ease-standard),
+    background-color var(--duration-120) var(--ease-standard);
+}
+
+.carousel__marker::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+}
+
+.carousel__marker:hover {
+  background: var(--color-hover);
+}
+
+.carousel__marker[aria-current="true"] {
+  inline-size: 28px;
+  background: var(--color-text);
+}
+
+.carousel__step {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 44px;
+  block-size: 44px;
+  padding: 0;
+  border: 1.5px solid var(--color-text);
+  border-radius: var(--radius-4);
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: var(--shadow-pixel);
+  cursor: pointer;
+  transition:
+    translate var(--duration-120) var(--ease-standard),
+    box-shadow var(--duration-120) var(--ease-standard);
+}
+
+.carousel__step svg {
+  inline-size: 18px;
+  block-size: 18px;
+}
+
+.carousel__step:hover {
+  background: var(--color-hover);
+}
+
+.carousel__step:active {
+  translate: 3px 3px;
+  box-shadow: 0 0 0 var(--shadow-ink);
+}
+
+.carousel__step:disabled {
+  border-color: var(--color-border);
+  background: transparent;
+  box-shadow: none;
+  color: var(--color-muted);
+  cursor: default;
+  translate: none;
+}
+
+/* --- Track and cards ------------------------------------------------------ */
+
+/*
+ * One card per view on a phone; from the tablet up, a card and the edge of the
+ * next, which is what says the row goes on.
+ */
+.carousel {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 100%;
+  gap: var(--space-16);
+  margin: 0;
+  /* Room for the cards' pixel shadow, which the scroller would otherwise clip. */
+  padding: 0 var(--space-8) var(--space-12) 0;
+  list-style: none;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.carousel::-webkit-scrollbar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .carousel {
+    scroll-behavior: smooth;
+  }
+}
+
+@media (min-width: 48rem) {
+  .carousel {
+    grid-auto-columns: 92%;
+    gap: var(--space-24);
+  }
+}
+
+.slide {
+  --cover-ink: light-dark(
+    oklch(0.56 0.075 var(--hue, 200)),
+    oklch(0.76 0.07 var(--hue, 200))
+  );
+  position: relative;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  margin-inline-end: 6px;
+  overflow: hidden;
+  border: 1.5px solid var(--color-text);
+  border-radius: var(--radius-8);
+  background: color-mix(in oklch, var(--cover-ink) 7%, var(--color-surface));
+  box-shadow: var(--shadow-pixel-lg);
+  scroll-snap-align: start;
+}
+
+.slide__cover {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-block-end: 1.5px solid var(--color-text);
+}
+
+.slide__cover img {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+
+/* The card shape at every width; the media partial swaps shapes by breakpoint. */
+.slide .generated-cover--card {
+  display: block;
+}
+
+.slide__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  padding: var(--space-24);
+}
+
+.slide__flag {
+  align-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  padding: 2px var(--space-8);
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+  font-family: var(--font-meta);
+  font-size: var(--step--2);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.slide__flag .px {
+  --px-color: var(--color-accent-ink);
+}
+
+.slide__title {
+  font-size: var(--step-4);
+  line-height: 1.12;
+  letter-spacing: -0.03em;
+}
+
+.slide__title a {
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+/* The title's link covers the card, so the whole card is one target. */
+.slide__title a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.slide__title a:hover {
+  text-decoration: underline;
+  text-decoration-thickness: 3px;
+}
+
+.slide__title a:focus-visible {
+  outline: none;
+}
+
+.slide:has(.slide__title a:focus-visible) {
+  outline: var(--focus-ring-width) solid var(--color-accent);
+  outline-offset: -6px;
+}
+
+.slide__lede {
+  max-inline-size: 34rem;
+  color: var(--color-muted);
+}
+
+.slide__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4) var(--space-16);
+  margin-block-start: auto;
+  font-family: var(--font-meta);
+  font-size: var(--step--2);
+  color: var(--color-muted);
+}
+
+@media (min-width: 48rem) {
+  .slide {
+    grid-template-rows: none;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+    min-block-size: 22rem;
+  }
+
+  .slide__cover {
+    order: 2;
+    aspect-ratio: auto;
+    border-block-end: 0;
+    border-inline-start: 1.5px solid var(--color-text);
+  }
+
+  .slide__body {
+    padding: var(--space-32);
+  }
+}
+
+/* --- Series cards ---------------------------------------------------------- */
+
+.series-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+  gap: var(--space-16);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.series-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--index-cover-tile) minmax(0, 1fr);
+  gap: var(--space-16);
+  align-items: center;
+  padding: var(--space-16);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-8);
+  background: var(--color-surface);
+  transition:
+    border-color var(--duration-120) var(--ease-standard),
+    box-shadow var(--duration-120) var(--ease-standard),
+    translate var(--duration-120) var(--ease-standard);
+}
+
+/* Hovered, the card lifts off its own pixel shadow. */
+.series-card:hover {
+  border-color: var(--color-text);
+  box-shadow: var(--shadow-pixel);
+  translate: -2px -2px;
+}
+
+/* The generated tile is the series' picture here, not a fallback, so it is put
+   back in the flow; the attribute in the selector outranks the media rule that
+   lays a fallback over its frame. */
+.series-card__tile[data-media-fallback] {
+  position: relative;
+  inset: auto;
+  display: block;
+  inline-size: var(--index-cover-tile);
+  block-size: var(--index-cover-tile);
+  overflow: hidden;
+}
+
+.series-card .generated-cover--tile {
+  display: block;
+}
+
+.series-card__title {
+  font-size: var(--step-0);
+  line-height: 1.35;
+}
+
+.series-card__title a {
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.series-card__title a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.series-card__meta {
+  font-family: var(--font-meta);
+  font-size: var(--step--2);
+  color: var(--color-muted);
+}
+
+/* A date is one unit; it moves to the next line whole, never split at a dash. */
+.series-card__meta time,
+.slide__meta time {
+  white-space: nowrap;
+}

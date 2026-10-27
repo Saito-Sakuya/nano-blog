@@ -55,7 +55,7 @@
     "date meta";
   gap: var(--space-4) var(--space-12);
   padding-block: 18px;
-  border-block-end: var(--border-width) solid var(--color-border);
+  border-block-end: var(--border-width) solid var(--color-hairline);
   align-items: start;
   /*
    * Deliberately NOT `overflow: hidden`. The band clips itself (the media frame
@@ -67,6 +67,7 @@
 
 .index-row__date {
   grid-area: date;
+  font-family: var(--font-meta);
   font-size: var(--font-size-meta);
   color: var(--color-muted);
   font-variant-numeric: tabular-nums;
@@ -77,8 +78,9 @@
 
 .index-row__title {
   grid-area: title;
-  font-size: var(--step-0);
+  font-size: 1.0625rem;
   font-weight: 600;
+  letter-spacing: -0.01em;
   line-height: 1.4;
   min-width: 0;
 }
@@ -88,9 +90,23 @@
   text-decoration: none;
 }
 
-.index-row__title a:hover {
-  text-decoration: underline;
-  text-decoration-thickness: 2px;
+/* Hovered, a square slides in ahead of the title. */
+.index-row__title a::before {
+  content: "";
+  display: inline-block;
+  inline-size: 0;
+  block-size: 0.5em;
+  background: var(--color-text);
+  vertical-align: 0.08em;
+  transition:
+    inline-size var(--duration-180) var(--ease-standard),
+    margin var(--duration-180) var(--ease-standard);
+}
+
+.index-row:hover .index-row__title a::before,
+.index-row__title a:focus-visible::before {
+  inline-size: 0.5em;
+  margin-inline-end: 0.4em;
 }
 
 .index-row__meta {
@@ -99,6 +115,7 @@
   flex-wrap: wrap;
   gap: var(--space-8);
   align-items: center;
+  font-family: var(--font-meta);
   font-size: var(--font-size-meta);
   color: var(--color-muted);
   min-inline-size: 0;
@@ -302,20 +319,24 @@
   }
 }
 
-/* Tag chips are plain text links with a hairline, never pill buttons. */
+/* Tag chips are plain text in the meta face, written as `#tag`: never pills. */
 .tag-chip {
   display: inline-block;
+  font-family: var(--font-meta);
   font-size: var(--font-size-meta);
   color: var(--color-muted);
   text-decoration: none;
-  border: var(--border-width) solid var(--color-border);
-  border-radius: var(--radius-2);
-  padding: 1px var(--space-4);
+  padding-block: 1px;
   min-height: 20px;
 }
 
+/* Decoration only: the empty alternative keeps "#" out of the link's name. */
+.tag-chip::before {
+  content: "#";
+  content: "#" / "";
+}
+
 .tag-chip:hover {
-  color: var(--color-link);
-  border-color: var(--color-link);
-  text-decoration: none;
+  color: var(--color-text);
+  text-decoration: underline;
 }

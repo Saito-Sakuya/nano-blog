@@ -95,6 +95,7 @@ license: CC-BY-4.0
 | `canonicalUrl`  | https URL    | 否     | 缺省为站内 canonical                         |
 | `toc`           | enum         | 否     | `auto` / `always` / `never`，缺省 `auto`     |
 | `comments`      | boolean      | 否     | 缺省 `true`；`false` 表示这篇不接受评论      |
+| `featured`      | boolean      | 否     | 缺省 `false`；`true` 时进入首页精选，见 3.8  |
 | `ogTitle`       | string       | 否     | 1–70 个字符                                  |
 | `ogDescription` | string       | 否     | 40–160 个字符                                |
 | `license`       | literal      | 否     | 只能为 `CC-BY-4.0`，缺省该值                 |
@@ -176,13 +177,23 @@ comments: false
 
 构建会把关闭评论的文章 id 写进 `/comments-closed.json`，评论端点读它来决定是否接受。这个文件与页面由同一份 frontmatter 生成，因此两者的判断不会互相矛盾。
 
-### 3.8 草稿与未来时间
+### 3.8 精选（featured）
+
+```yaml
+featured: true
+```
+
+缺省为 `false`。标为 `true` 的公开文章会出现在首页第一页顶部的「精选」轮播里，按发布时间从新到旧，最多 4 篇；超出的不显示，也不报错。没有任何精选文章时，首页不显示这一区块。轮播不会自动播放，读者用箭头、方块标记或横向滑动切换。
+
+精选只影响首页，不改变文章在列表、归档、搜索与订阅里的位置。
+
+### 3.9 草稿与未来时间
 
 - `draft: true` **永远不公开**。新稿可以是空正文，校验只给 warning；它仍可随完整工作区进入私有 release，但永远不会出现在公开产物里。
 - `publishedAt` 晚于构建时刻的文章不公开。
 - 未来文章不会由常驻进程定时出现——到时间后需要一次新的构建。
 
-### 3.9 可见性统一判定
+### 3.10 可见性统一判定
 
 生产页面、搜索、RSS、sitemap、标签计数、系列与相关文章共用同一条判定：
 
@@ -190,7 +201,7 @@ comments: false
 2. `publishedAt` 晚于构建时刻 → 不公开；
 3. 其他通过 schema 与媒体验证的文章 → 公开。
 
-### 3.10 排序与阅读时间
+### 3.11 排序与阅读时间
 
 排序固定为 `publishedAt` 倒序；完全相同时按 canonical path 升序。
 

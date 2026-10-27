@@ -4,7 +4,7 @@ import {
   OG_HEIGHT,
   OG_WIDTH,
   SITE_NAME,
-  SITE_TAGLINE,
+  SITE_DESCRIPTION,
   isIndexable,
 } from "../site.js";
 
@@ -68,7 +68,7 @@ export interface BuildMetadataInput {
 
 export function buildMetadata(input: BuildMetadataInput): PageMetadata {
   const description =
-    input.description.trim().length > 0 ? input.description : SITE_TAGLINE;
+    input.description.trim().length > 0 ? input.description : SITE_DESCRIPTION;
   const title = pageTitle(input.title);
   // The path comes from `site.ts` rather than from `seo/og.ts`, which owns the
   // card's *contents*: importing that module would pull `sharp` and the

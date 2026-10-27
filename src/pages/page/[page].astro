@@ -6,7 +6,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import { loadSite } from '../../lib/content/collections.js';
 import { buildMetadata } from '../../lib/seo/metadata.js';
 import { homePageUrl, pageNumbers } from '../../lib/routing/urls.js';
-import { PAGE_SIZE, SITE_TAGLINE } from '../../lib/site.js';
+import { PAGE_SIZE, SITE_DESCRIPTION } from '../../lib/site.js';
 
 /**
  * Pages 2 and beyond of the home feed.
@@ -29,7 +29,7 @@ const page = Number(Astro.params['page']);
 
 const meta = buildMetadata({
   title: `最新文章 · 第 ${page} 页`,
-  description: `${SITE_TAGLINE}（第 ${page} 页）`,
+  description: `${SITE_DESCRIPTION}（第 ${page} 页）`,
   pathname: homePageUrl(page),
 });
 ---
